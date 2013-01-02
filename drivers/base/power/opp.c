@@ -66,6 +66,7 @@
  *
  * This structure stores the OPP information for a given device.
  */
+#if 0 /* Definition moved to header file */
 struct dev_pm_opp {
 	struct list_head node;
 
@@ -100,7 +101,7 @@ struct device_list_opp {
 	const struct device *dev;
 	struct rcu_head rcu_head;
 };
-
+#endif
 /**
  * struct device_opp - Device opp structure
  * @node:	list node - contains the devices with OPPs that
@@ -123,6 +124,7 @@ struct device_list_opp {
  * need to wait for the grace period of both of them before freeing any
  * resources. And so we have used kfree_rcu() from within call_srcu() handlers.
  */
+#if 0 /* Definition moved to header file */
 struct device_opp {
 	struct list_head node;
 
@@ -136,7 +138,7 @@ struct device_opp {
 	bool shared_opp;
 	struct dev_pm_opp *suspend_opp;
 };
-
+#endif
 /*
  * The root of the list of all devices. All device_opp structures branch off
  * from here, with each device_opp containing the list of opp it supports in
@@ -200,7 +202,7 @@ static struct device_opp *_managed_opp(const struct device_node *np)
  * is a RCU protected pointer. This means that device_opp is valid as long
  * as we are under RCU lock.
  */
-static struct device_opp *_find_device_opp(struct device *dev)
+struct device_opp *_find_device_opp(struct device *dev)
 {
 	struct device_opp *dev_opp;
 
