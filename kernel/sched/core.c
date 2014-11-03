@@ -1591,7 +1591,12 @@ void scheduler_ipi(void)
 	 */
 	preempt_fold_need_resched();
 
-	if (llist_empty(&this_rq()->wake_list) && !got_nohz_idle_kick())
+	if (llist_empty(&this_rq()->wake_list)
+			&& !got_nohz_idle_kick()
+#ifdef CONFIG_SCHED_HMP
+			&& !this_rq()->wake_for_idle_pull
+#endif
+			)
 		return;
 
 	/*
@@ -1617,6 +1622,11 @@ void scheduler_ipi(void)
 		this_rq()->idle_balance = 1;
 		raise_softirq_irqoff(SCHED_SOFTIRQ);
 	}
+#ifdef CONFIG_SCHED_HMP
+	else if (unlikely(this_rq()->wake_for_idle_pull))
+		raise_softirq_irqoff(SCHED_SOFTIRQ);
+#endif
+
 	irq_exit();
 }
 
