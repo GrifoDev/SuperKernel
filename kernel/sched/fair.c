@@ -8955,6 +8955,14 @@ static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle) { }
 #endif
 
 #ifdef CONFIG_SCHED_HMP
+static unsigned int hmp_task_eligible_for_up_migration(struct sched_entity *se)
+{
+	/* below hmp_up_threshold, never eligible */
+	if (se->avg.load_avg_ratio < hmp_up_threshold)
+		return 0;
+	return 1;
+}
+
 /* Check if task should migrate to a faster cpu */
 static unsigned int hmp_up_migration(int cpu, int *target_cpu, struct sched_entity *se)
 {
@@ -8965,6 +8973,9 @@ static unsigned int hmp_up_migration(int cpu, int *target_cpu, struct sched_enti
 	u64 now;
 
 	if (hmp_cpu_is_fastest(cpu))
+		return 0;
+
+	if (!hmp_task_eligible_for_up_migration(se))
 		return 0;
 
 #ifdef CONFIG_SCHED_HMP_PRIO_FILTER
@@ -9088,6 +9099,12 @@ static int hmp_can_migrate_task(struct task_struct *p, struct lb_env *env)
 		schedstat_inc(p, se.statistics.nr_failed_migrations_running);
 		return 0;
 	}
+	env->flags &= ~LBF_ALL_PINNED;
+
+	if (task_running(env->src_rq, p)) {
+		schedstat_inc(p, se.statistics.nr_failed_migrations_running);
+		return 0;
+	}
 
 	/*
 	 * Aggressive migration if:
@@ -9121,8 +9138,9 @@ static int move_specific_task(struct lb_env *env, struct task_struct *pm)
 
 	list_for_each_entry_safe(p, n, &env->src_rq->cfs_tasks, se.group_node) {
 	if (throttled_lb_pair(task_group(p), env->src_rq->cpu,
-				env->dst_cpu))
+				env->dst_cpu)) {
 		continue;
+	}
 
 		if (!hmp_can_migrate_task(p, env))
 			continue;
@@ -9140,6 +9158,70 @@ static int move_specific_task(struct lb_env *env, struct task_struct *pm)
 		return 1;
 	}
 	return 0;
+}
+/*
+ * Move task in a runnable state to another CPU.
+ *
+ * Tailored on 'active_load_balance_cpu_stop' with slight
+ * modification to locking and pre-transfer checks.  Note
+ * rq->lock must be held before calling.
+ */
+static void hmp_migrate_runnable_task(struct rq *rq)
+{
+	struct sched_domain *sd;
+	int src_cpu = cpu_of(rq);
+	struct rq *src_rq = rq;
+	int dst_cpu = rq->push_cpu;
+	struct rq *dst_rq = cpu_rq(dst_cpu);
+	struct task_struct *p = rq->migrate_task;
+	/*
+	 * One last check to make sure nobody else is playing
+	 * with the source rq.
+	 */
+	if (src_rq->active_balance)
+		goto out;
+
+	if (src_rq->nr_running <= 1)
+		goto out;
+
+	if (task_rq(p) != src_rq)
+		goto out;
+	/*
+	 * Not sure if this applies here but one can never
+	 * be too cautious
+	 */
+	BUG_ON(src_rq == dst_rq);
+
+	double_lock_balance(src_rq, dst_rq);
+
+	rcu_read_lock();
+	for_each_domain(dst_cpu, sd) {
+		if (cpumask_test_cpu(src_cpu, sched_domain_span(sd)))
+			break;
+	}
+
+	if (likely(sd)) {
+		struct lb_env env = {
+			.sd             = sd,
+			.dst_cpu        = dst_cpu,
+			.dst_rq         = dst_rq,
+			.src_cpu        = src_cpu,
+			.src_rq         = src_rq,
+			.idle           = CPU_IDLE,
+		};
+
+		schedstat_inc(sd, alb_count);
+
+		if (move_specific_task(&env, p))
+			schedstat_inc(sd, alb_pushed);
+		else
+			schedstat_inc(sd, alb_failed);
+	}
+
+	rcu_read_unlock();
+	double_unlock_balance(src_rq, dst_rq);
+out:
+	put_task_struct(p);
 }
 
 static ATOMIC_NOTIFIER_HEAD(hmp_task_migration_notifier);
