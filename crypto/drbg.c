@@ -310,12 +310,12 @@ static inline void drbg_cpu_to_be32(__u32 val, unsigned char *buf)
 
 #ifdef CONFIG_CRYPTO_DRBG_CTR
 #define CRYPTO_DRBG_CTR_STRING "CTR "
-MODULE_ALIAS("drbg_pr_ctr_aes256");
-MODULE_ALIAS("drbg_nopr_ctr_aes256");
-MODULE_ALIAS("drbg_pr_ctr_aes192");
-MODULE_ALIAS("drbg_nopr_ctr_aes192");
-MODULE_ALIAS("drbg_pr_ctr_aes128");
-MODULE_ALIAS("drbg_nopr_ctr_aes128");
+MODULE_ALIAS_CRYPTO("drbg_pr_ctr_aes256");
+MODULE_ALIAS_CRYPTO("drbg_nopr_ctr_aes256");
+MODULE_ALIAS_CRYPTO("drbg_pr_ctr_aes192");
+MODULE_ALIAS_CRYPTO("drbg_nopr_ctr_aes192");
+MODULE_ALIAS_CRYPTO("drbg_pr_ctr_aes128");
+MODULE_ALIAS_CRYPTO("drbg_nopr_ctr_aes128");
 
 static int drbg_kcapi_sym(struct drbg_state *drbg, const unsigned char *key,
 			  unsigned char *outval, const struct drbg_string *in);
@@ -691,14 +691,14 @@ static int drbg_fini_hash_kernel(struct drbg_state *drbg);
 
 #ifdef CONFIG_CRYPTO_DRBG_HMAC
 #define CRYPTO_DRBG_HMAC_STRING "HMAC "
-MODULE_ALIAS("drbg_pr_hmac_sha512");
-MODULE_ALIAS("drbg_nopr_hmac_sha512");
-MODULE_ALIAS("drbg_pr_hmac_sha384");
-MODULE_ALIAS("drbg_nopr_hmac_sha384");
-MODULE_ALIAS("drbg_pr_hmac_sha256");
-MODULE_ALIAS("drbg_nopr_hmac_sha256");
-MODULE_ALIAS("drbg_pr_hmac_sha1");
-MODULE_ALIAS("drbg_nopr_hmac_sha1");
+MODULE_ALIAS_CRYPTO("drbg_pr_hmac_sha512");
+MODULE_ALIAS_CRYPTO("drbg_nopr_hmac_sha512");
+MODULE_ALIAS_CRYPTO("drbg_pr_hmac_sha384");
+MODULE_ALIAS_CRYPTO("drbg_nopr_hmac_sha384");
+MODULE_ALIAS_CRYPTO("drbg_pr_hmac_sha256");
+MODULE_ALIAS_CRYPTO("drbg_nopr_hmac_sha256");
+MODULE_ALIAS_CRYPTO("drbg_pr_hmac_sha1");
+MODULE_ALIAS_CRYPTO("drbg_nopr_hmac_sha1");
 
 /* update function of HMAC DRBG as defined in 10.1.2.2 */
 static int drbg_hmac_update(struct drbg_state *drbg, struct list_head *seed,
@@ -825,14 +825,14 @@ static struct drbg_state_ops drbg_hmac_ops = {
 
 #ifdef CONFIG_CRYPTO_DRBG_HASH
 #define CRYPTO_DRBG_HASH_STRING "HASH "
-MODULE_ALIAS("drbg_pr_sha512");
-MODULE_ALIAS("drbg_nopr_sha512");
-MODULE_ALIAS("drbg_pr_sha384");
-MODULE_ALIAS("drbg_nopr_sha384");
-MODULE_ALIAS("drbg_pr_sha256");
-MODULE_ALIAS("drbg_nopr_sha256");
-MODULE_ALIAS("drbg_pr_sha1");
-MODULE_ALIAS("drbg_nopr_sha1");
+MODULE_ALIAS_CRYPTO("drbg_pr_sha512");
+MODULE_ALIAS_CRYPTO("drbg_nopr_sha512");
+MODULE_ALIAS_CRYPTO("drbg_pr_sha384");
+MODULE_ALIAS_CRYPTO("drbg_nopr_sha384");
+MODULE_ALIAS_CRYPTO("drbg_pr_sha256");
+MODULE_ALIAS_CRYPTO("drbg_nopr_sha256");
+MODULE_ALIAS_CRYPTO("drbg_pr_sha1");
+MODULE_ALIAS_CRYPTO("drbg_nopr_sha1");
 
 /*
  * Increment buffer
