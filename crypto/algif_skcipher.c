@@ -256,6 +256,7 @@ static int skcipher_sendmsg(struct kiocb *unused, struct socket *sock,
 	struct af_alg_control con = {};
 	long copied = 0;
 	bool enc = 0;
+	bool init = 0;
 	int err;
 	int i;
 
@@ -264,6 +265,7 @@ static int skcipher_sendmsg(struct kiocb *unused, struct socket *sock,
 		if (err)
 			return err;
 
+		init = 1;
 		switch (con.op) {
 		case ALG_OP_ENCRYPT:
 			enc = 1;
@@ -285,7 +287,7 @@ static int skcipher_sendmsg(struct kiocb *unused, struct socket *sock,
 	if (!ctx->more && ctx->used)
 		goto unlock;
 
-	if (!ctx->used) {
+	if (init) {
 		ctx->enc = enc;
 		if (con.iv)
 			memcpy(ctx->iv, con.iv->iv, ivsize);
