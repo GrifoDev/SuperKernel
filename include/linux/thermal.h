@@ -38,7 +38,7 @@
 #define THERMAL_CSTATE_INVALID -1UL
 
 /* No upper/lower limit requirement */
-#define THERMAL_NO_LIMIT	THERMAL_CSTATE_INVALID
+#define THERMAL_NO_LIMIT	((u32)~0)
 
 /* use value, which < 0K, to indicate an invalid/uninitialized temperature */
 #define THERMAL_TEMP_INVALID	-274000
