@@ -66,4 +66,8 @@ config EXYNOS_OTP
 	help
 		This option enables OTP (one-time programmable) tune bits functions
 
+config STATE_NOTIFIER
+        bool "State Notifier"
+	default y
+
 endif #SOC_SAMSUNG
