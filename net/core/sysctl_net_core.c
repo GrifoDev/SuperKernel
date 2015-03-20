@@ -23,7 +23,6 @@
 #include <net/pkt_sched.h>
 
 static int zero = 0;
-static int ushort_max = USHRT_MAX;
 static int min_sndbuf = SOCK_MIN_SNDBUF;
 static int min_rcvbuf = SOCK_MIN_RCVBUF;
 static int max_skb_frags = MAX_SKB_FRAGS;
@@ -382,7 +381,6 @@ static struct ctl_table netns_core_table[] = {
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
 		.extra1		= &zero,
-		.extra2		= &ushort_max,
 		.proc_handler	= proc_dointvec_minmax
 	},
 	{ }
