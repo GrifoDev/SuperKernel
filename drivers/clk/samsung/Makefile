@@ -13,7 +13,7 @@ ifeq ($(CONFIG_SOC_EXYNOS8890), y)
 	obj-y				+= composite.o
 	obj-y				+= clk-exynos8890.o
 else
-	obj-$(CONFIG_COMMON_CLK)	+= clk.o clk-pll.o
+	obj-$(CONFIG_COMMON_CLK)	+= clk.o clk-pll.o clk-cpu.o
 endif
 obj-$(CONFIG_ARCH_EXYNOS)	+= clk-exynos-audss.o
 obj-$(CONFIG_ARCH_EXYNOS)	+= clk-exynos-clkout.o
