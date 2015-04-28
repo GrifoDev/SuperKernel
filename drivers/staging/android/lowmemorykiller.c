@@ -200,6 +200,19 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 			     p->comm, p->pid, oom_score_adj, tasksize);
 	}
 	if (selected) {
+		task_lock(selected);
+		if (!selected->mm) {
+			/* Already exited, cannot do mark_tsk_oom_victim() */
+			task_unlock(selected);
+			goto out;
+		}
+		/*
+		 * FIXME: lowmemorykiller shouldn't abuse global OOM killer
+		 * infrastructure. There is no real reason why the selected
+		 * task should have access to the memory reserves.
+		 */
+		mark_tsk_oom_victim(selected);
+		task_unlock(selected);
 		lowmem_print(1, "Killing '%s' (%d), adj %hd,\n" \
 				"   to free %ldkB on behalf of '%s' (%d) because\n" \
 				"   cache %ldkB is below limit %ldkB for oom_score_adj %hd\n" \
@@ -213,12 +226,6 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 			     min_score_adj,
 			     other_free * (long)(PAGE_SIZE / 1024));
 		lowmem_deathpending_timeout = jiffies + HZ;
-		/*
-		 * FIXME: lowmemorykiller shouldn't abuse global OOM killer
-		 * infrastructure. There is no real reason why the selected
-		 * task should have access to the memory reserves.
-		 */
-		mark_tsk_oom_victim(selected);
 		send_sig(SIGKILL, selected, 0);
 		rem += selected_tasksize;
 		lowmem_lmkcount++;
@@ -231,7 +238,7 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 	} else {
 		rcu_read_unlock();
 	}
-
+out:
 	lowmem_print(4, "lowmem_scan %lu, %x, return %lu\n",
 		     sc->nr_to_scan, sc->gfp_mask, rem);
 	return rem;
