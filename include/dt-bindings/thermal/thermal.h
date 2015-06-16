@@ -11,6 +11,7 @@
 #define _DT_BINDINGS_THERMAL_THERMAL_H
 
 /* On cooling devices upper and lower limits */
+<<<<<<< HEAD
 #define THERMAL_NO_LIMIT		(-1UL)
 #define TABLE_END			(~1)
 
@@ -24,6 +25,9 @@
 
 #define NORMAL_SENSOR	(0)
 #define VIRTUAL_SENSOR	(1)
+=======
+#define THERMAL_NO_LIMIT		(~0)
+>>>>>>> b0477f5... Merge branch 'linux-linaro-lsk-v3.18' into linux-linaro-lsk-v3.18-android
 
 #endif
 
