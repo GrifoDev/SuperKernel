@@ -90,9 +90,10 @@ static atomic_t zswap_zero_pages = ATOMIC_INIT(0);
 /*********************************
 * tunables
 **********************************/
-/* Enable/disable zswap (disabled by default, fixed at boot for now) */
-static bool zswap_enabled __read_mostly = 1;
-module_param_named(enabled, zswap_enabled, bool, 0444);
+
+/* Enable/disable zswap (disabled by default) */
+static bool zswap_enabled = 1;
+module_param_named(enabled, zswap_enabled, bool, 0644);
 
 /* Compressor to be used by zswap (fixed at boot for now) */
 #define ZSWAP_COMPRESSOR_DEFAULT "lzo"
@@ -900,7 +901,7 @@ static int zswap_frontswap_store(unsigned type, pgoff_t offset,
 	struct zswap_header *zhdr;
 #endif
 
-	if (!tree) {
+	if (!zswap_enabled || !tree) {
 		ret = -ENODEV;
 		goto reject;
 	}
@@ -1269,9 +1270,6 @@ static void __exit zswap_debugfs_exit(void) { }
 static int __init init_zswap(void)
 {
 	gfp_t gfp = __GFP_NORETRY | __GFP_NOWARN | __GFP_HIGHMEM;
-
-	if (!zswap_enabled)
-		return 0;
 
 	pr_info("loading zswap\n");
 	zswap_writebackd_run();
