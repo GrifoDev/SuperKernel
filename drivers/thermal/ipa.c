@@ -1039,6 +1039,8 @@ static void setup_sysfs(struct arbiter_data *arb)
 	}
 }
 
+static struct cpu_cluster_efficiency *c_eff = NULL;
+
 static void setup_power_tables(void)
 {
 	struct cpu_power_info t;
@@ -1046,18 +1048,42 @@ static void setup_power_tables(void)
 
 	t.load[0] = 100; t.load[1] = t.load[2] = t.load[3] = 0;
 	t.cluster = CL_ZERO;
+	
+	if (c_eff == NULL) {
+		c_eff = kzalloc(sizeof(struct cpu_cluster_efficiency) * (CL_ONE + 1), GFP_KERNEL);
+	
+		c_eff[CL_ZERO].arch_efficiency = 100;
+		c_eff[CL_ZERO].n_p_states = nr_little_coeffs;
+		c_eff[CL_ZERO].p_states = kzalloc(sizeof(struct cpu_p_state) * nr_little_coeffs, GFP_KERNEL);
+		
+		c_eff[CL_ONE].arch_efficiency = 208;
+		c_eff[CL_ONE].n_p_states = nr_big_coeffs;
+		c_eff[CL_ONE].p_states = kzalloc(sizeof(struct cpu_p_state) * nr_big_coeffs, GFP_KERNEL);
+	}
+	
 	for (i = 0; i < nr_little_coeffs; i++) {
-		t.freq = MHZ_TO_KHZ(little_cpu_coeffs[i].frequency);
-		little_cpu_coeffs[i].power = get_power_value(&t);
+		c_eff[CL_ZERO].p_states[i].freq = t.freq = MHZ_TO_KHZ(little_cpu_coeffs[i].frequency);
+		c_eff[CL_ZERO].p_states[i].power = little_cpu_coeffs[i].power = get_power_value(&t);
+		c_eff[CL_ZERO].p_states[i].capacity = (t.freq / 1000) * c_eff[CL_ZERO].arch_efficiency;
+		c_eff[CL_ZERO].p_states[i].efficiency = 
+			((c_eff[CL_ZERO].p_states[i].freq / 1000) * c_eff[CL_ZERO].arch_efficiency)
+			/ c_eff[CL_ZERO].p_states[i].power;
 		pr_info("cluster: %d freq: %d power=%d\n", CL_ZERO, t.freq, little_cpu_coeffs[i].power);
 	}
-
+	
 	t.cluster = CL_ONE;
 	for (i = 0; i < nr_big_coeffs; i++) {
-		t.freq = MHZ_TO_KHZ(big_cpu_coeffs[i].frequency);
-		big_cpu_coeffs[i].power = get_power_value(&t);
+		c_eff[CL_ONE].p_states[i].freq = t.freq = MHZ_TO_KHZ(big_cpu_coeffs[i].frequency);
+		c_eff[CL_ONE].p_states[i].power = big_cpu_coeffs[i].power = get_power_value(&t);
+		c_eff[CL_ONE].p_states[i].capacity = (t.freq / 1000) * c_eff[CL_ONE].arch_efficiency;
+		c_eff[CL_ONE].p_states[i].efficiency = 
+			((c_eff[CL_ONE].p_states[i].freq / 1000) * c_eff[CL_ONE].arch_efficiency)
+			/ c_eff[CL_ONE].p_states[i].power;
 		pr_info("cluster: %d freq: %d power=%d\n", CL_ONE, t.freq, big_cpu_coeffs[i].power);
 	}
+	
+	sched_update_cpu_efficiency_table(&c_eff[CL_ZERO], CL_ZERO);
+	sched_update_cpu_efficiency_table(&c_eff[CL_ONE], CL_ONE);
 }
 
 static int setup_cpufreq_tables(int cl_idx)
