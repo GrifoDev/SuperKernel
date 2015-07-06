@@ -61,6 +61,22 @@ int ipa_hotplug(bool remove_cores);  // this is not very generic
 
 #ifdef CONFIG_CPU_THERMAL_IPA
 
+struct cpu_p_state {
+	unsigned int freq;
+	unsigned int power;
+	unsigned int capacity;
+	unsigned int efficiency;
+};
+
+struct cpu_cluster_efficiency {
+	unsigned int arch_efficiency;
+	unsigned int n_p_states;
+	struct cpu_p_state *p_states;
+};
+
+void sched_update_cpu_efficiency_table(struct cpu_cluster_efficiency *cluster_eff, 
+				       unsigned int cluster);
+
 void ipa_cpufreq_requested(struct cpufreq_policy *p, unsigned int freq);
 int ipa_register_thermal_sensor(struct ipa_sensor_conf *);
 int thermal_register_notifier(struct notifier_block *nb);
