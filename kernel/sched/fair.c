@@ -2728,11 +2728,11 @@ static inline void update_rq_runnable_avg(struct rq *rq, int runnable) {}
  * tweaking suit particular needs.
  */
 
-unsigned int hmp_up_threshold = 700;
-unsigned int hmp_down_threshold = 256;
+static unsigned int hmp_up_threshold = 700;
+static unsigned int hmp_down_threshold = 256;
 
-unsigned int hmp_semiboost_up_threshold = 400;
-unsigned int hmp_semiboost_down_threshold = 150;
+static unsigned int hmp_semiboost_up_threshold = 400;
+static unsigned int hmp_semiboost_down_threshold = 150;
 
 #ifdef CONFIG_SCHED_HMP_DOWN_MIGRATION_COMPENSATION
 #include <linux/pm_qos.h>
@@ -5016,20 +5016,20 @@ static DEFINE_RAW_SPINLOCK(hmp_sysfs_lock);
 #define YIELD_CORRECTION_TIME 10000000 /* nanoseconds */
 
 #ifdef CONFIG_SCHED_HMP_PRIO_FILTER
-unsigned int hmp_up_prio = NICE_TO_PRIO(CONFIG_SCHED_HMP_PRIO_FILTER_VAL);
+static unsigned int hmp_up_prio = NICE_TO_PRIO(CONFIG_SCHED_HMP_PRIO_FILTER_VAL);
 #endif
-unsigned int hmp_next_up_threshold = 4096;
-unsigned int hmp_next_down_threshold = 4096;
+static unsigned int hmp_next_up_threshold = 4096;
+static unsigned int hmp_next_down_threshold = 4096;
 
 static inline int hmp_boost(void)
 {
 	u64 now = ktime_to_us(ktime_get());
-	int ret;
+	bool ret;
 
 	if (hmp_boost_val || now < hmp_boostpulse_endtime)
-		ret = 1;
+		ret = true;
 	else
-		ret = 0;
+		ret = false;
 
 	return ret;
 }
@@ -5186,7 +5186,7 @@ static u64 hmp_variable_scale_convert(u64 delta)
 	u64 high = delta >> 32ULL;
 	u64 low = delta & 0xffffffffULL;
 
-	if (hmp_semiboost()) {
+	if (hmp_semiboost_val) {
 		low *= hmp_data.semiboost_multiplier;
 		high *= hmp_data.semiboost_multiplier;
 	} else {
@@ -5588,7 +5588,7 @@ int set_hmp_aggressive_yield(int enable)
 
 int get_hmp_boost(void)
 {
-	return hmp_boost();
+	return hmp_boost() ? 1 : 0;
 }
 
 int get_hmp_semiboost(void)
