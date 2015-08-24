@@ -17,7 +17,7 @@
 
 #include "mdnie.h"
 
-#define DEBUG 0
+//#define DEBUG
 
 #ifdef CONFIG_EXYNOS_DECON_MDNIE_LITE
 #define MDNIE_LITE
@@ -366,7 +366,7 @@ mdnie_t mdnie_reg_hook(unsigned short reg, mdnie_t value)
 	int tmp, original;
 	mdnie_t regval;
 	
-	printk("mdnie: hook on: 0x%2X (%3d) val: 0x%2X (%3d)\n", reg, reg, value, value);
+	pr_debug("mdnie: hook on: 0x%2X (%3d) val: 0x%2X (%3d)\n", reg, reg, value, value);
 
 	original = value;
 
@@ -411,10 +411,8 @@ mdnie_t mdnie_reg_hook(unsigned short reg, mdnie_t value)
 		value = regval;
 #endif
 		
-#if DEBUG
-		printk("mdnie: hook on: 0x%X val: 0x%2X -> 0x%2X effect: %3d -> %3d : %s \n",
+		pr_debug("mdnie: hook on: 0x%X val: 0x%2X -> 0x%2X effect: %3d -> %3d : %s \n",
 			reg, original, value, original, value, effect->attribute.attr.name);
-#endif
 	    }
 	    ++effect;
 	}
