@@ -350,7 +350,8 @@ static struct zs_ops zs_zpool_ops = {
 	.evict =	zs_zpool_evict
 };
 
-static void *zs_zpool_create(char *name, gfp_t gfp, struct zpool_ops *zpool_ops,
+static void *zs_zpool_create(char *name, gfp_t gfp,
+			     const struct zpool_ops *zpool_ops,
 			     struct zpool *zpool)
 {
 	return zs_create_pool(name, gfp, &zs_zpool_ops);
