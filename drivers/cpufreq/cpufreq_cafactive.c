@@ -31,6 +31,7 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <linux/kernel_stat.h>
+#include <linux/powersuspend.h>
 #include <asm/cputime.h>
 
 #define CREATE_TRACE_POINTS
@@ -75,6 +76,9 @@ static struct mutex gov_lock;
 static int set_window_count;
 static int migration_register_count;
 static struct mutex sched_lock;
+
+/* boolean for determining screen on/off state */
+static bool suspended = false;
 
 /* Target load.  Lower values result in higher CPU speeds. */
 #define DEFAULT_TARGET_LOAD 90
@@ -470,7 +474,7 @@ static void __cpufreq_cafactive_timer(unsigned long data, bool is_notif)
 	tunables->boosted = tunables->boost_val || now < tunables->boostpulse_endtime;
 
 	if ((cpu_load >= tunables->go_hispeed_load || tunables->boosted)
-	    && ((pcpu->policy->cpu == 0) || (pcpu->policy->cpu == 4))) {
+	    && ((pcpu->policy->cpu == 0) || (pcpu->policy->cpu == 4)) && !suspended) {
 		if (pcpu->policy->cur < tunables->hispeed_freq &&
 		    cpu_load <= MAX_LOCAL_LOAD) {
 			new_freq = tunables->hispeed_freq;
@@ -1518,6 +1522,23 @@ unsigned int cpufreq_cafactive_get_hispeed_freq(int cpu)
 	return tunables->hispeed_freq;
 }
 
+static void cafactive_early_suspend(struct power_suspend *handler)
+{
+	suspended = true;
+	return;
+}
+
+static void cafactive_late_resume(struct power_suspend *handler)
+{
+	suspended = false;
+	return;
+}
+
+static struct power_suspend cafactive_suspend = {
+	.suspend = cafactive_early_suspend,
+	.resume = cafactive_late_resume,
+};
+
 static int __init cpufreq_cafactive_init(void)
 {
 	unsigned int i;
@@ -1536,6 +1557,8 @@ static int __init cpufreq_cafactive_init(void)
 		spin_lock_init(&pcpu->target_freq_lock);
 		init_rwsem(&pcpu->enable_sem);
 	}
+
+	register_power_suspend(&cafactive_suspend);
 
 	spin_lock_init(&speedchange_cpumask_lock);
 	mutex_init(&gov_lock);
