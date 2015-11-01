@@ -184,6 +184,7 @@ static int is_full_zero(const void *s1, size_t len)
 
 #define UKSM_RUNG_ROUND_FINISHED  (1 << 0)
 #define TIME_RATIO_SCALE	10000
+#define SLEEP_MILLISECS		1000
 
 #define SLOT_TREE_NODE_SHIFT	8
 #define SLOT_TREE_NODE_STORE_SIZE	(1UL << SLOT_TREE_NODE_SHIFT)
@@ -5575,7 +5576,7 @@ static int __init uksm_init(void)
 	struct task_struct *uksm_thread;
 	int err;
 
-	uksm_sleep_jiffies = msecs_to_jiffies(500);
+	uksm_sleep_jiffies = msecs_to_jiffies(SLEEP_MILLISECS);
 
 	slot_tree_init();
 	init_scan_ladder();
