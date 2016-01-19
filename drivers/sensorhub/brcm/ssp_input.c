@@ -20,6 +20,13 @@
 #include <linux/iio/buffer.h>
 #include <linux/iio/types.h>
 
+#include <linux/moduleparam.h>
+
+static int wl_prox = 1;
+module_param(wl_prox, int, 0644);
+static int wl_humi = 2;
+module_param(wl_humi, int, 0644);
+
 /*************************************************************************/
 /* SSP Kernel -> HAL input evnet function                                */
 /*************************************************************************/
@@ -440,7 +447,7 @@ void report_prox_data(struct ssp_data *data, struct sensor_value *proxdata)
 		ts_low);
 	input_sync(data->prox_input_dev);
 
-	wake_lock_timeout(&data->ssp_wake_lock, 1 * HZ);
+	wake_lock_timeout(&data->ssp_wake_lock, wl_prox * HZ);
 }
 
 void report_prox_raw_data(struct ssp_data *data,
@@ -537,7 +544,7 @@ void report_temp_humidity_data(struct ssp_data *data,
 		data->buf[TEMPERATURE_HUMIDITY_SENSOR].y);
 	input_sync(data->temp_humi_input_dev);
 	if (data->buf[TEMPERATURE_HUMIDITY_SENSOR].z)
-		wake_lock_timeout(&data->ssp_wake_lock, 1 * HZ);
+		wake_lock_timeout(&data->ssp_wake_lock, wl_humi * HZ);
 }
 
 #ifdef CONFIG_SENSORS_SSP_SHTC1
