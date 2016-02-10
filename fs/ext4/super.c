@@ -413,6 +413,9 @@ static void ext4_handle_error(struct super_block *sb)
 		sb->s_flags |= MS_RDONLY;
 	}
 	if (test_opt(sb, ERRORS_PANIC)) {
+		if (EXT4_SB(sb)->s_journal &&
+		  !(EXT4_SB(sb)->s_journal->j_flags & JBD2_REC_ERR))
+			return;
 		printk("EXT4-fs (device %s): panic forced after error\n",
 			sb->s_id);
 		BUG_ON(1);
@@ -606,6 +609,9 @@ void __ext4_abort(struct super_block *sb, const char *function,
 		save_error_info(sb, function, line);
 	}
 	if (test_opt(sb, ERRORS_PANIC)) {
+		if (EXT4_SB(sb)->s_journal &&
+		  !(EXT4_SB(sb)->s_journal->j_flags & JBD2_REC_ERR))
+			return;
 		printk("EXT4-fs panic from previous error\n");
 		BUG_ON(1);
 	}
