@@ -27,14 +27,22 @@
 static struct notifier_block thunder_state_notif;
 #endif
 
-#include "thunderplug.h"
-
 #define DEBUG				0
 
 #define THUNDERPLUG			"thunderplug"
 
 #define DRIVER_VERSION			5
 #define DRIVER_SUBVER			2
+
+#define ENABLED				1
+#define DISABLED			0
+
+#define POWER_SAVER			0
+#define BALANCED			1
+#define TURBO				2
+
+#define HOTPLUG_PERCORE			1
+#define HOTPLUG_SCHED			2
 
 #define DEFAULT_CPU_LOAD_THRESHOLD	(65)
 #define MIN_CPU_LOAD_THRESHOLD		(10)
@@ -50,6 +58,7 @@ static struct notifier_block thunder_state_notif;
 
 static bool isSuspended = false;
 
+extern int sched_set_boost(int enable);
 static int suspend_cpu_num = 2, resume_cpu_num = (NR_CPUS -1);
 static int endurance_level = 0;
 static int core_limit = NR_CPUS;
