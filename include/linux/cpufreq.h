@@ -580,6 +580,9 @@ extern struct cpufreq_governor cpufreq_gov_interactive_x;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE_X)
 extern struct cpufreq_governor cpufreq_gov_conservative_x;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative_x)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_INTEREXTREM)
+extern struct cpufreq_governor cpufreq_gov_interextrem;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_interextrem)
 #endif
 
 /*********************************************************************
