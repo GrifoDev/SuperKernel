@@ -338,6 +338,15 @@ config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE_X
 	  governor. If unsure have a look at the help section of the
 	  driver. Fallback governor will be the performance governor.
 
+config CPU_FREQ_DEFAULT_GOV_INTEREXTREM
+	bool "interextrem"
+	select CPU_FREQ_GOV_INTEREXTREM
+	help
+	  Use the CPUFreq governor 'interextrem' as default. This
+	  is a tweaked 'interactive' CPUFreq governor, This allows
+	  you to get a full dynamic cpu frequency capable system by simply
+	  loading your cpufreq low-level hardware driver, using the
+	  'interactive' governor for latency-sensitive workloads.
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -414,7 +423,7 @@ config CPU_FREQ_GOV_INTERACTIVE
 
 config MODE_AUTO_CHANGE
 	bool "automatic governor parameter change"
-	depends on CPU_FREQ_GOV_INTERACTIVE
+	depends on CPU_FREQ_GOV_INTERACTIVE || CPU_FREQ_GOV_INTEREXTREM
 	default n
 	help
 	  automatic governor parameter change by MODE
@@ -518,7 +527,6 @@ config CPU_FREQ_GOV_INTELLIACTIVE
 
 config CPU_FREQ_GOV_ONDEMANDPLUS
 	tristate "'ondemandplus' cpufreq policy governor"
-	select CPU_FREQ_TABLE
 	help
 	  'ondemandplus' - This driver adds a dynamic cpufreq policy
 	  governor. The governor does a periodic polling and
@@ -717,6 +725,23 @@ config CPU_FREQ_GOV_CONSERVATIVE_X
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_conservative.
+
+	  For details, take a look at linux/Documentation/cpu-freq.
+
+	  If in doubt, say N.
+
+config CPU_FREQ_GOV_INTEREXTREM
+	tristate "'interextrem' cpufreq policy governor"
+	help
+	  'interextrem' - This driver adds a dynamic cpufreq policy governor
+	  designed for latency-sensitive workloads.
+
+	  This governor attempts to reduce the latency of clock
+	  increases so that the system is more responsive to
+	  interactive workloads.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called cpufreq_interextrem.
 
 	  For details, take a look at linux/Documentation/cpu-freq.
 
