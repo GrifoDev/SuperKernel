@@ -392,7 +392,7 @@ static ssize_t thunderplug_hp_enabled_show(struct kobject *kobj,
 	return sprintf(buf, "%d", tplug_hp_enabled);
 }
 
-static ssize_t thunderplug_hp_enabled_store(struct kobject *kobj,
+static ssize_t __ref thunderplug_hp_enabled_store(struct kobject *kobj,
 			struct kobj_attribute *attr,
 			const char *buf, size_t count)
 {
