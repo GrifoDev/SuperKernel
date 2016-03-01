@@ -299,7 +299,7 @@ static void __cpuinit tplug_work_fn(struct work_struct *work)
 	if (!tplug_hp_enabled)
 		return;
 
-	for (i = 0 ; i < max_core_online; i++) {
+	for (i = 0 ; i < max_core_online - 1; i++) {
 		if (cpu_online(i))
 			load[i] = get_curr_load(i);
 		else
@@ -312,7 +312,7 @@ static void __cpuinit tplug_work_fn(struct work_struct *work)
 	/* count online cores */
 	nr_cpu_online = num_online_cpus();
 
-	for (i = 0 ; i < max_core_online; i++) {
+	for (i = 0 ; i < max_core_online - 1; i++) {
 		if (cpu_online(i) && avg_load[i] >
 				load_threshold && cpu_is_offline(i + 1)) {
 			if (DEBUG)
