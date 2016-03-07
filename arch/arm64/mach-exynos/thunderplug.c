@@ -398,7 +398,7 @@ static void __cpuinit tplug_work_fn(struct work_struct *work)
 			/* count online cores */
 			nr_cpu_online = num_online_cpus();
 
-			if (nr_cpu_online >= thunder_param.min_core_online) {
+			if (nr_cpu_online > thunder_param.min_core_online) {
 				/*
 				 * check if core touch boosted
 				 * before cpu_down
