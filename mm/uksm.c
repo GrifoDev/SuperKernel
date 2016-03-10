@@ -182,6 +182,7 @@ static int is_full_zero(const void *s1, size_t len)
 }
 #endif
 
+/* #define U64_MAX		(~((u64)0)) Moved to include/linux/kernel.h */
 #define UKSM_RUNG_ROUND_FINISHED  (1 << 0)
 #define TIME_RATIO_SCALE	10000
 #define SLEEP_MILLISECS		1000
