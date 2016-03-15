@@ -2114,7 +2114,11 @@ static int ata_dev_config_ncq(struct ata_device *dev,
 		return 0;
 	}
 	if (ap->flags & ATA_FLAG_NCQ) {
+#ifdef CONFIG_ZEN_INTERACTIVE
+		hdepth = min(ap->scsi_host->can_queue, 8);
+#else
 		hdepth = min(ap->scsi_host->can_queue, ATA_MAX_QUEUE - 1);
+#endif
 		dev->flags |= ATA_DFLAG_NCQ;
 	}
 
