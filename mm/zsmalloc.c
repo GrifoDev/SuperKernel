@@ -301,7 +301,6 @@ struct mapping_area {
 #endif
 	char *vm_addr; /* address of kmap_atomic()'ed pages */
 	enum zs_mapmode vm_mm; /* mapping mode */
-	bool huge;
 };
 
 /* atomic counter indicating which class/fg to reclaim from */
@@ -1281,11 +1280,9 @@ static void __zs_unmap_object(struct mapping_area *area,
 		goto out;
 
 	buf = area->vm_buf;
-	if (!area->huge) {
-		buf = buf + ZS_HANDLE_SIZE;
-		size -= ZS_HANDLE_SIZE;
-		off += ZS_HANDLE_SIZE;
-	}
+	buf = buf + ZS_HANDLE_SIZE;
+	size -= ZS_HANDLE_SIZE;
+	off += ZS_HANDLE_SIZE;
 #ifdef CONFIG_ZSMALLOC_OBJ_SEQ
 	buf += ZS_OBJ_SEQ_SIZE;
 	size -= ZS_OBJ_SEQ_SIZE;
@@ -2366,11 +2363,7 @@ static int zs_register_shrinker(struct zs_pool *pool)
  * On success, a pointer to the newly created pool is returned,
  * otherwise NULL.
  */
-<<<<<<< HEAD
-struct zs_pool *zs_create_pool(char *name, gfp_t flags, struct zs_ops *ops)
-=======
-struct zs_pool *zs_create_pool(const char *name, gfp_t flags)
->>>>>>> 6f3526d... mm: zsmalloc: constify struct zs_pool name
+struct zs_pool *zs_create_pool(const char *name, gfp_t flags, struct zs_ops *ops)
 {
 	int i;
 	struct zs_pool *pool;
