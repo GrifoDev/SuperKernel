@@ -26,3 +26,4 @@ obj-$(CONFIG_EXYNOS_HOTPLUG_GOVERNOR)	+= exynos-hotplug_governor.o
 # memory
 obj-$(CONFIG_ARCH_EXYNOS)	+= memory/
 obj-$(CONFIG_EXYNOS_MCINFO)	+= exynos-mcinfo.o
+obj-$(CONFIG_STATE_NOTIFIER)	+= state_notifier.o
