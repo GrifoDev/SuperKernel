@@ -663,7 +663,7 @@ static int wm_adsp_fw_get(struct snd_kcontrol *kcontrol,
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	struct wm_adsp *dsp = snd_soc_codec_get_drvdata(codec);
 
-	ucontrol->value.integer.value[0] = dsp[e->shift_l].fw;
+	ucontrol->value.enumerated.item[0] = dsp[e->shift_l].fw;
 
 	return 0;
 }
@@ -682,10 +682,10 @@ static int wm_adsp_fw_put(struct snd_kcontrol *kcontrol,
 	struct wm_adsp *dsp = &dsps[e->shift_l];
 	int ret;
 
-	if (ucontrol->value.integer.value[0] == dsp->fw)
+	if (ucontrol->value.enumerated.item[0] == dsp->fw)
 		return 0;
 
-	if (ucontrol->value.integer.value[0] >= dsp->num_firmwares)
+	if (ucontrol->value.enumerated.item[0] >= dsp->num_firmwares)
 		return -EINVAL;
 
 	switch (dsp->type) {
@@ -696,7 +696,7 @@ static int wm_adsp_fw_put(struct snd_kcontrol *kcontrol,
 	case WMFW_ADSP1:
 		if (dsp->running)
 			return -EBUSY;
-		dsp->fw = ucontrol->value.integer.value[0];
+		dsp->fw = ucontrol->value.enumerated.item[0];
 		return 0;
 	default:
 		return -EINVAL;
@@ -708,7 +708,7 @@ static int wm_adsp_fw_put(struct snd_kcontrol *kcontrol,
 		SND_SOC_DAPM_CLASS_RUNTIME);
 
 	wm_adsp2_shutdown_dsp(dsp);
-	dsp->fw = ucontrol->value.integer.value[0];
+	dsp->fw = ucontrol->value.enumerated.item[0];
 	wm_adsp2_set_dspclk(dsp, dsp->freq_cache);
 	queue_work(system_unbound_wq, &dsp->boot_work);
 	ret = wm_adsp2_start_dsp(dsp);
