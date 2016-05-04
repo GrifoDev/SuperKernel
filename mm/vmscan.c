@@ -2773,7 +2773,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 #else
 		.may_swap = 1,
 #endif
-#ifdef CONFIG_ZSWAP
+#if defined (CONFIG_ZSWAP) || defined (CONFIG_ESWAP)
 		.swappiness = vm_swappiness / 2,
 #else
 		.swappiness = vm_swappiness,

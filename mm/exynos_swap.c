@@ -73,7 +73,6 @@ struct eswap_verify {
 static struct eswap_data eswap;
 static char *eswap_zpool_type = "zsmalloc";
 static struct eswap_entry **comp_table;
-static u64 eswap_pool_total_size;
 
 static struct eswap_verify eswap_src;
 static struct eswap_verify eswap_comp;
@@ -96,6 +95,15 @@ static inline int eswap_test_flag(struct eswap_entry *entry,
 {
 	return entry->flag & BIT(flag);
 };
+
+
+/*********************************
+* statistics
+**********************************/
+/* Total bytes used by the compressed storage */
+u64 eswap_pool_total_size;
+/* Number of memory pages used by the compressed pool */
+u64 eswap_pool_pages;
 
 /*********************************
 * statistics
@@ -121,7 +129,7 @@ static u64 eswap_comp_page_swapin_hit;
 /* queued page was invalidated */
 static u64 eswap_queued_page_inv_hit;
 /* The number of compressed pages currently stored in eswap */
-static atomic_t eswap_stored_pages = ATOMIC_INIT(0);
+atomic_t eswap_stored_pages = ATOMIC_INIT(0);
 /* TODO: add to perf monitor of zsmalloc time */
 
 /*********************************
@@ -222,6 +230,7 @@ static void eswap_free_entry(struct eswap_entry *entry)
 	eswap_entry_cache_free(entry);
 	atomic_dec(&eswap_stored_pages);
 	eswap_pool_total_size = zpool_get_total_size(eswap.pool);
+	eswap_pool_pages = eswap_pool_total_size >> PAGE_SHIFT;
 }
 
 /*********************************
@@ -443,6 +452,8 @@ static int eswap_frontswap_store(unsigned type, pgoff_t offset,
 				ESWP_ORG_DATA | ESWP_BACKUP);
 
 	atomic_inc(&eswap_stored_pages);
+	eswap_pool_total_size = zpool_get_total_size(eswap.pool);
+	eswap_pool_pages = eswap_pool_total_size >> PAGE_SHIFT;
 	pr_debug("%s: offset %ld index %d\n", __func__, entry->offset,
 		       entry->index);
 	return 0;
@@ -696,9 +707,11 @@ void compress_register_ops(struct compress_ops *ops, void *priv)
 
 static int __init exynos_swap_init(void)
 {
+	gfp_t gfp = __GFP_WAIT | __GFP_IO | __GFP_FS;
+	
 	pr_info("initialize exynos swap\n");
 
-	eswap.pool = zpool_create_pool(eswap_zpool_type, GFP_KERNEL, NULL);
+	eswap.pool = zpool_create_pool(eswap_zpool_type, "eswap", gfp, NULL);
 	if (!eswap.pool) {
 		pr_info("fail to create %s\n", eswap_zpool_type);
 		goto err_pool;
