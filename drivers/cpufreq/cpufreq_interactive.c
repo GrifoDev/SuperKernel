@@ -259,12 +259,12 @@ static void cpufreq_interactive_timer_resched(
 				  tunables->io_is_busy);
 	pcpu->cputime_speedadj = 0;
 	pcpu->cputime_speedadj_timestamp = pcpu->time_in_idle_timestamp;
-	expires = jiffies + usecs_to_jiffies(tunables->timer_rate);
+	expires = jiffies + tunables->timer_rate;
 	mod_timer_pinned(&pcpu->cpu_timer, expires);
 
 	if (tunables->timer_slack_val >= 0 &&
 	    pcpu->target_freq > pcpu->policy->min) {
-		expires += usecs_to_jiffies(tunables->timer_slack_val);
+		expires += tunables->timer_slack_val;
 		mod_timer_pinned(&pcpu->cpu_slack_timer, expires);
 	}
 
@@ -279,15 +279,14 @@ static void cpufreq_interactive_timer_start(
 	struct cpufreq_interactive_tunables *tunables, int cpu)
 {
 	struct cpufreq_interactive_cpuinfo *pcpu = &per_cpu(cpuinfo, cpu);
-	unsigned long expires = jiffies +
-		usecs_to_jiffies(tunables->timer_rate);
+	unsigned long expires = jiffies + tunables->timer_rate;
 	unsigned long flags;
 
 	pcpu->cpu_timer.expires = expires;
 	add_timer_on(&pcpu->cpu_timer, cpu);
 	if (tunables->timer_slack_val >= 0 &&
 	    pcpu->target_freq > pcpu->policy->min) {
-		expires += usecs_to_jiffies(tunables->timer_slack_val);
+		expires += tunables->timer_slack_val;
 		pcpu->cpu_slack_timer.expires = expires;
 		add_timer_on(&pcpu->cpu_slack_timer, cpu);
 	}
@@ -482,16 +481,16 @@ static unsigned int check_mode(int cpu, unsigned int cur_mode, u64 now)
 	struct cpufreq_interactive_tunables *tunables =
 		pcpu->policy->governor_data;
 
-	if (now - tunables->mode_check_timestamp < tunables->timer_rate - USEC_PER_MSEC)
+	if (now - tunables->mode_check_timestamp < jiffies_to_usecs(tunables->timer_rate) - USEC_PER_MSEC)
 		return ret;
 
-	if (now - tunables->mode_check_timestamp > tunables->timer_rate + USEC_PER_MSEC)
-		tunables->mode_check_timestamp = now - tunables->timer_rate;
+	if (now - tunables->mode_check_timestamp > jiffies_to_usecs(tunables->timer_rate) + USEC_PER_MSEC)
+		tunables->mode_check_timestamp = now - jiffies_to_usecs(tunables->timer_rate);
 
 	if(cpumask_test_cpu(cpu, &hmp_fast_cpu_mask)) {
 		for_each_cpu_mask(i, hmp_fast_cpu_mask) {
 			cur_loadinfo = &per_cpu(loadinfo, i);
-			if (now - cur_loadinfo->timestamp <= tunables->timer_rate + USEC_PER_MSEC) {
+			if (now - cur_loadinfo->timestamp <= jiffies_to_usecs(tunables->timer_rate) + USEC_PER_MSEC) {
 				total_load += cur_loadinfo->load;
 				if (cur_loadinfo->load > max_single_load)
 					max_single_load = cur_loadinfo->load;
@@ -1258,9 +1257,9 @@ static ssize_t show_timer_rate(struct cpufreq_interactive_tunables *tunables,
 		char *buf)
 {
 #ifdef CONFIG_MODE_AUTO_CHANGE
-	return sprintf(buf, "%lu\n", tunables->timer_rate_set[tunables->param_index]);
+	return sprintf(buf, "%u\n", jiffies_to_usecs(tunables->timer_rate_set[tunables->param_index]));
 #else
-	return sprintf(buf, "%lu\n", tunables->timer_rate);
+	return sprintf(buf, "%u\n", jiffies_to_usecs(tunables->timer_rate));
 #endif
 }
 
@@ -1281,6 +1280,8 @@ static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
 		pr_warn("timer_rate not aligned to jiffy. Rounded up to %lu\n",
 			val_round);
 
+	val_round = usecs_to_jiffies(val_round);
+
 #ifdef CONFIG_MODE_AUTO_CHANGE
 	spin_lock_irqsave(&tunables->param_index_lock, flags_idx);
 	tunables->timer_rate_set[tunables->param_index] = val_round;
@@ -1296,7 +1297,7 @@ static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
 static ssize_t show_timer_slack(struct cpufreq_interactive_tunables *tunables,
 		char *buf)
 {
-	return sprintf(buf, "%d\n", tunables->timer_slack_val);
+	return sprintf(buf, "%u\n", jiffies_to_usecs(tunables->timer_slack_val));
 }
 
 static ssize_t store_timer_slack(struct cpufreq_interactive_tunables *tunables,
@@ -1309,7 +1310,7 @@ static ssize_t store_timer_slack(struct cpufreq_interactive_tunables *tunables,
 	if (ret < 0)
 		return ret;
 
-	tunables->timer_slack_val = val;
+	tunables->timer_slack_val = usecs_to_jiffies(val);
 	return count;
 }
 
@@ -1643,7 +1644,7 @@ static ssize_t show_cpu_util(struct cpufreq_interactive_tunables
 			pcpu = &per_cpu(cpuinfo, i);
 			get_cpu_idle_time(i, &now, tunables->io_is_busy);
 
-			if (now - pcpu->time_in_idle_timestamp <= tunables->timer_rate)
+			if (now - pcpu->time_in_idle_timestamp <= jiffies_to_usecs(tunables->timer_rate))
 				ret += sprintf(buf + ret, "%3u ", per_cpu(cpu_util, i));
 			else
 				ret += sprintf(buf + ret, "%3s ", (pcpu->target_freq == pcpu->policy->max) ? "H_I" : "L_I");
@@ -3017,9 +3018,9 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 			tunables->target_loads = default_target_loads;
 			tunables->ntarget_loads = ARRAY_SIZE(default_target_loads);
 			tunables->min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
-			tunables->timer_rate = DEFAULT_TIMER_RATE;
+			tunables->timer_rate = usecs_to_jiffies(DEFAULT_TIMER_RATE);
 			tunables->boostpulse_duration_val = DEFAULT_MIN_SAMPLE_TIME;
-			tunables->timer_slack_val = DEFAULT_TIMER_SLACK;
+			tunables->timer_slack_val = usecs_to_jiffies(DEFAULT_TIMER_SLACK);
 #if defined(CONFIG_EXYNOS_DUAL_GOV_PARAMS_SUPPORT)
 			if (policy->cpu) {
 				for (j = 0; j < NR_MODE; j++) {
