@@ -1,5 +1,6 @@
 extern void __init bootmem_init(void);
-extern void __init arm64_swiotlb_init(void);
+
+void fixup_init(void);
 
 /* For exynos compatible */
 
