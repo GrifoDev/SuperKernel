@@ -3455,6 +3455,8 @@ restart:
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
 			if (family == AF_INET6) {
 				struct in6_addr *s6;
+				if (!inet->pinet6)
+					continue;
 
 				if (sk->sk_family == AF_INET)
 					continue;
