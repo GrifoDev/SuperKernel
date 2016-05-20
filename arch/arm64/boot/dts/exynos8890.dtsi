@@ -400,20 +400,20 @@
 
 		/* MNGS */
 		cl1_idx_num = <28>;
-		cl1_max_support_idx = <7>;
-		cl1_min_support_idx = <22>;
-		cl1_boot_max_qos = <2288000>;
-		cl1_boot_min_qos = <2288000>;
+		cl1_max_support_idx = <3>;
+		cl1_min_support_idx = <24>;
+		cl1_boot_max_qos = <2700000>;
+		cl1_boot_min_qos = <2496000>;
 		cl1_en_ema = <1>;
 		cl1_en_smpl = <1>;
 		cl1_jig_boot_max_qos = <1456000>;
 		cl1_reboot_limit_freq = <728000>;
 
-		cl1_max_support_idx_table = < 7	   /* Number of online core is 0 */
-					      4    /* Number of online core is 1 */
-					      4    /* Number of online core is 2 */
-					      7    /* Number of online core is 3 */
-					      7 >; /* Number of online core is 4 */
+		cl1_max_support_idx_table = < 3	   /* Number of online core is 0 */
+					      3    /* Number of online core is 1 */
+					      3    /* Number of online core is 2 */
+					      3    /* Number of online core is 3 */
+					      3 >; /* Number of online core is 4 */
 
 		/* Boost freq*/
 		cl0_boost_freq = <754000>;
@@ -435,19 +435,19 @@
 				  12   754000  781250   676000   /* ARM L12: 800MHz  */
 				  13   650000  750000   546000   /* ARM L13: 700MHz  */
 				  14   546000  718750   421000   /* ARM L14: 500MHz  */
-				  15   442000  681250	     0   /* ARM L15: 400MHz  */
-				  16   338000  650000	     0   /* ARM L16: 300MHz  */
-				  17   234000  643750	     0   /* ARM L17: 200MHz  */
-				  18   130000  643750	     0 >;/* ARM L18: 100MHz  */
+				  15   442000  681250	421000   /* ARM L15: 400MHz  */
+				  16   338000  650000	421000   /* ARM L16: 300MHz  */
+				  17   234000  643750	421000   /* ARM L17: 200MHz  */
+				  18   130000  643750	421000 >;/* ARM L18: 100MHz  */
 
 		/*MNGS table ->	 idx  freq    volt   bus_lock */
 		cl1_dvfs_domain_name = "dvfs_big";
 		cl1_dvfs_table = < 0 3000000 1137500   1794000 /* ARM L0: 3.0GHz  */
 				   1 2900000 1137500   1794000 /* ARM L1: 2.9GMHz */
 				   2 2800000 1137500   1794000 /* ARM L2: 2.8GMHz */
-				   3 2700000 1137500   1794000 /* ARM L3: 2.7GHz  */
-				   4 2600000 1137500   1794000 /* ARM L4: 2.6GHz  */
-				   5 2496000 1137500   1716000 /* ARM L5: 2.5GHz  */
+				   3 2700000 1428750   1794000 /* ARM L3: 2.7GHz  */
+				   4 2600000 1378750   1794000 /* ARM L4: 2.6GHz  */
+				   5 2496000 1328750   1716000 /* ARM L5: 2.5GHz  */
 				   6 2392000 1268750   1716000 /* ARM L6: 2.4GHz  */
 				   7 2288000 1187500   1716000 /* ARM L7: 2.3GHz  */
 				   8 2184000 1131250   1539000 /* ARM L8: 2.2GHz  */
@@ -465,11 +465,11 @@
 				  20  936000  837500    421000 /* ARM L20: 900MHz */
 				  21  832000  837500    421000 /* ARM L21: 800MHz */
 				  22  728000  837500    421000 /* ARM L22: 700MHz */
-				  23  624000  837500       0   /* ARM L23: 600MHz */
-				  24  520000  837500       0   /* ARM L23: 500MHz */
-				  25  416000  837500       0   /* ARM L23: 400MHz */
-				  26  312000  837500       0   /* ARM L23: 300MHz */
-				  27  208000  837500       0 >;/* ARM L23: 200MHz */
+				  23  624000  832500    421000 /* ARM L23: 600MHz */
+				  24  520000  832500    421000 /* ARM L23: 500MHz */
+				  25  416000  832500    421000 /* ARM L23: 400MHz */
+				  26  312000  832500    421000 /* ARM L23: 300MHz */
+				  27  208000  832500    421000 >;/* ARM L23: 200MHz */
 	};
 
 
