@@ -2684,6 +2684,7 @@ struct proto tcp_prot = {
 #ifdef CONFIG_MPTCP
 	.clear_sk		= tcp_v4_clear_sk,
 #endif
+	.diag_destroy		= tcp_abort,
 };
 EXPORT_SYMBOL(tcp_prot);
 
