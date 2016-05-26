@@ -1799,7 +1799,7 @@ static int reclaim_zspage(struct zs_pool *pool, struct page *first_page)
 	 * so it's not available for use by zs_malloc,
 	 * and won't be freed by zs_free
 	 */
-	remove_zspage(first_page, class, fullness);
+	remove_zspage(class, fullness, first_page);
 	set_zspage_mapping(first_page, class_idx, ZS_RECLAIM);
 
 	spin_unlock(&class->lock);

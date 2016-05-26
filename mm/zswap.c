@@ -389,7 +389,7 @@ zeropage_out:
 	zswap_entry_cache_free(entry);
 	atomic_dec(&zswap_stored_pages);
 	zswap_update_total_size();
-	zswap_pool_pages = zpool_get_total_size(zswap_pool) >> PAGE_SHIFT;
+	zswap_pool_pages = zpool_get_total_size(entry->pool->zpool) >> PAGE_SHIFT;
 }
 
 /* caller must hold the tree lock */
@@ -1446,9 +1446,11 @@ int sysctl_zswap_compact;
 int sysctl_zswap_compaction_handler(struct ctl_table *table, int write,
 			void __user *buffer, size_t *length, loff_t *ppos)
 {
+	struct zswap_entry *entry;
+
 	if (write) {
 		sysctl_zswap_compact++;
-		zpool_compact(zswap_pool);
+		zpool_compact(entry->pool->zpool);
 		pr_info("zswap_compact: (%d times so far)\n",
 			sysctl_zswap_compact);
 	} else
@@ -1459,8 +1461,10 @@ int sysctl_zswap_compaction_handler(struct ctl_table *table, int write,
 
 static void zswap_compact_zpool(struct work_struct *work)
 {
+	struct zswap_entry *entry;
+
 	sysctl_zswap_compact++;
-	zpool_compact(zswap_pool);
+	zpool_compact(entry->pool->zpool);
 	pr_info("zswap_compact: (%d times so far)\n",
 		sysctl_zswap_compact);
 }
@@ -1609,6 +1613,7 @@ static int __init init_zswap(void)
 {
 	struct zswap_pool *pool;
 
+	zswap_writebackd_run();
 	zswap_init_started = true;
 
 	if (zswap_entry_cache_create()) {
