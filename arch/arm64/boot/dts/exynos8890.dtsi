@@ -392,17 +392,17 @@
 		/* For CPUFREQ table */
 		/* APO */
 		cl0_idx_num = <19>;
-		cl0_max_support_idx = <4>;
+		cl0_max_support_idx = <2>;
 		cl0_min_support_idx = <15>;
-		cl0_boot_max_qos = <1586000>;
+		cl0_boot_max_qos = <1898000>;
 		cl0_boot_min_qos = <1586000>;
 		cl0_en_ema = <1>;
 
 		/* MNGS */
 		cl1_idx_num = <28>;
-		cl1_max_support_idx = <3>;
+		cl1_max_support_idx = <2>;
 		cl1_min_support_idx = <24>;
-		cl1_boot_max_qos = <2700000>;
+		cl1_boot_max_qos = <2800000>;
 		cl1_boot_min_qos = <2496000>;
 		cl1_en_ema = <1>;
 		cl1_en_smpl = <1>;
@@ -410,8 +410,8 @@
 		cl1_reboot_limit_freq = <728000>;
 
 		cl1_max_support_idx_table = < 3	   /* Number of online core is 0 */
-					      3    /* Number of online core is 1 */
-					      3    /* Number of online core is 2 */
+					      2    /* Number of online core is 1 */
+					      2    /* Number of online core is 2 */
 					      3    /* Number of online core is 3 */
 					      3 >; /* Number of online core is 4 */
 
@@ -420,10 +420,10 @@
 
 		/*APO table ->	 idx   freq    volt   bus_lock */
 		cl0_dvfs_domain_name = "dvfs_little";
-		cl0_dvfs_table = < 0  1976000 1100000        0   /* ARM L0: 2.0GHz   */
-				   1  1898000 1100000        0   /* ARM L1: 1.9GMHz  */
-				   2  1794000 1100000        0   /* ARM L2: 1.8GMHz  */
-				   3  1690000 1100000        0   /* ARM L3: 1.7GHz   */
+		cl0_dvfs_table = < 0  1976000 1475000  1539000   /* ARM L0: 2.0GHz   */
+				   1  1898000 1390000  1539000   /* ARM L1: 1.9GMHz  */
+				   2  1794000 1290500  1352000   /* ARM L2: 1.8GMHz  */
+				   3  1690000 1225000  1144000   /* ARM L3: 1.7GHz   */
 				   4  1586000 1162500  1014000   /* ARM L4: 1.6GHz   */
 				   5  1482000 1100000  1014000   /* ARM L5: 1.5GMHz  */
 				   6  1378000 1037500  1014000   /* ARM L6: 1.4GMHz  */
@@ -442,9 +442,9 @@
 
 		/*MNGS table ->	 idx  freq    volt   bus_lock */
 		cl1_dvfs_domain_name = "dvfs_big";
-		cl1_dvfs_table = < 0 3000000 1137500   1794000 /* ARM L0: 3.0GHz  */
-				   1 2900000 1137500   1794000 /* ARM L1: 2.9GMHz */
-				   2 2800000 1137500   1794000 /* ARM L2: 2.8GMHz */
+		cl1_dvfs_table = < 0 3000000 1575000   1794000 /* ARM L0: 3.0GHz  */
+				   1 2900000 1528750   1794000 /* ARM L1: 2.9GMHz */
+				   2 2800000 1478750   1794000 /* ARM L2: 2.8GMHz */
 				   3 2700000 1428750   1794000 /* ARM L3: 2.7GHz  */
 				   4 2600000 1378750   1794000 /* ARM L4: 2.6GHz  */
 				   5 2496000 1328750   1716000 /* ARM L5: 2.5GHz  */
