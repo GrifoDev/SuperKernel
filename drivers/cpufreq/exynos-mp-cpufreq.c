@@ -1734,7 +1734,7 @@ static ssize_t store_volt_table(struct kobject *kobj, struct attribute *attr,
 	if (tokens == 2 && target > 0) {
 		if ((rest = t[1] % CL_VOLT_STEP) != 0)
 			t[1] += CL_VOLT_STEP - rest;
-		
+
 		sanitize_min_max(t[1], CL_MIN_VOLT(cluster), CL_MAX_VOLT(cluster));
 		exynos_info[cluster]->volt_table[target] = t[1];
 	} else {
@@ -1744,7 +1744,7 @@ static ssize_t store_volt_table(struct kobject *kobj, struct attribute *attr,
 
 			if ((rest = t[i] % CL_VOLT_STEP) != 0)
 				t[i] += CL_VOLT_STEP - rest;
-			
+
 			sanitize_min_max(t[i], CL_MIN_VOLT(cluster), CL_MAX_VOLT(cluster));
 			exynos_info[cluster]->volt_table[i + invalid_offset] = t[i];
 		}
