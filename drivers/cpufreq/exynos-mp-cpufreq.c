@@ -2676,11 +2676,11 @@ static int exynos_mp_cpufreq_parse_dt(struct device_node *np, cluster_type cl)
 		if (asv_big < 7) {
 		ret = of_property_read_u32_array(np, "low_cl1_max_support_idx_table",
 				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
-		/* For Grade C phones, use mid OC freq_table */
-		} else if (asv_big < 11) {
+		/* For Grade C and B phones, use mid OC freq_table */
+		} else if (asv_big < 14) {
 		ret = of_property_read_u32_array(np, "mid_cl1_max_support_idx_table",
 				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
-		/* Grade A,B phones? That's amazing, let's unleash the Exynos */
+		/* Grade A phones? That's amazing, let's unleash the Exynos */
 		} else {
 		ret = of_property_read_u32_array(np, "high_cl1_max_support_idx_table",
 				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
