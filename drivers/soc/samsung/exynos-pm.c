@@ -21,6 +21,7 @@
 #include <soc/samsung/exynos-pm.h>
 #include <soc/samsung/exynos-pmu.h>
 #include <soc/samsung/exynos-powermode.h>
+#include <soc/samsung/asv-cal.h>
 
 #ifdef CONFIG_SEC_PM_DEBUG
 #include <linux/debugfs.h>
@@ -221,32 +222,6 @@ static const struct platform_suspend_ops exynos_pm_ops = {
 };
 
 #if defined(CONFIG_SEC_PM_DEBUG)
-enum dvfs_id {
-	cal_asv_dvfs_big,
-	cal_asv_dvfs_little,
-	cal_asv_dvfs_g3d,
-	cal_asv_dvfs_mif,
-	cal_asv_dvfs_int,
-	cal_asv_dvfs_cam,
-	cal_asv_dvfs_disp,
-	cal_asv_dvs_g3dm,
-	num_of_dvfs,
-};
-
-enum asv_group {
-	asv_max_lv,
-	dvfs_freq,
-	dvfs_voltage,
-	dvfs_rcc,
-	dvfs_group,
-	table_group,
-	ids_group,
-	num_of_asc,
-};
-
-extern int asv_get_information(enum dvfs_id id,
-	enum asv_group grp, unsigned int lv);
-
 static int asv_group_show(struct seq_file *s, void *d)
 {
 	int i;
