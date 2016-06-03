@@ -636,8 +636,8 @@ static long etspi_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	case FP_CPU_SPEEDUP:
 		pr_info("%s FP_CPU_SPEEDUP\n", __func__);
 		if (ioc->len) {
-			(void)set_hmp_boost(1);
 			u8 retry_cnt = 0;
+			(void)set_hmp_boost(1);
 			pr_info("%s FP_CPU_SPEEDUP ON:%d, retry: %d\n",
 				__func__, ioc->len, retry_cnt);
 #if defined(CONFIG_SECURE_OS_BOOSTER_API)
