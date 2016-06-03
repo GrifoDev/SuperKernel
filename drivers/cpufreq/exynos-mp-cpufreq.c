@@ -46,6 +46,7 @@
 #include <soc/samsung/cpufreq.h>
 #include <soc/samsung/exynos-powermode.h>
 #include <soc/samsung/asv-exynos.h>
+#include <soc/samsung/asv-cal.h>
 #include <soc/samsung/tmu.h>
 #include <soc/samsung/ect_parser.h>
 #include <soc/samsung/exynos-pmu.h>
@@ -2435,6 +2436,7 @@ static int exynos_mp_cpufreq_parse_dt(struct device_node *np, cluster_type cl)
 	char *cluster_name;
 	int ret;
 	int not_using_ect = true;
+	unsigned int asv_big = asv_get_information(cal_asv_dvfs_big, dvfs_group, 0);
 
 	if (!np) {
 		pr_info("%s: cpufreq_dt is not existed. \n", __func__);
@@ -2483,8 +2485,21 @@ static int exynos_mp_cpufreq_parse_dt(struct device_node *np, cluster_type cl)
 #if defined(CONFIG_EXYNOS_BIG_FREQ_BOOST)
 		ptr->max_support_idx_table = kzalloc(sizeof(unsigned int)
 				* (NR_CLUST1_CPUS + 1), GFP_KERNEL);
-		ret = of_property_read_u32_array(np, "cl1_max_support_idx_table",
+
+		/* For Grade D,E phones, use stock freq_table */
+		if (asv_big < 7) {
+		ret = of_property_read_u32_array(np, "low_cl1_max_support_idx_table",
 				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
+		/* For Grade C phones, use mid OC freq_table */
+		} else if (asv_big < 11) {
+		ret = of_property_read_u32_array(np, "mid_cl1_max_support_idx_table",
+				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
+		/* Grade A,B phones? That's amazing, let's unleash the Exynos */
+		} else {
+		ret = of_property_read_u32_array(np, "high_cl1_max_support_idx_table",
+				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
+		}
+
 		if (ret < 0)
 			return -ENODEV;
 
