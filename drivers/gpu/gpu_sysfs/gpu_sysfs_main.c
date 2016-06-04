@@ -8,8 +8,8 @@ static struct platform_device *gpu_sysfs_pdev;
  * Device attribute macros, linking functions with sysfs.
  * *********************************************************************
  * */
-DEVICE_ATTR(gpu_min_clock, 0444, gpu_min_clock_show, NULL);
-DEVICE_ATTR(gpu_max_clock, 0444, gpu_max_clock_show, NULL);
+DEVICE_ATTR(gpu_min_clock, 0644, gpu_min_clock_show, NULL);
+DEVICE_ATTR(gpu_max_clock, 0644, gpu_max_clock_show, NULL);
 DEVICE_ATTR(gpu_busy, 0444, gpu_busy_show, NULL);
 DEVICE_ATTR(gpu_voltage, 0444, gpu_vol_show, NULL);
 DEVICE_ATTR(gpu_clock, 0444, gpu_freq_show, gpu_freq_write);
