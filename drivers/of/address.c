@@ -765,7 +765,7 @@ unsigned long __weak pci_address_to_pio(phys_addr_t address)
 	spin_lock(&io_range_lock);
 	list_for_each_entry(res, &io_range_list, list) {
 		if (address >= res->start && address < res->start + res->size) {
-			addr = res->start - address + offset;
+			addr = address - res->start + offset;
 			break;
 		}
 		offset += res->size;
@@ -845,10 +845,10 @@ struct device_node *of_find_matching_node_by_address(struct device_node *from,
 	struct resource res;
 
 	while (dn) {
-		if (of_address_to_resource(dn, 0, &res))
-			continue;
-		if (res.start == base_address)
+		if (!of_address_to_resource(dn, 0, &res) &&
+		    res.start == base_address)
 			return dn;
+
 		dn = of_find_matching_node(dn, matches);
 	}
 
