@@ -3,6 +3,7 @@
 #include <linux/virtio_config.h>
 #include <linux/module.h>
 #include <linux/idr.h>
+#include <uapi/linux/virtio_ids.h>
 
 /* Unique numbering for virtio devices. */
 static DEFINE_IDA(virtio_index_ida);
@@ -197,7 +198,11 @@ static int virtio_dev_probe(struct device *_d)
 		driver_features_legacy = driver_features;
 	}
 
-	if (driver_features & device_features & (1ULL << VIRTIO_F_VERSION_1))
+	/* Detect legacy-only drivers and disable VIRTIO_F_VERSION_1. */
+	if (drv->legacy_only)
+		device_features &= ~(1ULL << VIRTIO_F_VERSION_1);
+
+	if (device_features & (1ULL << VIRTIO_F_VERSION_1))
 		dev->features = driver_features & device_features;
 	else
 		dev->features = driver_features_legacy & device_features;
@@ -262,6 +267,12 @@ static struct bus_type virtio_bus = {
 	.probe = virtio_dev_probe,
 	.remove = virtio_dev_remove,
 };
+
+bool virtio_device_is_legacy_only(struct virtio_device_id id)
+{
+	return id.device == VIRTIO_ID_BALLOON;
+}
+EXPORT_SYMBOL_GPL(virtio_device_is_legacy_only);
 
 int register_virtio_driver(struct virtio_driver *driver)
 {
