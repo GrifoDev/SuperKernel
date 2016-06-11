@@ -967,7 +967,7 @@ static struct dentry *splice_dentry(struct dentry *dn, struct inode *in,
 	/* dn must be unhashed */
 	if (!d_unhashed(dn))
 		d_drop(dn);
-	realdn = d_materialise_unique(dn, in);
+	realdn = d_splice_alias(in, dn);
 	if (IS_ERR(realdn)) {
 		pr_err("splice_dentry error %ld %p inode %p ino %llx.%llx\n",
 		       PTR_ERR(realdn), dn, in, ceph_vinop(in));
@@ -1186,20 +1186,18 @@ retry_lookup:
 			struct inode *olddir = req->r_old_dentry_dir;
 			BUG_ON(!olddir);
 
-			dout(" src %p '%.*s' dst %p '%.*s'\n",
+			dout(" src %p '%pd' dst %p '%pd'\n",
 			     req->r_old_dentry,
-			     req->r_old_dentry->d_name.len,
-			     req->r_old_dentry->d_name.name,
-			     dn, dn->d_name.len, dn->d_name.name);
+			     req->r_old_dentry,
+			     dn, dn);
 			dout("fill_trace doing d_move %p -> %p\n",
 			     req->r_old_dentry, dn);
 
 			d_move(req->r_old_dentry, dn);
-			dout(" src %p '%.*s' dst %p '%.*s'\n",
+			dout(" src %p '%pd' dst %p '%pd'\n",
 			     req->r_old_dentry,
-			     req->r_old_dentry->d_name.len,
-			     req->r_old_dentry->d_name.name,
-			     dn, dn->d_name.len, dn->d_name.name);
+			     req->r_old_dentry,
+			     dn, dn);
 
 			/* ensure target dentry is invalidated, despite
 			   rehashing bug in vfs_rename_dir */
