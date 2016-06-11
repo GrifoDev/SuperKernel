@@ -508,7 +508,9 @@ static int selinux_is_sblabel_mnt(struct super_block *sb)
 		!strcmp(sb->s_type->name, "sysfs") ||
 		!strcmp(sb->s_type->name, "pstore") ||
 		!strcmp(sb->s_type->name, "debugfs") ||
-		!strcmp(sb->s_type->name, "rootfs");
+		!strcmp(sb->s_type->name, "rootfs") ||
+		!strcmp(sb->s_type->name, "f2fs") ||
+		!strcmp(sb->s_type->name, "sdcardfs");
 }
 
 static int sb_finish_set_opts(struct super_block *sb)
@@ -555,14 +557,6 @@ static int sb_finish_set_opts(struct super_block *sb)
 	sbsec->flags |= SE_SBINITIALIZED;
 	if (selinux_is_sblabel_mnt(sb))
 		sbsec->flags |= SBLABEL_MNT;
-
-	/* Special handling for f2fs */
-	if (strncmp(sb->s_type->name, "f2fs", sizeof("f2fs")) == 0)
-		sbsec->flags |= SE_SBLABELSUPP;
-
-	/* Special handling for sdcardfs */
-	if (strncmp(sb->s_type->name, "sdcardfs", sizeof("sdcardfs")) == 0)
-		sbsec->flags |= SE_SBLABELSUPP;
 
 	/* Initialize the root inode. */
 	rc = inode_doinit_with_dentry(root_inode, root);
