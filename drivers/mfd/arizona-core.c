@@ -501,8 +501,7 @@ static int arizona_soft_reset(struct arizona *arizona)
 err:
 	return ret;
 }
-
-#ifdef CONFIG_PM_RUNTIME
+#ifdef CONFIG_PM
 static int arizona_dcvdd_notify(struct notifier_block *nb,
 				unsigned long action, void *data)
 {
