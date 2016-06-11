@@ -248,10 +248,25 @@ static int bt_get(struct blk_mq_alloc_data *data,
 	if (!(data->gfp & __GFP_WAIT))
 		return -1;
 
-	bs = bt_wait_ptr(bt, hctx);
 	do {
+		bs = bt_wait_ptr(bt, hctx);
 		prepare_to_wait(&bs->wait, &wait, TASK_UNINTERRUPTIBLE);
 
+		tag = __bt_get(hctx, bt, last_tag);
+		if (tag != -1)
+			break;
+
+		/*
+		 * We're out of tags on this hardware queue, kick any
+		 * pending IO submits before going to sleep waiting for
+		 * some to complete.
+		 */
+		blk_mq_run_hw_queue(hctx, false);
+
+		/*
+		 * Retry tag allocation after running the hardware queue,
+		 * as running the queue may also have found completions.
+		 */
 		tag = __bt_get(hctx, bt, last_tag);
 		if (tag != -1)
 			break;
@@ -270,8 +285,6 @@ static int bt_get(struct blk_mq_alloc_data *data,
 			hctx = data->hctx;
 			bt = &hctx->tags->bitmap_tags;
 		}
-		finish_wait(&bs->wait, &wait);
-		bs = bt_wait_ptr(bt, hctx);
 	} while (1);
 
 	finish_wait(&bs->wait, &wait);
@@ -361,21 +374,6 @@ static void bt_clear_tag(struct blk_mq_bitmap_tags *bt, unsigned int tag)
 	}
 }
 
-static void __blk_mq_put_tag(struct blk_mq_tags *tags, unsigned int tag)
-{
-	BUG_ON(tag >= tags->nr_tags);
-
-	bt_clear_tag(&tags->bitmap_tags, tag);
-}
-
-static void __blk_mq_put_reserved_tag(struct blk_mq_tags *tags,
-				      unsigned int tag)
-{
-	BUG_ON(tag >= tags->nr_reserved_tags);
-
-	bt_clear_tag(&tags->breserved_tags, tag);
-}
-
 void blk_mq_put_tag(struct blk_mq_hw_ctx *hctx, unsigned int tag,
 		    unsigned int *last_tag)
 {
@@ -384,10 +382,13 @@ void blk_mq_put_tag(struct blk_mq_hw_ctx *hctx, unsigned int tag,
 	if (tag >= tags->nr_reserved_tags) {
 		const int real_tag = tag - tags->nr_reserved_tags;
 
-		__blk_mq_put_tag(tags, real_tag);
+		BUG_ON(real_tag >= tags->nr_tags);
+		bt_clear_tag(&tags->bitmap_tags, real_tag);
 		*last_tag = real_tag;
-	} else
-		__blk_mq_put_reserved_tag(tags, tag);
+	} else {
+		BUG_ON(tag >= tags->nr_reserved_tags);
+		bt_clear_tag(&tags->breserved_tags, tag);
+	}
 }
 
 static void bt_for_each(struct blk_mq_hw_ctx *hctx,
