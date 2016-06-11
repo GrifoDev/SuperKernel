@@ -902,7 +902,7 @@ static __be32
 nfsd_vfs_read(struct svc_rqst *rqstp, struct file *file,
 	      loff_t offset, struct kvec *vec, int vlen, unsigned long *count)
 {
-	if (file->f_op->splice_read && rqstp->rq_splice_ok)
+	if (file->f_op->splice_read && test_bit(RQ_SPLICE_OK, &rqstp->rq_flags))
 		return nfsd_splice_read(rqstp, file, offset, count);
 	else
 		return nfsd_readv(file, offset, vec, vlen, count);
@@ -962,7 +962,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
 	loff_t			end = LLONG_MAX;
 	unsigned int		pflags = current->flags;
 
-	if (rqstp->rq_local)
+	if (test_bit(RQ_LOCAL, &rqstp->rq_flags))
 		/*
 		 * We want less throttling in balance_dirty_pages()
 		 * and shrink_inactive_list() so that nfs to
@@ -1006,7 +1006,7 @@ out_nfserr:
 		err = 0;
 	else
 		err = nfserrno(host_err);
-	if (rqstp->rq_local)
+	if (test_bit(RQ_LOCAL, &rqstp->rq_flags))
 		tsk_restore_flags(current, pflags, PF_LESS_THROTTLE);
 	return err;
 }
