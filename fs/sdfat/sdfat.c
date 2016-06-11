@@ -1939,7 +1939,7 @@ static int sdfat_dbg_ioctl(struct inode *inode, struct file *filp,
 
 static long sdfat_generic_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-	struct inode *inode = filp->f_dentry->d_inode;
+	struct inode *inode = filp->f_path.dentry->d_inode;
 	int err;
 
 	if (cmd == SDFAT_IOCTL_GET_VOLUME_ID)

@@ -269,6 +269,11 @@ struct zs_pool {
 
 	struct zs_pool_stats stats;
 
+#ifdef CONFIG_ZPOOL
+	struct zpool *zpool;
+	const struct zpool_ops *zpool_ops;
+#endif
+
 	/* Compact classes */
 	struct shrinker shrinker;
 	/*
@@ -352,7 +357,10 @@ static void record_obj(unsigned long handle, unsigned long obj)
 
 static int zs_zpool_evict(struct zs_pool *pool, unsigned long handle)
 {
-	return zpool_evict(pool, handle);
+	if (pool->zpool && pool->zpool_ops && pool->zpool_ops->evict)
+		return pool->zpool_ops->evict(pool->zpool, handle);
+	else
+		return -ENOENT;
 }
 
 static struct zs_ops zs_zpool_ops = {
@@ -363,7 +371,14 @@ static void *zs_zpool_create(const char *name, gfp_t gfp,
 			     const struct zpool_ops *zpool_ops,
 			     struct zpool *zpool)
 {
-	return zs_create_pool(name, gfp, &zs_zpool_ops);
+	struct zs_pool *pool;
+
+	pool = zs_create_pool(name, gfp, &zs_zpool_ops);
+	if (pool) {
+		pool->zpool = zpool;
+		pool->zpool_ops = zpool_ops;
+	}
+	return pool;
 }
 
 static void zs_zpool_destroy(void *pool)

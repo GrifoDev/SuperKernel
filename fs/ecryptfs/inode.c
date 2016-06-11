@@ -358,7 +358,7 @@ int ecryptfs_initialize_file(struct dentry *ecryptfs_dentry,
 	if (crypt_stat->flags & ECRYPTFS_ENCRYPTED) {
 		struct dentry *fp_dentry =
 			ecryptfs_inode_to_private(ecryptfs_inode)
-			->lower_file->f_dentry;
+			->lower_file->f_path.dentry;
 		struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
 			&ecryptfs_superblock_to_private(ecryptfs_dentry->d_sb)
 			->mount_crypt_stat;

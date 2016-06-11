@@ -566,7 +566,7 @@ long ecryptfs_do_sdp_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 	struct ecryptfs_crypt_stat *crypt_stat =
 			&ecryptfs_inode_to_private(inode)->crypt_stat;
 	struct dentry *fp_dentry =
-			ecryptfs_inode_to_private(inode)->lower_file->f_dentry;
+			ecryptfs_inode_to_private(inode)->lower_file->f_path.dentry;
     struct ecryptfs_mount_crypt_stat *mount_crypt_stat  =
             &ecryptfs_superblock_to_private(inode->i_sb)->mount_crypt_stat;
     int rc;
