@@ -1460,6 +1460,9 @@ static ssize_t store_cpufreq_min_limit(struct kobject *kobj, struct attribute *a
 	if (!sscanf(buf, "%8d", &cluster1_input))
 		return -EINVAL;
 
+	if (cluster1_input > 2392000)
+		cluster1_input = 2392000;
+
 	save_cpufreq_min_limit(cluster1_input);
 	cancel_delayed_work_sync(&dvfs_reset_work);
 	if (cluster1_input > 0)
