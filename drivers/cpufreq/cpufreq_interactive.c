@@ -2962,6 +2962,7 @@ static void cpufreq_param_set_init(struct cpufreq_interactive_tunables *tunables
 	tunables->multi_enter_load = DEFAULT_TARGET_LOAD * num_possible_cpus() / 2;
 
 	for (i = 0; i < MAX_PARAM_SET; i++) {
+		tunables->io_is_busy = 1;
 		tunables->hispeed_freq_set[i] = 0;
 		tunables->go_hispeed_load_set[i] = tunables->go_hispeed_load;
 		tunables->target_loads_set[i] = tunables->target_loads;
