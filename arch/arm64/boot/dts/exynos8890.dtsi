@@ -433,7 +433,7 @@
 
 		/* MNGS */
 		cl1_idx_num = <28>;
-		cl1_max_support_idx = <3>;
+		cl1_max_support_idx = <2>;
 		cl1_min_support_idx = <26>;
 		cl1_boot_max_qos = <2800000>;
 		cl1_boot_min_qos = <2496000>;
