@@ -394,7 +394,7 @@
 		cl0_idx_num = <19>;
 		cl0_max_support_idx = <2>;
 		cl0_min_support_idx = <16>;
-		cl0_boot_max_qos = <1898000>;
+		cl0_boot_max_qos = <1586000>;
 		cl0_boot_min_qos = <1586000>;
 		cl0_en_ema = <1>;
 
@@ -402,12 +402,12 @@
 		cl1_idx_num = <28>;
 		cl1_max_support_idx = <2>;
 		cl1_min_support_idx = <26>;
-		cl1_boot_max_qos = <2800000>;
+		cl1_boot_max_qos = <2496000>;
 		cl1_boot_min_qos = <2496000>;
 		cl1_en_ema = <1>;
 		cl1_en_smpl = <1>;
 		cl1_jig_boot_max_qos = <1456000>;
-		cl1_reboot_limit_freq = <728000>;
+		cl1_reboot_limit_freq = <520000>;
 
 		low_cl1_max_support_idx_table = < 5	   /* Number of online core is 0 */
 					      3    /* Number of online core is 1 */
