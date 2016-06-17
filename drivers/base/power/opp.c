@@ -86,7 +86,7 @@ struct dev_pm_opp {
 
 	struct device_node *np;
 };
-
+#endif
 /**
  * struct device_list_opp - devices managed by 'struct device_opp'
  * @node:	list node
@@ -101,7 +101,7 @@ struct device_list_opp {
 	const struct device *dev;
 	struct rcu_head rcu_head;
 };
-#endif
+
 /**
  * struct device_opp - Device opp structure
  * @node:	list node - contains the devices with OPPs that
