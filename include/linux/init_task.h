@@ -253,11 +253,8 @@ extern struct task_group root_task_group;
 	INIT_CPUSET_SEQ(tsk)						\
 	INIT_RT_MUTEXES(tsk)						\
 	INIT_VTIME(tsk)							\
-<<<<<<< HEAD
 	INIT_NUMA_BALANCING(tsk)					\
-=======
 	INIT_KASAN(tsk)							\
->>>>>>> e0ac66e... Merge branch 'v3.18/topic/KASAN' into linux-linaro-lsk-v3.18
 }
 
 
