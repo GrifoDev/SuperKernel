@@ -58,8 +58,14 @@ static inline void cpu_set_reserved_ttbr0(void)
 	unsigned long ttbr = page_to_phys(empty_zero_page);
 
 	asm(
+	"	tlbi	vaae1, xzr	\n"
+	"	dsb	nsh		\n"
+	"	tlbi	vaae1, xzr	\n"
 	"	msr	ttbr0_el1, %0			// set TTBR0\n"
-	"	isb"
+	"	tlbi	vaae1, xzr	\n"
+	"	isb			\n"
+	"	tlbi	vaae1, xzr	\n"
+	"	dsb	nsh		\n"
 	:
 	: "r" (ttbr));
 }

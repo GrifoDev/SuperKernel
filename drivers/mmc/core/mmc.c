@@ -628,6 +628,11 @@ static int mmc_read_ext_csd(struct mmc_card *card, u8 *ext_csd)
 		card->ext_csd.data_sector_size = 512;
 	}
 
+	if (card->ext_csd.rev >= 7) {
+		card->ext_csd.enhanced_strobe_support =
+			ext_csd[EXT_CSD_STORBE_SUPPORT];
+	}
+
 out:
 	return err;
 }
@@ -1048,6 +1053,7 @@ static int mmc_select_hs_ddr(struct mmc_card *card)
 static int mmc_select_hs400(struct mmc_card *card)
 {
 	struct mmc_host *host = card->host;
+	u32 ext_csd_bits;
 	int err = 0;
 
 	/*
@@ -1074,29 +1080,60 @@ static int mmc_select_hs400(struct mmc_card *card)
 		return err;
 	}
 
-	err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
-			 EXT_CSD_BUS_WIDTH,
-			 EXT_CSD_DDR_BUS_WIDTH_8,
-			 card->ext_csd.generic_cmd6_time);
-	if (err) {
-		pr_warn("%s: switch to bus width for hs400 failed, err:%d\n",
-			mmc_hostname(host), err);
-		return err;
-	}
+	if(card->en_strobe_enhanced) {
+		ext_csd_bits = EXT_CSD_STROBE_ENHANCED_EN;
+		err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+			EXT_CSD_BUS_WIDTH,
+			EXT_CSD_DDR_BUS_WIDTH_8,
+			card->ext_csd.generic_cmd6_time);
+		if (err) {
+			pr_warn("%s: switch to bus width for hs400 failed, err:%d\n",
+				 mmc_hostname(host), err);
+			return err;
+		}
 
-	err = __mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+		err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+			EXT_CSD_BUS_WIDTH,
+			EXT_CSD_DDR_BUS_WIDTH_8 | ext_csd_bits,
+			card->ext_csd.generic_cmd6_time);
+		if (err) {
+			pr_warn("%s: switch to enhanced strobe failed, err:%d\n",
+				 mmc_hostname(host), err);
+			return err;
+		}
+
+		err = __mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
 			   EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400,
 			   card->ext_csd.generic_cmd6_time,
 			   true, true, true);
-	if (err) {
-		pr_warn("%s: switch to hs400 failed, err:%d\n",
-			 mmc_hostname(host), err);
-		return err;
+		if (err) {
+			pr_warn("%s: switch to hs400 failed, err:%d\n",
+				mmc_hostname(host), err);
+			return err;
+		}
+		mmc_set_timing(host, MMC_TIMING_MMC_HS400_ES);
+	} else {
+		err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+			 EXT_CSD_BUS_WIDTH,
+			 EXT_CSD_DDR_BUS_WIDTH_8,
+			 card->ext_csd.generic_cmd6_time);
+		if (err) {
+			pr_warn("%s: switch to bus width for hs400 failed, err:%d\n",
+				mmc_hostname(host), err);
+			return err;
+		}
+		err = __mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+			   EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400,
+			   card->ext_csd.generic_cmd6_time,
+			   true, true, true);
+		if (err) {
+			pr_warn("%s: switch to hs400 failed, err:%d\n",
+				mmc_hostname(host), err);
+			return err;
+		}
+		mmc_set_timing(host, MMC_TIMING_MMC_HS400);
 	}
-
-	mmc_set_timing(host, MMC_TIMING_MMC_HS400);
 	mmc_set_bus_speed(card);
-
 	return 0;
 }
 
@@ -1222,10 +1259,10 @@ static int mmc_hs200_tuning(struct mmc_card *card)
 	 */
 	if (card->mmc_avail_type & EXT_CSD_CARD_TYPE_HS400 &&
 	    host->ios.bus_width == MMC_BUS_WIDTH_8)
-		if (host->ops->prepare_hs400_tuning)
+		if (host->ops->prepare_hs400_tuning && !card->en_strobe_enhanced)
 			host->ops->prepare_hs400_tuning(host, &host->ios);
 
-	if (host->ops->execute_tuning) {
+	if (host->ops->execute_tuning && !card->en_strobe_enhanced) {
 		mmc_host_clk_hold(host);
 		err = host->ops->execute_tuning(host,
 				MMC_SEND_TUNING_BLOCK_HS200);
@@ -1384,6 +1421,8 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 		mmc_set_erase_size(card);
 	}
 
+	card->en_strobe_enhanced = false;
+
 	/*
 	 * If enhanced_area_en is TRUE, host needs to enable ERASE_GRP_DEF
 	 * bit.  This bit will be lost every time after a reset or power off.
@@ -1446,6 +1485,27 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 		 */
 		if (!err)
 			card->ext_csd.power_off_notification = EXT_CSD_POWER_ON;
+	}
+
+	/*
+	 * Sequence for Enhanced Strobe
+	 *
+	 * 1. CMD6(BUS_WIDTH) with 8 bit SDR bus
+	 * 2. CMD6(HS_TIMING) with HS mode
+	 * 3. Set timing and clock as HS mode
+	 * 4. CMD6(BUS_WIDTH) with 8 bit DDR bus and enhanced strobe
+	 * 5. CMD6(HS_TIMING) with HS400 mode
+	 * 6. Set timing and clock as HS400 mode and enhanced strobe
+	 * 7. CMD6(POWER_CLASS) with 8 bit DDR bus and MMC_HS200_MAX_DTR
+	 */
+	if (card->ext_csd.enhanced_strobe_support &
+			MMC_STROBE_ENHANCED_SUPPORT) {
+		if (host->caps2 & MMC_CAP2_STROBE_ENHANCED &&
+				host->caps2 & MMC_CAP2_HS400) {
+			card->en_strobe_enhanced = true;
+			pr_warning("%s: STROBE ENHANCED enable\n",
+					mmc_hostname(card->host));
+		}
 	}
 
 	/*

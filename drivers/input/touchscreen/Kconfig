@@ -962,4 +962,17 @@ config TOUCHSCREEN_ZFORCE
 	  To compile this driver as a module, choose M here: the
 	  module will be called zforce_ts.
 
+config TOUCHSCREEN_MXT540E
+       tristate "Atmel MXT540E Touchscreen Interface"
+       depends on I2C
+       help
+         Say Y here if you want support for atmel_MXT540E touchscreen controllers.
+         To compile this driver as a module, choose M here: the
+         module will be called mxt540e.
+
+source "drivers/input/touchscreen/synaptics_dsx/Kconfig"
+source "drivers/input/touchscreen/synaptics_dsx2/Kconfig"
+source "drivers/input/touchscreen/stm/Kconfig"
+source "drivers/input/touchscreen/stm/fts7/Kconfig"
+source "drivers/input/touchscreen/sec_ts/Kconfig"
 endif

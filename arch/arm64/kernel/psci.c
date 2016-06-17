@@ -32,6 +32,9 @@
 #include <asm/suspend.h>
 #include <asm/system_misc.h>
 
+#ifdef CONFIG_RKP_CFP_FIX_SMC_BUG
+#include <linux/rkp_cfp.h>
+#endif
 #define PSCI_POWER_STATE_TYPE_STANDBY		0
 #define PSCI_POWER_STATE_TYPE_POWER_DOWN	1
 
@@ -136,7 +139,13 @@ static noinline int __invoke_psci_fn_smc(u64 function_id, u64 arg0, u64 arg1,
 			__asmeq("%1", "x1")
 			__asmeq("%2", "x2")
 			__asmeq("%3", "x3")
+#ifdef CONFIG_RKP_CFP_FIX_SMC_BUG
+			PRE_SMC_INLINE
+#endif
 			"smc	#0\n"
+#ifdef CONFIG_RKP_CFP_FIX_SMC_BUG
+			POST_SMC_INLINE
+#endif
 		: "+r" (function_id)
 		: "r" (arg0), "r" (arg1), "r" (arg2));
 
@@ -517,16 +526,58 @@ static int psci_suspend_finisher(unsigned long index)
 				    virt_to_phys(cpu_resume));
 }
 
+/**
+ * Ideally, we hope that PSCI framework cover the all power states, but it
+ * is not correspond on some platforms. Below function supports extra power
+ * state that PSCI cannot be handled.
+ */
+static int psci_suspend_customized_finisher(unsigned long index)
+{
+	struct psci_power_state state = {
+			.id = 0,
+			.type = 0,
+			.affinity_level = 0,
+	};
+
+	switch (index) {
+	case PSCI_CLUSTER_SLEEP:
+		state.affinity_level = 1;
+		break;
+	case PSCI_SYSTEM_IDLE:
+		state.id = 1;
+		break;
+	case PSCI_SYSTEM_IDLE_AUDIO:
+		state.id = 2;
+		break;
+	case PSCI_SYSTEM_IDLE_CLUSTER_SLEEP:
+		state.id = 1;
+		state.affinity_level = 1;
+		break;
+	case PSCI_SYSTEM_SLEEP:
+		state.affinity_level = 3;
+		break;
+	default:
+		panic("Unsupported psci state, index = %ld\n", index);
+		break;
+	};
+
+	return psci_ops.cpu_suspend(state, virt_to_phys(cpu_resume));
+}
+
 static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
 {
 	int ret;
 	struct psci_power_state *state = __get_cpu_var(psci_power_state);
+
 	/*
 	 * idle state index 0 corresponds to wfi, should never be called
 	 * from the cpu_suspend operations
 	 */
 	if (WARN_ON_ONCE(!index))
 		return -EINVAL;
+
+	if (unlikely(index >= PSCI_UNUSED_INDEX))
+		return __cpu_suspend(index, psci_suspend_customized_finisher);
 
 	if (state[index - 1].type == PSCI_POWER_STATE_TYPE_STANDBY)
 		ret = psci_ops.cpu_suspend(state[index - 1], 0);
@@ -540,8 +591,8 @@ const struct cpu_operations cpu_psci_ops = {
 	.name		= "psci",
 #ifdef CONFIG_CPU_IDLE
 	.cpu_init_idle	= cpu_psci_cpu_init_idle,
-	.cpu_suspend	= cpu_psci_cpu_suspend,
 #endif
+	.cpu_suspend	= cpu_psci_cpu_suspend,
 #ifdef CONFIG_SMP
 	.cpu_init	= cpu_psci_cpu_init,
 	.cpu_prepare	= cpu_psci_cpu_prepare,

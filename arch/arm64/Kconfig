@@ -37,6 +37,7 @@ config ARM64
 	select HAVE_ARCH_AUDITSYSCALL
 	select HAVE_ARCH_JUMP_LABEL
 	select HAVE_ARCH_KGDB
+	select HAVE_ARCH_SECCOMP_FILTER
 	select HAVE_ARCH_TRACEHOOK
 	select HAVE_BPF_JIT
 	select HAVE_C_RECORDMCOUNT
@@ -110,7 +111,7 @@ config GENERIC_CALIBRATE_DELAY
 	def_bool y
 
 config ZONE_DMA
-	def_bool y
+	def_bool n
 
 config HAVE_GENERIC_RCU_GUP
 	def_bool y
@@ -135,6 +136,10 @@ config KERNEL_MODE_NEON
 
 config FIX_EARLYCON_MEM
 	def_bool y
+
+config GENERIC_BUG
+	def_bool y
+	depends on BUG
 
 source "init/Kconfig"
 
@@ -162,6 +167,69 @@ config ARCH_XGENE
 	help
 	  This enables support for AppliedMicro X-Gene SOC Family
 
+menu "Samsung Exynos"
+config ARCH_EXYNOS
+	bool
+
+config SOC_EXYNOS8890
+	bool "Samsung EXYNOS8890"
+	select ARCH_EXYNOS
+	select ARCH_HAS_CPUFREQ
+	select HAVE_S3C2410_I2C if I2C
+	select HAVE_S3C2410_WATCHDOG if WATCHDOG
+	select HAVE_S3C_RTC if RTC_CLASS
+	select ARCH_SUPPORTS_MSI
+	select ARM_AMBA
+	select CLKSRC_OF
+	select USE_OF
+	select COMMON_CLK_SAMSUNG
+	select CLKSRC_EXYNOS_MCT
+	select PINCTRL
+	select PWRCAL
+	select PM_GENERIC_DOMAINS if PM
+	select SOC_SAMSUNG
+	select SAMSUNG_DMADEV
+
+config ARCH_EXYNOS8
+	bool "SAMSUNG EXYNOS8"
+	select HAVE_ARM_SCU if SMP
+	select HAVE_SMP
+	help
+	  Samsung EXYNOS8 (Mongoose/A53) SoC based systems
+
+config PWRCAL
+    bool "Exynos Power Chip Abstraction Layer"
+    help
+    Support Power CAL for Exynos SoC.
+
+config ARM_TRUSTZONE
+	bool "Support TrustZone-enabled Trusted Execution Environment"
+	default y
+	help
+	  Select if you want a kernel to be executed at non-secure world.
+	  This option should be used with related secure bootloader and
+	  TrustZone software.
+
+	  If you don't know about TrustZone, say 'N'.
+
+config ZONE_DMA_ALLOW_CUSTOM_SIZE
+	bool "Enable Platform-settable Custom Size for ZONE_DMA"
+	default n
+	depends on ZONE_DMA
+	help
+	  Select Y if you need to allow setting ZONE_DMA size for platform.
+
+config ZONE_DMA_SIZE_MBYTES
+	int "ZONE_DMA Size in MBytes"
+	range 16 4096
+	default 4096
+	depends on ZONE_DMA && ZONE_DMA_ALLOW_CUSTOM_SIZE
+	help
+	  Set DMA-able size based on bits shift value. DMA-able size
+	  must be less than total DRAM size. This value may be used
+	  to limit DMA-able address space for ZONE_DMA.
+
+endmenu
 endmenu
 
 menu "Bus support"
@@ -318,6 +386,44 @@ config ARM64_ERRATUM_845719
 	  the kernel if an affected CPU is detected.
 
 	  If unsure, say Y.
+	  
+config TIMA
+	bool "Enable TIMA(Trustzone based Integrity Measurement Archtecture feature"
+	default n
+
+config TIMA_LKMAUTH
+	bool "Enable LKM authentication by TIMA"
+	help
+	  TIMA authenticates loaded kernel modules. Disable it if you don't
+	  want TIMA enabled.
+
+config TIMA_RKP
+	depends on TIMA
+	default n
+	bool "Samsung KNOX realtime kernel protection depends on TIMA"
+	help
+	  this enables realtime kernel protection
+
+config RKP_KDP
+	bool "Protection for cred structure"
+	depends on TIMA_RKP
+	default n
+	help
+	  Prevents unauthorized cred modification.
+
+config RKP_NS_PROT
+	bool "Protection for namespace structure"
+	depends on RKP_KDP
+	default n
+	help
+	  Prevents unauthorized namespace modification.
+
+config RKP_DMAP_PROT
+	bool "Page Double Mapping protection"
+	depends on RKP_KDP
+	default n
+	help
+	  Prevents unauthorized mapping for page table.
 
 endmenu
 
@@ -413,6 +519,103 @@ config SCHED_SMT
 	  MultiThreading at a cost of slightly increased overhead in some
 	  places. If unsure say N here.
 
+config DISABLE_CPU_SCHED_DOMAIN_BALANCE
+	bool "(EXPERIMENTAL) Disable CPU level scheduler load-balancing"
+	help
+	  Disables scheduler load-balancing at CPU sched domain level.
+
+config SCHED_HMP
+	bool "(EXPERIMENTAL) Heterogenous multiprocessor scheduling"
+	depends on DISABLE_CPU_SCHED_DOMAIN_BALANCE && SCHED_MC && FAIR_GROUP_SCHED && !SCHED_AUTOGROUP
+	help
+	  Experimental scheduler optimizations for heterogeneous platforms.
+	  Attempts to introspectively select task affinity to optimize power
+	  and performance. Basic support for multiple (>2) cpu types is in place,
+	  but it has only been tested with two types of cpus.
+	  There is currently no support for migration of task groups, hence
+	  !SCHED_AUTOGROUP. Furthermore, normal load-balancing must be disabled
+	  between cpus of different type (DISABLE_CPU_SCHED_DOMAIN_BALANCE).
+
+config SCHED_HMP_PRIO_FILTER
+	bool "(EXPERIMENTAL) Filter HMP migrations by task priority"
+	depends on SCHED_HMP
+	help
+	  Enables task priority based HMP migration filter. Any task with
+	  a NICE value above the threshold will always be on low-power cpus
+	  with less compute capacity.
+
+config SCHED_HMP_PRIO_FILTER_VAL
+	int "NICE priority threshold"
+	default 5
+	depends on SCHED_HMP_PRIO_FILTER
+
+config HMP_FAST_CPU_MASK
+	string "HMP scheduler fast CPU mask"
+	depends on SCHED_HMP
+	help
+          Leave empty to use device tree information.
+	  Specify the cpuids of the fast CPUs in the system as a list string,
+	  e.g. cpuid 0+1 should be specified as 0-1.
+
+config HMP_SLOW_CPU_MASK
+	string "HMP scheduler slow CPU mask"
+	depends on SCHED_HMP
+	help
+	  Leave empty to use device tree information.
+	  Specify the cpuids of the slow CPUs in the system as a list string,
+	  e.g. cpuid 0+1 should be specified as 0-1.
+
+config HMP_VARIABLE_SCALE
+	bool "Allows changing the load tracking scale through sysfs"
+	depends on SCHED_HMP
+	help
+	  When turned on, this option exports the thresholds and load average
+	  period value for the load tracking patches through sysfs.
+	  The values can be modified to change the rate of load accumulation
+	  and the thresholds used for HMP migration.
+	  The load_avg_period_ms is the time in ms to reach a load average of
+	  0.5 for an idle task of 0 load average ratio that start a busy loop.
+	  The up_threshold and down_threshold is the value to go to a faster
+	  CPU or to go back to a slower cpu.
+	  The {up,down}_threshold are devided by 1024 before being compared
+	  to the load average.
+	  For examples, with load_avg_period_ms = 128 and up_threshold = 512,
+	  a running task with a load of 0 will be migrated to a bigger CPU after
+	  128ms, because after 128ms its load_avg_ratio is 0.5 and the real
+	  up_threshold is 0.5.
+	  This patch has the same behavior as changing the Y of the load
+	  average computation to
+	        (1002/1024)^(LOAD_AVG_PERIOD/load_avg_period_ms)
+	  but it remove intermadiate overflows in computation.
+
+config HMP_FREQUENCY_INVARIANT_SCALE
+	bool "(EXPERIMENTAL) Frequency-Invariant Tracked Load for HMP"
+	depends on HMP_VARIABLE_SCALE && CPU_FREQ
+	default y
+	help
+	  Scales the current load contribution in line with the frequency
+	  of the CPU that the task was executed on.
+	  In this version, we use a simple linear scale derived from the
+	  maximum frequency reported by CPUFreq.
+	  Restricting tracked load to be scaled by the CPU's frequency
+	  represents the consumption of possible compute capacity
+	  (rather than consumption of actual instantaneous capacity as
+	  normal) and allows the HMP migration's simple threshold
+	  migration strategy to interact more predictably with CPUFreq's
+	  asynchronous compute capacity changes.
+
+config SCHED_HMP_LITTLE_PACKING
+	bool "Small task packing for HMP"
+	depends on SCHED_HMP
+	default n
+	help
+	  Allows the HMP Scheduler to pack small tasks into CPUs in the
+	  smallest HMP domain.
+	  Controlled by two sysfs files in sys/kernel/hmp.
+	  packing_enable: 1 to enable, 0 to disable packing. Default 1.
+	  packing_limit: runqueue load ratio where a RQ is considered
+	    to be full. Default is NICE_0_LOAD * 9/8.
+
 config NR_CPUS
 	int "Maximum number of CPUs (2-64)"
 	range 2 64
@@ -474,6 +677,19 @@ config ARCH_HAS_CACHE_LINE_SIZE
 
 source "mm/Kconfig"
 
+config SECCOMP
+	bool "Enable seccomp to safely compute untrusted bytecode"
+	---help---
+	  This kernel feature is useful for number crunching applications
+	  that may need to compute untrusted bytecode during their
+	  execution. By using pipes or other transports made available to
+	  the process as file descriptors supporting the read/write
+	  syscalls, it's possible to isolate those applications in
+	  their own address space using seccomp. Once seccomp is
+	  enabled via prctl(PR_SET_SECCOMP), it cannot be disabled
+	  and the task is only allowed to execute a few safe syscalls
+	  defined by each seccomp mode.
+
 config XEN_DOM0
 	def_bool y
 	depends on XEN
@@ -490,6 +706,74 @@ config FORCE_MAX_ZONEORDER
 	default "14" if (ARM64_64K_PAGES && TRANSPARENT_HUGEPAGE)
 	default "11"
 
+menuconfig ARMV8_DEPRECATED
+	bool "Emulate deprecated/obsolete ARMv8 instructions"
+	depends on COMPAT
+	help
+	  Legacy software support may require certain instructions
+	  that have been deprecated or obsoleted in the architecture.
+
+	  Enable this config to enable selective emulation of these
+	  features.
+
+	  If unsure, say Y
+
+if ARMV8_DEPRECATED
+
+config SWP_EMULATION
+	bool "Emulate SWP/SWPB instructions"
+	help
+	  ARMv8 obsoletes the use of A32 SWP/SWPB instructions such that
+	  they are always undefined. Say Y here to enable software
+	  emulation of these instructions for userspace using LDXR/STXR.
+
+	  In some older versions of glibc [<=2.8] SWP is used during futex
+	  trylock() operations with the assumption that the code will not
+	  be preempted. This invalid assumption may be more likely to fail
+	  with SWP emulation enabled, leading to deadlock of the user
+	  application.
+
+	  NOTE: when accessing uncached shared regions, LDXR/STXR rely
+	  on an external transaction monitoring block called a global
+	  monitor to maintain update atomicity. If your system does not
+	  implement a global monitor, this option can cause programs that
+	  perform SWP operations to uncached memory to deadlock.
+
+	  If unsure, say Y
+
+config CP15_BARRIER_EMULATION
+	bool "Emulate CP15 Barrier instructions"
+	help
+	  The CP15 barrier instructions - CP15ISB, CP15DSB, and
+	  CP15DMB - are deprecated in ARMv8 (and ARMv7). It is
+	  strongly recommended to use the ISB, DSB, and DMB
+	  instructions instead.
+
+	  Say Y here to enable software emulation of these
+	  instructions for AArch32 userspace code. When this option is
+	  enabled, CP15 barrier usage is traced which can help
+	  identify software that needs updating.
+
+	  If unsure, say Y
+
+config SETEND_EMULATION
+	bool "Emulate SETEND instruction"
+	help
+	  The SETEND instruction alters the data-endianness of the
+	  AArch32 EL0, and is deprecated in ARMv8.
+
+	  Say Y here to enable software emulation of the instruction
+	  for AArch32 userspace code.
+
+	  Note: All the cpus on the system must have mixed endian support at EL0
+	  for this feature to be enabled. If a new CPU - which doesn't support mixed
+	  endian - is hotplugged in after this feature has been enabled, there could
+	  be unexpected results in the applications.
+
+	  If unsure, say Y
+
+endif
+
 endmenu
 
 menu "Boot options"
@@ -502,6 +786,23 @@ config CMDLINE
 	  entering them here. As a minimum, you should specify the the
 	  root device (e.g. root=/dev/nfs).
 
+choice
+	prompt "Kernel command line type" if CMDLINE != ""
+	default CMDLINE_FROM_BOOTLOADER
+
+config CMDLINE_FROM_BOOTLOADER
+	bool "Use bootloader kernel arguments if available"
+	help
+	  Uses the command-line options passed by the boot loader. If
+	  the boot loader doesn't provide any, the default kernel command
+	  string provided in CMDLINE will be used.
+
+config CMDLINE_EXTEND
+	bool "Extend bootloader kernel arguments"
+	help
+	  The command-line arguments provided by the boot loader will be
+	  appended to the default kernel command string.
+
 config CMDLINE_FORCE
 	bool "Always use the default kernel command string"
 	help
@@ -509,6 +810,7 @@ config CMDLINE_FORCE
 	  loader passes other arguments to the kernel.
 	  This is useful if you cannot or don't want to change the
 	  command-line options your boot loader passes to the kernel.
+endchoice
 
 config EFI_STUB
 	bool
@@ -529,6 +831,21 @@ config EFI
           clock, and platform reset). A UEFI stub is also provided to
 	  allow the kernel to be booted as an EFI application. This
 	  is only useful on systems that have UEFI firmware.
+
+config BUILD_ARM64_APPENDED_DTB_IMAGE
+	bool "Build a concatenated Image.gz/dtb by default"
+	depends on OF
+	help
+	  Enabling this option will cause a concatenated Image.gz and list of
+	  DTBs to be built by default (instead of a standalone Image.gz.)
+	  The image will built in arch/arm64/boot/Image.gz-dtb
+
+config BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES
+	string "Default dtb names"
+	depends on BUILD_ARM64_APPENDED_DTB_IMAGE
+	help
+	  Space separated list of names of dtbs to append when
+	  building a concatenated Image.gz-dtb.
 
 endmenu
 
@@ -555,6 +872,11 @@ config SYSVIPC_COMPAT
 	def_bool y
 	depends on COMPAT && SYSVIPC
 
+config KEYS_COMPAT
+	def_bool y if COMPAT && KEYS
+	help
+	  This option enables support for a 32-bit keyctl syscall callback function under
+	  a 64-bit kernel.
 endmenu
 
 menu "Power management options"
@@ -569,6 +891,16 @@ config ARM64_CPU_SUSPEND
 
 endmenu
 
+config RELOCATABLE_KERNEL 
+	bool "set kernel to relocatable in both virtual and physical address"
+	default n
+	help 	
+	  This configuare will allow you to config the kernel into position independent kernel, with '--PIE' insert into LD script.
+
+config SAMSUNG_PRODUCT_SHIP
+	bool "set up for product shipping"
+	default n
+
 menu "CPU Power Management"
 
 source "drivers/cpuidle/Kconfig"
@@ -576,6 +908,97 @@ source "drivers/cpuidle/Kconfig"
 source "drivers/cpufreq/Kconfig"
 
 endmenu
+
+#
+# BEGIN RKP_CFP CONFIG OPTIONS
+#
+
+menu "Control Flow Protection"
+
+config RKP_CFP
+	bool "Hyperdrive ROP protection"
+	# depends on TIMA_RKP
+	# Disable RKP for now, keep getting TIMA_RKP_VMM_PANIC when doing sleep.S code for saving/restoring x17.
+	default n
+	help
+        Static binary instrumentation of direct/indirect branches to prevent 
+        return-oriented programming (ROP) attacks and jump-oriented programming (JOP) attacks.
+
+config RKP_CFP_ROPP
+	bool "Hyperdrive: encrypt return-addresses"
+	select RKP_CFP
+	default n
+	help
+        XOR return-addresses with the reserved key register on call/return from functions 
+        to encrypt/decrypt return-addresses before they are pushed onto the stack.
+        Also, save the key during context-switches and suspend/resume cycles.
+
+choice
+	prompt "ROPP key"
+	default RKP_CFP_ROPP_RANDOM_KEY
+	depends on RKP_CFP && RKP_CFP_ROPP
+	help
+	  ROPP key configuration
+
+config RKP_CFP_ROPP_HYPKEY
+	bool "Use hypervisor for key secure storage"
+	help
+        if n, use random key or zero key
+
+config RKP_CFP_ROPP_RANDOM_KEY
+	bool "Hyperdrive: use pseudo random key for return-address encryption"
+	help
+        if n, use hyp key or zero key
+
+config RKP_CFP_ROPP_ZERO_KEY
+	bool "Hyperdrive: use zero key for return-address encryption"
+	help
+        if n, use hyp key or random key
+endchoice
+
+config RKP_CFP_JOPP
+	bool "Just to function entry only, Restrict BLR jump target to a valid function entry point and no br in C code"
+	select RKP_CFP
+	default n
+	help
+        We need nop spacers above ever potential target of a blr jump instruction.
+        The compiler already adds spacers for C functions.
+        We need to define a VECTOR_ENTRY macro for exception vector definitions.  We don't 
+        want to add nops to exception vectors, since they need PRECISE alignment. Need to
+        put FALLTHROUGH for ASM fall through
+        
+        No BR in C code requires to disable BPF, as it has a lot of jump, which can be used 
+        as dispatch gadget for JOPP
+
+
+config RKP_CFP_JOPP_MAGIC
+	hex "Magic number put just above function labels to restrict BLR to function entry points"
+	# depends on RKP_CFP && RKP_CFP_JOPP
+	# basically it depends on above line but it's needed for avoiding a build break
+	default "0xb3ea3bad"
+
+config RKP_CFP_FIX_SMC_BUG
+	bool "Hyperdrive: [INSECURE] hack broken smc calls to save/restore RRK after it clobbers it"
+	depends on RKP_CFP_ROPP
+	default n
+	help
+        As of bootloader version "G920VVRE1BOE4" of the TrustZone for exynos7420, the smc 
+        instruction sets register x17 to zero.  Too bad for us, we store our key there!  In 
+        the meantime, save x17 (and other reserved registers) before making the call.
+
+        To reproduce this bug, disable this option and set a JTAG breakpoint at 
+        exynos_smc_readsfr which gets called during early boot (start_kernel).  Watch x17 
+        get zeroed after the smc call returns.
+
+        ADDITIONAL BUG BECAUSE OF THIS:
+        If we take an interrupt at the instruction IMMEDIATELY after "smc #0", we won't be 
+        able to restore x17 to the key before entering el1_irq. To work around this, we 
+        reload the key in kernel_entry.
+endmenu
+
+#
+# END RKP_CFP CONFIG OPTIONS
+#
 
 source "net/Kconfig"
 

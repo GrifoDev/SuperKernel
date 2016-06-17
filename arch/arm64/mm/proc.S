@@ -165,6 +165,7 @@ ENTRY(cpu_do_resume)
 	ubfx	x11, x11, #1, #1
 	msr	oslar_el1, x11
 	mov	x0, x12
+	tlbi	vmalle1
 	dsb	nsh		// Make sure local tlb invalidation completed
 	isb
 	ret
@@ -181,8 +182,14 @@ ENDPROC(cpu_do_resume)
 ENTRY(cpu_do_switch_mm)
 	mmid	w1, x1				// get mm->context.id
 	bfi	x0, x1, #48, #16		// set the ASID
+	tlbi	vaae1, xzr
+	dsb	nsh
+	tlbi	vaae1, xzr
 	msr	ttbr0_el1, x0			// set TTBR0
+	tlbi	vaae1, xzr
 	isb
+	tlbi	vaae1, xzr
+	dsb	nsh
 	ret
 ENDPROC(cpu_do_switch_mm)
 

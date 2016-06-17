@@ -1440,6 +1440,13 @@ static inline unsigned int hcd_index(struct usb_hcd *hcd)
 		return 1;
 }
 
+/*
+ * Sometimes deadlock occurred between hub_event and remove_hcd.
+ * In order to prevent it, waiting for completion of hub_event was added.
+ * This is a timeout (300msec) value for the waiting.
+ */
+#define XHCI_HUB_EVENT_TIMEOUT	(300)
+
 /* There is one xhci_hcd structure per controller */
 struct xhci_hcd {
 	struct usb_hcd *main_hcd;
@@ -1573,9 +1580,17 @@ struct xhci_hcd {
 	u8			*port_array;
 	/* Array of pointers to USB 3.0 PORTSC registers */
 	__le32 __iomem		**usb3_ports;
+#ifdef CONFIG_HOST_COMPLIANT_TEST
+	/* Array of pointers to USB 3.0 PORTPMSC registers */
+	__le32 __iomem		**usb3_portpmsc;
+#endif
 	unsigned int		num_usb3_ports;
 	/* Array of pointers to USB 2.0 PORTSC registers */
 	__le32 __iomem		**usb2_ports;
+#ifdef CONFIG_HOST_COMPLIANT_TEST
+	/* Array of pointers to USB 2.0 PORTPMSC registers */
+	__le32 __iomem		**usb2_portpmsc;
+#endif
 	unsigned int		num_usb2_ports;
 	/* support xHCI 0.96 spec USB2 software LPM */
 	unsigned		sw_lpm_support:1;
@@ -1602,14 +1617,35 @@ static inline struct usb_hcd *xhci_to_hcd(struct xhci_hcd *xhci)
 	return xhci->main_hcd;
 }
 
+#ifdef CONFIG_USB_XHCI_HCD_DEBUGGING
+#define XHCI_DEBUG	1
+#else
+#define XHCI_DEBUG	0
+#endif
+
 #define xhci_dbg(xhci, fmt, args...) \
-	dev_dbg(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
+	do { if (XHCI_DEBUG) dev_dbg(xhci_to_hcd(xhci)->self.controller , fmt , ## args); } while (0)
+#define xhci_info(xhci, fmt, args...) \
+	do { if (XHCI_DEBUG) dev_info(xhci_to_hcd(xhci)->self.controller , fmt , ## args); } while (0)
 #define xhci_err(xhci, fmt, args...) \
 	dev_err(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
 #define xhci_warn(xhci, fmt, args...) \
 	dev_warn(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
 #define xhci_warn_ratelimited(xhci, fmt, args...) \
 	dev_warn_ratelimited(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
+
+/* TODO: copied from ehci.h - can be refactored? */
+/* xHCI spec says all registers are little endian */
+static inline unsigned int xhci_readl(const struct xhci_hcd *xhci,
+		__le32 __iomem *regs)
+{
+	return readl(regs);
+}
+static inline void xhci_writel(struct xhci_hcd *xhci,
+		const unsigned int val, __le32 __iomem *regs)
+{
+	writel(val, regs);
+}
 
 /*
  * Registers should always be accessed with double word or quad word accesses.
@@ -1873,4 +1909,11 @@ struct xhci_input_control_ctx *xhci_get_input_control_ctx(struct xhci_hcd *xhci,
 struct xhci_slot_ctx *xhci_get_slot_ctx(struct xhci_hcd *xhci, struct xhci_container_ctx *ctx);
 struct xhci_ep_ctx *xhci_get_ep_ctx(struct xhci_hcd *xhci, struct xhci_container_ctx *ctx, unsigned int ep_index);
 
+#ifdef CONFIG_HOST_COMPLIANT_TEST
+int xhci_urb_enqueue_single_step(struct usb_hcd *hcd,
+		struct urb *urb, gfp_t mem_flags, int get_dev_desc);
+int xhci_queue_ctrl_tx_single_step(struct xhci_hcd *xhci,
+		gfp_t mem_flags, struct urb *urb, int slot_id,
+		unsigned int ep_index, int get_dev_desc);
+#endif
 #endif /* __LINUX_XHCI_HCD_H */

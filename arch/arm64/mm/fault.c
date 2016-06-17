@@ -29,6 +29,7 @@
 #include <linux/sched.h>
 #include <linux/highmem.h>
 #include <linux/perf_event.h>
+#include <linux/exynos-ss.h>
 
 #include <asm/exception.h>
 #include <asm/debug-monitors.h>
@@ -37,7 +38,9 @@
 #include <asm/pgtable.h>
 #include <asm/tlbflush.h>
 
+static int safe_fault_in_progress = 0;
 static const char *fault_name(unsigned int esr);
+extern void exynos_ss_panic_handler_safe(struct pt_regs *regs);
 
 /*
  * Dump out the page tables associated with 'addr' in mm 'mm'.
@@ -79,6 +82,19 @@ void show_pte(struct mm_struct *mm, unsigned long addr)
 	printk("\n");
 }
 
+static int __do_kernel_fault_safe(struct mm_struct *mm, unsigned long addr,
+		unsigned int esr, struct pt_regs *regs)
+{
+	safe_fault_in_progress = 0xFAFADEAD;
+
+	exynos_ss_panic_handler_safe(regs);
+	exynos_ss_printkl(safe_fault_in_progress,safe_fault_in_progress);
+	while(1)
+		wfi();
+
+	return 0;
+}
+
 /*
  * The kernel tried to access some page that wasn't present.
  */
@@ -90,6 +106,10 @@ static void __do_kernel_fault(struct mm_struct *mm, unsigned long addr,
 	 */
 	if (fixup_exception(regs))
 		return;
+	if (safe_fault_in_progress) {
+		exynos_ss_printkl(safe_fault_in_progress, safe_fault_in_progress);
+		return;
+	}
 
 	/*
 	 * No handler, we'll have to terminate things with extreme prejudice.
@@ -355,10 +375,24 @@ static int __kprobes do_translation_fault(unsigned long addr,
 					  unsigned int esr,
 					  struct pt_regs *regs)
 {
+	/* We may have invalid '*current' due to a stack overflow. */
+	if (!virt_addr_valid(current_thread_info()) || !virt_addr_valid(current))
+		__do_kernel_fault_safe(NULL, addr, esr, regs);
+
 	if (addr < TASK_SIZE)
 		return do_page_fault(addr, esr, regs);
 
 	do_bad_area(addr, esr, regs);
+	return 0;
+}
+
+static int __kprobes do_tlb_conflict(unsigned long addr,
+                                         unsigned int esr,
+                                         struct pt_regs *regs)
+{
+	asm volatile("tlbi vmalle1");
+	asm volatile("dsb nsh");
+
 	return 0;
 }
 
@@ -424,7 +458,7 @@ static struct fault_info {
 	{ do_bad,		SIGBUS,  0,		"unknown 45"			},
 	{ do_bad,		SIGBUS,  0,		"unknown 46"			},
 	{ do_bad,		SIGBUS,  0,		"unknown 47"			},
-	{ do_bad,		SIGBUS,  0,		"unknown 48"			},
+	{ do_tlb_conflict,      SIGBUS,  0,             "TLB conflict"                  },
 	{ do_bad,		SIGBUS,  0,		"unknown 49"			},
 	{ do_bad,		SIGBUS,  0,		"unknown 50"			},
 	{ do_bad,		SIGBUS,  0,		"unknown 51"			},

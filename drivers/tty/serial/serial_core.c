@@ -38,6 +38,9 @@
 #include <asm/irq.h>
 #include <asm/uaccess.h>
 
+#if defined(CONFIG_BT_BCM4339) || defined(CONFIG_BT_BCM4354) || defined(CONFIG_BT_BCM4358) || defined(CONFIG_BT_BCM4359) /* This is just temporary features*/
+#define BT4339_LINE 1
+#endif
 /*
  * This is used to lock changes in serial line configuration.
  */
@@ -94,6 +97,9 @@ static void __uart_start(struct tty_struct *tty)
 {
 	struct uart_state *state = tty->driver_data;
 	struct uart_port *port = state->uart_port;
+
+	if (port->ops->wake_peer)
+		port->ops->wake_peer(port);
 
 	if (!uart_tx_stopped(port))
 		port->ops->start_tx(port);
@@ -182,10 +188,16 @@ static int uart_port_startup(struct tty_struct *tty, struct uart_state *state,
 
 		spin_lock_irq(&uport->lock);
 		if (uart_cts_enabled(uport) &&
-		    !(uport->ops->get_mctrl(uport) & TIOCM_CTS))
-			uport->hw_stopped = 1;
+		    !(uport->ops->get_mctrl(uport) & TIOCM_CTS)) {
+
+#if defined(CONFIG_BT_BCM4339) || defined(CONFIG_BT_BCM4354) || defined(CONFIG_BT_BCM4358) || defined(CONFIG_BT_BCM4359)
+			if (uport->line != BT4339_LINE)
+				uport->hw_stopped = 1;
+#endif
+		}
 		else
 			uport->hw_stopped = 0;
+
 		spin_unlock_irq(&uport->lock);
 	}
 
@@ -1311,7 +1323,10 @@ static void uart_set_termios(struct tty_struct *tty,
 	else if (!(old_termios->c_cflag & CRTSCTS) && (cflag & CRTSCTS)) {
 		spin_lock_irq(&uport->lock);
 		if (!(uport->ops->get_mctrl(uport) & TIOCM_CTS)) {
-			uport->hw_stopped = 1;
+#if defined(CONFIG_BT_BCM4339) || defined(CONFIG_BT_BCM4354) || defined(CONFIG_BT_BCM4358) || defined(CONFIG_BT_BCM4359)
+			if (uport->line != BT4339_LINE)
+#endif
+				uport->hw_stopped = 1;
 			uport->ops->stop_tx(uport);
 		}
 		spin_unlock_irq(&uport->lock);

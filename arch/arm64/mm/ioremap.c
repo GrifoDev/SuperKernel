@@ -102,7 +102,10 @@ void __iomem *ioremap_cache(phys_addr_t phys_addr, size_t size)
 				__builtin_return_address(0));
 }
 EXPORT_SYMBOL(ioremap_cache);
-
+#ifdef CONFIG_TIMA_RKP
+extern pte_t bm_pte[];
+extern pmd_t bm_pmd[];
+#else
 static pte_t bm_pte[PTRS_PER_PTE] __page_aligned_bss;
 #if CONFIG_ARM64_PGTABLE_LEVELS > 2
 static pmd_t bm_pmd[PTRS_PER_PMD] __page_aligned_bss;
@@ -110,7 +113,7 @@ static pmd_t bm_pmd[PTRS_PER_PMD] __page_aligned_bss;
 #if CONFIG_ARM64_PGTABLE_LEVELS > 3
 static pud_t bm_pud[PTRS_PER_PUD] __page_aligned_bss;
 #endif
-
+#endif
 static inline pud_t * __init early_ioremap_pud(unsigned long addr)
 {
 	pgd_t *pgd;

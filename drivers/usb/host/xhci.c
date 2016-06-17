@@ -1313,6 +1313,67 @@ command_cleanup:
 	return ret;
 }
 
+#ifdef CONFIG_HOST_COMPLIANT_TEST
+int xhci_urb_enqueue_single_step(struct usb_hcd *hcd,
+		struct urb *urb, gfp_t mem_flags, int get_dev_desc)
+{
+	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
+	struct xhci_td *buffer;
+	int ret = 0;
+	unsigned int slot_id, ep_index;
+	struct urb_priv *urb_priv;
+	int size, i;
+
+	xhci_info(xhci, "%s\n", __func__);
+
+	slot_id = urb->dev->slot_id;
+	ep_index = xhci_get_endpoint_index(&urb->ep->desc);
+
+	size = 1;
+	urb_priv = kzalloc(sizeof(struct urb_priv) +
+			size * sizeof(struct xhci_td *), mem_flags);
+	if (!urb_priv) {
+		xhci_err(xhci, "urb_priv: get alloc failed\n");
+		return -ENOMEM;
+	}
+
+	buffer = kzalloc(size * sizeof(struct xhci_td), mem_flags);
+	if (!buffer) {
+		xhci_err(xhci, "buffer: get alloc failed\n");
+		kfree(urb_priv);
+		return -ENOMEM;
+	}
+
+	for (i = 0; i < size; i++) {
+		urb_priv->td[i] = buffer;
+		buffer++;
+	}
+
+	urb_priv->length = size;
+	urb_priv->td_cnt = 0;
+	urb->hcpriv = urb_priv;
+
+	if (xhci->xhc_state & XHCI_STATE_DYING)
+		goto dying;
+
+	ret = xhci_queue_ctrl_tx_single_step(xhci, GFP_KERNEL,
+			urb, slot_id, ep_index, get_dev_desc);
+	if (ret)
+		goto free_priv;
+
+	return ret;
+dying:
+	xhci_warn(xhci, "xHCI host is not responding\n");
+	xhci_warn(xhci, "Ep 0x%x: URB %p submitted\n",
+			urb->ep->desc.bEndpointAddress, urb);
+	ret = -ESHUTDOWN;
+free_priv:
+	xhci_urb_free_priv(xhci, urb_priv);
+	urb->hcpriv = NULL;
+	return ret;
+}
+#endif/* CONFIG_HOST_COMPLIANT_TEST */
+
 /*
  * non-error returns are a promise to giveback() the urb later
  * we drop ownership so next owner (or urb unlink) can get it

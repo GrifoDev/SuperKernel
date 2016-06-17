@@ -11,8 +11,14 @@
 
 #include "image.h"
 
+/* .exit.text needed in case of alternative patching */
+#if (defined(CONFIG_GENERIC_BUG))
+#define ARM_EXIT_KEEP(x)        x
+#define ARM_EXIT_DISCARD(x)
+#else
 #define ARM_EXIT_KEEP(x)
 #define ARM_EXIT_DISCARD(x)	x
+#endif
 
 OUTPUT_ARCH(aarch64)
 ENTRY(_text)
@@ -73,6 +79,39 @@ SECTIONS
 	RO_DATA(PAGE_SIZE)
 	EXCEPTION_TABLE(8)
 	NOTES
+#ifdef CONFIG_TIMA_RKP
+	. = ALIGN(PAGE_SIZE);
+	.rkp.bitmap : {
+		rkp_pgt_bitmap = .;
+		*(.rkp.bitmap)
+	}
+	. = ALIGN(PAGE_SIZE);
+	.rkp.dblmap : {
+		rkp_map_bitmap = .;
+		*(.rkp.dblmap) 
+	}
+#ifdef CONFIG_RKP_KDP
+	 /* Creating a new section to store task credentials */
+	. = ALIGN(PAGE_SIZE);
+	.rkp.prot.page : {
+		__rkp_ro_start = .;
+	}
+	. = ALIGN(PAGE_SIZE);
+#endif /* CONFIG_RKP_KDP*/
+	.vmm : { *(.vmm*) }
+	. = ALIGN(PAGE_SIZE);
+	idmap_pg_dir = .;
+	. += IDMAP_DIR_SIZE;
+	. = ALIGN(PAGE_SIZE);
+	swapper_pg_dir = .;
+	. += SWAPPER_DIR_SIZE;
+	. = ALIGN(PAGE_SIZE);
+	bm_pte = .;
+	. += PAGE_SIZE;
+	. = ALIGN(PAGE_SIZE);
+	bm_pmd = .;
+	. += PAGE_SIZE;
+#endif
 	_etext = .;			/* End of text and rodata section */
 
 	. = ALIGN(PAGE_SIZE);
@@ -97,6 +136,20 @@ SECTIONS
 
 	PERCPU_SECTION(64)
 
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	.rela : {
+		. = ALIGN(8);
+		__reloc_start = .;
+		*(.rela .rela*)
+		__reloc_end = .;
+	}
+	.dynsym : {
+		. = ALIGN(8);
+		__dynsym_start = .;
+		*(.dynsym)
+	}
+#endif 
+
 	. = ALIGN(PAGE_SIZE);
 	__init_end = .;
 
@@ -118,11 +171,13 @@ SECTIONS
 
 	BSS_SECTION(0, 0, 0)
 
+#ifndef CONFIG_TIMA_RKP
 	. = ALIGN(PAGE_SIZE);
 	idmap_pg_dir = .;
 	. += IDMAP_DIR_SIZE;
 	swapper_pg_dir = .;
 	. += SWAPPER_DIR_SIZE;
+#endif
 
 	_end = .;
 

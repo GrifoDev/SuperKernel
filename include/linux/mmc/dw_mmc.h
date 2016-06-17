@@ -16,6 +16,7 @@
 
 #include <linux/scatterlist.h>
 #include <linux/mmc/core.h>
+#include <linux/pm_qos.h>
 
 #define MAX_MCI_SLOTS	2
 
@@ -54,6 +55,7 @@ struct mmc_data;
  *	transfer is in progress.
  * @use_dma: Whether DMA channel is initialized or not.
  * @using_dma: Whether DMA is in use for the current transfer.
+ * @dma_64bit_address: Whether DMA supports 64-bit address mode or not.
  * @sg_dma: Bus address of DMA buffer.
  * @sg_cpu: Virtual address of DMA buffer.
  * @dma_ops: Pointer to platform-specific DMA callbacks.
@@ -140,6 +142,7 @@ struct dw_mci {
 	/* DMA interface members*/
 	int			use_dma;
 	int			using_dma;
+	int			dma_64bit_address;
 
 	dma_addr_t		sg_dma;
 	void			*sg_cpu;
@@ -149,11 +152,14 @@ struct dw_mci {
 #else
 	struct dw_mci_dma_data	*dma_data;
 #endif
+	unsigned int            desc_sz;
+	struct pm_qos_request	pm_qos_int;
 	u32			cmd_status;
 	u32			data_status;
 	u32			stop_cmdr;
 	u32			dir_status;
 	struct tasklet_struct	tasklet;
+	u32			tasklet_state;
 	struct work_struct	card_work;
 	unsigned long		pending_events;
 	unsigned long		completed_events;
@@ -164,6 +170,7 @@ struct dw_mci {
 	u32			current_speed;
 	u32			num_slots;
 	u32			fifoth_val;
+	u32			cd_rd_thr;
 	u16			verid;
 	u16			data_offset;
 	struct device		*dev;
@@ -172,6 +179,11 @@ struct dw_mci {
 	void			*priv;
 	struct clk		*biu_clk;
 	struct clk		*ciu_clk;
+	struct clk		*ciu_gate;
+	atomic_t		biu_clk_cnt;
+	atomic_t		ciu_clk_cnt;
+	atomic_t		biu_en_win;
+	atomic_t		ciu_en_win;
 	struct dw_mci_slot	*slot[MAX_MCI_SLOTS];
 
 	/* FIFO push and pull */
@@ -190,9 +202,24 @@ struct dw_mci {
 	/* Workaround flags */
 	u32			quirks;
 
+	/* S/W reset timer */
+	struct timer_list       timer;
+
 	bool			vqmmc_enabled;
 	unsigned long		irq_flags; /* IRQ flags */
 	int			irq;
+
+	/* Save request status */
+#define DW_MMC_REQ_IDLE		0
+#define DW_MMC_REQ_BUSY		1
+	unsigned int		req_state;
+	struct dw_mci_debug_info        *debug_info;    /* debug info */
+	
+	/* HWACG q-active ctrl check */
+	unsigned int qactive_check;
+
+	/* Support system power mode */
+	int idle_ip_index;
 };
 
 /* DMA ops for Internal/External DMAC interface */
@@ -202,6 +229,7 @@ struct dw_mci_dma_ops {
 	void (*start)(struct dw_mci *host, unsigned int sg_len);
 	void (*complete)(struct dw_mci *host);
 	void (*stop)(struct dw_mci *host);
+	void (*reset)(struct dw_mci *host);
 	void (*cleanup)(struct dw_mci *host);
 	void (*exit)(struct dw_mci *host);
 };
@@ -217,6 +245,16 @@ struct dw_mci_dma_ops {
 #define DW_MCI_QUIRK_BROKEN_CARD_DETECTION	BIT(3)
 /* No write protect */
 #define DW_MCI_QUIRK_NO_WRITE_PROTECT		BIT(4)
+/* No detect end bit during read */
+#define DW_MCI_QUIRK_NO_DETECT_EBIT		BIT(5)
+/* Bypass the security management unit */
+#define DW_MCI_QUIRK_BYPASS_SMU                 BIT(6)
+/* Use fixed IO voltage */
+#define DW_MMC_QUIRK_FIXED_VOLTAGE		BIT(7)
+/* Card init W/A HWACG ctrl */
+#define DW_MCI_QUIRK_HWACG_CTRL			BIT(8)
+/* Enables ultra low power mode */
+#define DW_MCI_QUIRK_ENABLE_ULP			BIT(9)
 
 /* Slot level quirks */
 /* This slot has no write protect */
@@ -252,9 +290,32 @@ struct dw_mci_board {
 	/* delay in mS before detecting cards after interrupt */
 	u32 detect_delay_ms;
 
+	u8 clk_smpl;
+	bool is_fine_tuned;
+	bool tuned;
+	bool extra_tuning;
+	bool only_once_tune;
+	bool use_vqmmc19;
+
+	/* INT QOS khz */
+	unsigned int qos_int_level;
+	unsigned char io_mode;
+
 	struct dw_mci_dma_ops *dma_ops;
 	struct dma_pdata *data;
 	struct block_settings *blk_settings;
+	unsigned int sw_timeout;
+
+	/* DATA_TIMEOUT[31:11] of TMOUT */
+	u32 data_timeout;
+	u32 hto_timeout;
+	bool use_gate_clock;
+	bool use_biu_gate_clock;
+	bool enable_cclk_on_suspend;
+	bool on_suspend;
+
+	/* Number of descriptors */
+	unsigned int desc_sz;
 };
 
 #endif /* LINUX_MMC_DW_MMC_H */

@@ -36,6 +36,9 @@
 #include <asm/page.h>
 #include <asm/virt.h>
 
+#ifdef CONFIG_RKP_CFP_ROPP
+#include <asm/rkp_cfp.h>
+#endif
 #define KERNEL_RAM_VADDR	(PAGE_OFFSET + TEXT_OFFSET)
 
 #if (TEXT_OFFSET & 0xfff) != 0
@@ -230,6 +233,21 @@ section_table:
 #endif
 
 ENTRY(stext)
+#ifdef CONFIG_RKP_CFP_ROPP
+	/* Must intialize RRK to zero */
+	mov RRK, #0
+#endif
+#ifdef CONFIG_RKP_CFP_JOPP
+	/* We need RRS to be loaded before we take our first instrumented BLR branch.  */
+	load_function_entry_magic_number_before_reloc head_magic
+#endif
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	mov	x22, x1				// x1=PHYS_OFFSET
+	mov	x19, x2				// x2=real TEXT_OFFSET
+	adr	x21, __boot_kernel_offset
+	stp	x1, x2, [x21]
+#endif 
+	
 	mov	x21, x0				// x21=FDT
 	bl	el2_setup			// Drop to EL1, w20=cpu_boot_mode
 	bl	__calc_phys_offset		// x24=PHYS_OFFSET, x28=PHYS_OFFSET-PAGE_OFFSET
@@ -248,13 +266,86 @@ ENTRY(stext)
 	 * On return, the CPU will be ready for the MMU to be turned on and
 	 * the TCR will have been set.
 	 */
+#ifndef	CONFIG_RELOCATABLE_KERNEL
 	ldr	x27, __switch_data		// address to jump to after
-						// MMU has been enabled
+   						// MMU has been enabled
 	adr	lr, __enable_mmu		// return (PIC) address
 	ldr	x12, [x23, #CPU_INFO_SETUP]
 	add	x12, x12, x28			// __virt_to_phys
+#else
+	adr 	x27, __relocate_kernel
+	adrp	lr, __enable_mmu		// return (PIC) address
+	add	lr, lr, #:lo12:__enable_mmu
+	adrp	x12, __cpu_setup		//manually setup the __cpu_setup address cause this address is in relocation table
+	add 	x12, x12, :lo12:__cpu_setup
+#endif
 	br	x12				// initialise processor
 ENDPROC(stext)
+
+#ifdef CONFIG_RKP_CFP_JOPP
+alloc_function_entry_magic_number head_magic
+#endif
+
+
+#ifdef CONFIG_RELOCATABLE_KERNEL
+
+#define R_AARCH64_RELATIVE	0x403
+#define R_AARCH64_ABS64		0x101
+
+
+
+	
+__relocate_kernel:
+	
+	sub	x23, x19, #TEXT_OFFSET
+	adrp 	x8, __dynsym_start		
+	add	x8, x8, :lo12:__dynsym_start	//x8: start of symbol table
+	adrp 	x9, __reloc_start		
+	add 	x9, x9, :lo12:__reloc_start	//x9: start of relocation table
+	adrp	x10, __reloc_end
+	add	x10, x10, :lo12:__reloc_end 	//x10: end of relocation table
+
+0:	cmp	x9, x10
+	b.hs	2f
+	ldp	x11, x12, [x9], #24
+	cmp	x12, #R_AARCH64_RELATIVE
+	b.ne	1f
+	ldr	x12, [x9, #-8]
+	add	x12, x12, x23			// relocate origin x23 
+	add	x11, x11, x23
+	str	x12, [x11, x28]
+	b	0b
+
+1:	ubfx	x13, x12, #0, #32
+	cmp	x13, #R_AARCH64_ABS64
+	b.ne	0b
+	lsr	x13, x12, #32			// symbol index
+	ldr	x12, [x9, #-8]			// addend
+	add	x13, x13, x13, lsl #1		// x 3
+	add	x13, x8, x13, lsl #3		// x 8
+	ldrsh	w14, [x13, #6]			// Elf64_Sym::st_shndx
+	cbz	w14, 0b				// SHN_UNDEF:: Weak Symbol? Do NOT patch 
+	ldr	x15, [x13, #8]			// Elf64_Sym::st_value
+	cmp	w14, #-0xf			// SHN_ABS (0xfff1) ?
+	add	x14, x15, x23			// st_value + offset
+	csel	x15, x14, x15, ne
+	add	x15, x12, x15
+	add	x11, x11, x23
+	str	x15, [x11, x28]
+	b	0b
+	
+2:	ldr	x8, =vectors			// reload VBAR_EL1 with
+	msr	vbar_el1, x8			// relocated address
+	isb
+
+	ldr	x9, __switch_data
+	br	x9
+ENDPROC(__relocate_kernel)
+#endif /*CONFIG_RELOCATABLE_KERNEL*/
+
+
+
+
 
 /*
  * If we're fortunate enough to boot at EL2, ensure that the world is
@@ -331,7 +422,12 @@ CPU_LE(	movk	x0, #0x30d0, lsl #16	)	// Clear EE and E0E on LE systems
 	msr	vttbr_el2, xzr
 
 	/* Hypervisor stub */
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	adrp	x0, __hyp_stub_vectors
+	add	x0, x0, #:lo12:__hyp_stub_vectors
+#else
 	adr	x0, __hyp_stub_vectors
+#endif
 	msr	vbar_el2, x0
 
 	/* spsr */
@@ -347,6 +443,19 @@ ENDPROC(el2_setup)
  * Sets the __boot_cpu_mode flag depending on the CPU boot mode passed
  * in x20. See arch/arm64/include/asm/virt.h for more info.
  */
+#ifdef CONFIG_RELOCATABLE_KERNEL
+ENTRY(set_cpu_boot_mode_flag)
+	adrp 	x1, __boot_cpu_mode
+	add	x1, x1,:lo12:__boot_cpu_mode 
+	cmp	w20, #BOOT_CPU_MODE_EL2
+	b.ne	1f
+	add	x1, x1, #4
+1:	str	w20, [x1]			// This CPU has booted in EL1
+	dmb	sy
+	dc	ivac, x1			// Invalidate potentially stale cache line
+	ret
+ENDPROC(set_cpu_boot_mode_flag)
+#else
 ENTRY(set_cpu_boot_mode_flag)
 	ldr	x1, =__boot_cpu_mode		// Compute __boot_cpu_mode
 	add	x1, x1, x28
@@ -358,7 +467,19 @@ ENTRY(set_cpu_boot_mode_flag)
 	dc	ivac, x1			// Invalidate potentially stale cache line
 	ret
 ENDPROC(set_cpu_boot_mode_flag)
+#endif
+	
 
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	.pushsection	.text
+ENTRY(__boot_kernel_offset)
+	.quad	0     	//Kernel Physical Address
+	.quad	0	//Kernel TEXT_OFFSET
+	.quad 	TEXT_OFFSET
+	.popsection
+#endif	
+	
+	
 /*
  * We need to find out the CPU boot mode long after boot, so we need to
  * store it in a writable variable.
@@ -372,6 +493,10 @@ ENTRY(__boot_cpu_mode)
 	.long	BOOT_CPU_MODE_EL2
 	.long	0
 	.popsection
+
+#ifdef CONFIG_RKP_CFP_ROPP
+tsk	.req	x28		// current thread_info
+#endif
 
 #ifdef CONFIG_SMP
 	.align	3
@@ -389,10 +514,15 @@ ENTRY(secondary_holding_pen)
 	mrs	x0, mpidr_el1
 	ldr     x1, =MPIDR_HWID_BITMASK
 	and	x0, x0, x1
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	adrp	x3, secondary_holding_pen_release
+	add 	x3, x3, :lo12: secondary_holding_pen_release
+#else
 	adr	x1, 1b
 	ldp	x2, x3, [x1]
 	sub	x1, x1, x2
 	add	x3, x3, x1
+#endif 
 pen:	ldr	x4, [x3]
 	cmp	x4, x0
 	b.eq	secondary_startup
@@ -406,7 +536,12 @@ ENDPROC(secondary_holding_pen)
 	 */
 ENTRY(secondary_entry)
 	bl	el2_setup			// Drop to EL1
+#ifdef 	CONFIG_RELOCATABLE_KERNEL
+	adr 	x22, __boot_kernel_offset
+	ldp	x24, x19, [x22]
+#else
 	bl	__calc_phys_offset		// x24=PHYS_OFFSET, x28=PHYS_OFFSET-PAGE_OFFSET
+#endif
 	bl	set_cpu_boot_mode_flag
 	b	secondary_startup
 ENDPROC(secondary_entry)
@@ -415,15 +550,30 @@ ENTRY(secondary_startup)
 	/*
 	 * Common entry point for secondary CPUs.
 	 */
+#ifdef CONFIG_RKP_CFP_JOPP
+	load_function_entry_magic_number_no_mmu head_magic
+#endif
 	mrs	x22, midr_el1			// x22=cpuid
 	mov	x0, x22
 	bl	lookup_processor_type
 	mov	x23, x0				// x23=current cpu_table
 	cbz	x23, __error_p			// invalid processor (x23=0)?
-
+#ifndef	CONFIG_RELOCATABLE_KERNEL
 	pgtbl	x25, x26, x28			// x25=TTBR0, x26=TTBR1
+#else
+	adrp	x25, idmap_pg_dir
+	add	x25, x25, :lo12:idmap_pg_dir
+	adrp	x26, swapper_pg_dir
+	add	x26, x26, :lo12:swapper_pg_dir
+#endif
+
+#ifndef	CONFIG_RELOCATABLE_KERNEL
 	ldr	x12, [x23, #CPU_INFO_SETUP]
 	add	x12, x12, x28			// __virt_to_phys
+#else
+	adrp	x12, __cpu_setup		//manually setup the __cpu_setup address cause this address is in relocation table
+	add 	x12, x12, :lo12:__cpu_setup
+#endif
 	blr	x12				// initialise processor
 
 	ldr	x21, =secondary_data
@@ -434,6 +584,17 @@ ENDPROC(secondary_startup)
 ENTRY(__secondary_switched)
 	ldr	x0, [x21]			// get secondary_data.stack
 	mov	sp, x0
+#ifdef CONFIG_RKP_CFP_ROPP
+	/* We are running off of the stack of the idle thread for this CPU.
+	 * The idle thread was forked from the CPU0 thread after it initialized its key.
+	 * We need to load our key from thread_info into x17 now.
+	 */
+	get_thread_info tsk
+	load_key tsk
+#endif
+#ifdef CONFIG_RKP_CFP_JOPP
+	load_function_entry_magic_number_before_reloc head_magic
+#endif
 	mov	x29, #0
 	b	secondary_start_kernel
 ENDPROC(__secondary_switched)
@@ -449,9 +610,15 @@ ENDPROC(__secondary_switched)
 __enable_mmu:
 	ldr	x5, =vectors
 	msr	vbar_el1, x5
+	tlbi	vaae1, xzr
+	dsb	nsh
+	tlbi	vaae1, xzr
 	msr	ttbr0_el1, x25			// load TTBR0
 	msr	ttbr1_el1, x26			// load TTBR1
+	tlbi	vaae1, xzr
 	isb
+	tlbi	vaae1, xzr
+	dsb	nsh
 	b	__turn_mmu_on
 ENDPROC(__enable_mmu)
 
@@ -480,10 +647,19 @@ ENDPROC(__turn_mmu_on)
  * Calculate the start of physical memory.
  */
 __calc_phys_offset:
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	mov	x24, x22		// x24 = PHYS_OFFSET
+	adr 	x0, 1f
+	ldp 	x1, x2, [x0]		// x2 =  PAGE_OFFSET
+	ldr 	x2, =PAGE_OFFSET
+	sub 	x28, x24, x2		// x28 = PHYS_OFFSET - PAGE_OFFSET
+#else
 	adr	x0, 1f
 	ldp	x1, x2, [x0]
 	sub	x28, x0, x1			// x28 = PHYS_OFFSET - PAGE_OFFSET
 	add	x24, x2, x28			// x24 = PHYS_OFFSET
+#endif 
+
 	ret
 ENDPROC(__calc_phys_offset)
 
@@ -556,7 +732,14 @@ ENDPROC(__calc_phys_offset)
  *   - pgd entry for fixed mappings (TTBR1)
  */
 __create_page_tables:
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	adrp	x25, idmap_pg_dir
+	add	x25, x25, :lo12:idmap_pg_dir
+	adrp	x26, swapper_pg_dir
+	add	x26, x26, :lo12:swapper_pg_dir
+#else
 	pgtbl	x25, x26, x28			// idmap_pg_dir and swapper_pg_dir addresses
+#endif
 	mov	x27, lr
 
 	/*
@@ -585,12 +768,25 @@ __create_page_tables:
 	 * Create the identity mapping.
 	 */
 	mov	x0, x25				// idmap_pg_dir
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	mov	x3, #PAGE_OFFSET
+	add	x3, x3, x19			//x19 = TEXT_OFFSET, KERNEL_START:=PAGE_OFFSET+TEXT_OFFSET
+#else
 	ldr	x3, =KERNEL_START
+#endif
 	add	x3, x3, x28			// __pa(KERNEL_START)
 	create_pgd_entry x0, x3, x5, x6
+
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	adrp 	x6, KERNEL_END
+	add	x6, x6, :lo12:KERNEL_END
+#else
 	ldr	x6, =KERNEL_END
+#endif 
 	mov	x5, x3				// __pa(KERNEL_START)
+#ifndef CONFIG_RELOCATABLE_KERNEL
 	add	x6, x6, x28			// __pa(KERNEL_END)
+#endif
 	create_block_map x0, x7, x3, x5, x6
 
 	/*
@@ -599,7 +795,16 @@ __create_page_tables:
 	mov	x0, x26				// swapper_pg_dir
 	mov	x5, #PAGE_OFFSET
 	create_pgd_entry x0, x5, x3, x6
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	mov	x3, #PAGE_OFFSET
+	add	x3, x3, x28			// __pa(PAGE_OFFSET)
+	adrp 	x6, KERNEL_END
+	add	x6, x6, :lo12:KERNEL_END        // __pa(KERNEL_END)
+	sub	x6, x6, x3
+	add	x6, x6, x5	 	        // (x6=KERNEL_END)
+#else	
 	ldr	x6, =KERNEL_END
+#endif
 	mov	x3, x24				// phys offset
 	create_block_map x0, x7, x3, x5, x6
 
@@ -689,6 +894,7 @@ ENDPROC(__error)
  * This routine can be called via C code and it needs to work with the MMU
  * both disabled and enabled (the offset is calculated automatically).
  */
+#ifndef CONFIG_RELOCATABLE_KERNEL
 ENTRY(lookup_processor_type)
 	adr	x1, __lookup_processor_type_data
 	ldp	x2, x3, [x1]
@@ -708,7 +914,26 @@ ENTRY(lookup_processor_type)
 	mov	x0, x3
 	ret
 ENDPROC(lookup_processor_type)
-
+#else
+ENTRY(lookup_processor_type)
+	adrp 	x3, cpu_table
+	add 	x3, x3, :lo12:cpu_table
+1:
+	ldp	w5, w6, [x3]			// load cpu_id_val and cpu_id_mask
+	cbz	w5, 2f				// end of list?
+	and	w6, w6, w0
+	cmp	w5, w6
+	b.eq	3f
+	add	x3, x3, #CPU_INFO_SZ		 
+	b	1b
+2:
+	mov	x3, #0				// unknown processor
+3:
+	mov	x0, x3
+	ret
+ENDPROC(lookup_processor_type)
+#endif
+	
 	.align	3
 	.type	__lookup_processor_type_data, %object
 __lookup_processor_type_data:

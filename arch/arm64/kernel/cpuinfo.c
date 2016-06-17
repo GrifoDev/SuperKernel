@@ -19,6 +19,7 @@
 #include <asm/cpu.h>
 #include <asm/cputype.h>
 #include <asm/cpufeature.h>
+#include <asm/smp_plat.h>
 
 #include <linux/bitops.h>
 #include <linux/bug.h>
@@ -35,6 +36,27 @@
  */
 DEFINE_PER_CPU(struct cpuinfo_arm64, cpu_data);
 static struct cpuinfo_arm64 boot_cpu_data;
+static bool mixed_endian_el0 = true;
+
+bool cpu_supports_mixed_endian_el0(void)
+{
+	return id_aa64mmfr0_mixed_endian_el0(read_cpuid(ID_AA64MMFR0_EL1));
+}
+
+bool system_supports_mixed_endian_el0(void)
+{
+	return mixed_endian_el0;
+}
+
+static void update_mixed_endian_el0_support(struct cpuinfo_arm64 *info)
+{
+	mixed_endian_el0 &= id_aa64mmfr0_mixed_endian_el0(info->reg_id_aa64mmfr0);
+}
+
+static void update_cpu_features(struct cpuinfo_arm64 *info)
+{
+	update_mixed_endian_el0_support(info);
+}
 
 static char *icache_policy_str[] = {
 	[ICACHE_POLICY_RESERVED] = "RESERVED/UNKNOWN",
@@ -93,6 +115,15 @@ static void cpuinfo_sanity_check(struct cpuinfo_arm64 *cur)
 	unsigned int cpu = smp_processor_id();
 	struct cpuinfo_arm64 *boot = &boot_cpu_data;
 	unsigned int diff = 0;
+
+#ifdef CONFIG_SOC_EXYNOS8890
+	/*
+	 * HACK: In Exynos8890, the sanity check for cluster '0' is meaningless
+	 * because it consists of non-arm CPUs.
+	 */
+	if (!MPIDR_AFFINITY_LEVEL(cpu_logical_map(cpu), 1))
+		return;
+#endif
 
 	/*
 	 * The kernel can handle differing I-cache policies, but otherwise
@@ -187,6 +218,7 @@ static void __cpuinfo_store_cpu(struct cpuinfo_arm64 *info)
 	info->reg_id_pfr1 = read_cpuid(ID_PFR1_EL1);
 
 	cpuinfo_detect_icache_policy(info);
+	update_cpu_features(info);
 
 	check_local_cpu_errata();
 }

@@ -209,6 +209,11 @@ static int soc_compr_free(struct snd_compr_stream *cstream)
 		platform->driver->compr_ops->free(cstream);
 
 	if (cstream->direction == SND_COMPRESS_PLAYBACK) {
+#ifdef CONFIG_SND_SAMSUNG_SEIREN_OFFLOAD
+		if (codec_dai->playback_active)
+			goto out;
+#endif
+
 		if (snd_soc_runtime_ignore_pmdown_time(rtd)) {
 			snd_soc_dapm_stream_event(rtd,
 					SNDRV_PCM_STREAM_PLAYBACK,
@@ -220,12 +225,20 @@ static int soc_compr_free(struct snd_compr_stream *cstream)
 					   msecs_to_jiffies(rtd->pmdown_time));
 		}
 	} else {
+#ifdef CONFIG_SND_SAMSUNG_SEIREN_OFFLOAD
+		if (codec_dai->capture_active)
+			goto out;
+#endif
+
 		/* capture streams can be powered down now */
 		snd_soc_dapm_stream_event(rtd,
 			SNDRV_PCM_STREAM_CAPTURE,
 			SND_SOC_DAPM_STREAM_STOP);
 	}
 
+#ifdef CONFIG_SND_SAMSUNG_SEIREN_OFFLOAD
+out:
+#endif
 	mutex_unlock(&rtd->pcm_mutex);
 	return 0;
 }
@@ -287,6 +300,19 @@ static int soc_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 	struct snd_soc_platform *platform = rtd->platform;
 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
 	int ret = 0;
+
+#ifdef CONFIG_SND_SAMSUNG_SEIREN_OFFLOAD
+	/* for partial drain and drain cmd, don't acquire lock while invoking FW.
+	 * These calls will be blocked till these operation can complete which
+	 * will be a while. And during that time, app can invoke STOP, PAUSE etc
+	 */
+	if (cmd == SND_COMPR_TRIGGER_PARTIAL_DRAIN ||
+				cmd == SND_COMPR_TRIGGER_DRAIN) {
+		if (platform->driver->compr_ops &&
+					platform->driver->compr_ops->trigger)
+			return platform->driver->compr_ops->trigger(cstream, cmd);
+	}
+#endif
 
 	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
 
@@ -666,8 +692,7 @@ int soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 			rtd->dai_link->stream_name);
 
 		ret = snd_pcm_new_internal(rtd->card->snd_card, new_name, num,
-				rtd->dai_link->dpcm_playback,
-				rtd->dai_link->dpcm_capture, &be_pcm);
+				1, 0, &be_pcm);
 		if (ret < 0) {
 			dev_err(rtd->card->dev, "ASoC: can't create compressed for %s\n",
 				rtd->dai_link->name);
@@ -676,10 +701,8 @@ int soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 
 		rtd->pcm = be_pcm;
 		rtd->fe_compr = 1;
-		if (rtd->dai_link->dpcm_playback)
-			be_pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data = rtd;
-		else if (rtd->dai_link->dpcm_capture)
-			be_pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream->private_data = rtd;
+		be_pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data = rtd;
+		be_pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream->private_data = rtd;
 		memcpy(compr->ops, &soc_compr_dyn_ops, sizeof(soc_compr_dyn_ops));
 	} else
 		memcpy(compr->ops, &soc_compr_ops, sizeof(soc_compr_ops));

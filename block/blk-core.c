@@ -351,7 +351,7 @@ EXPORT_SYMBOL(blk_put_queue);
  * If not, only ELVPRIV requests are drained.  The caller is responsible
  * for ensuring that no new requests which need to be drained are queued.
  */
-static void __blk_drain_queue(struct request_queue *q, bool drain_all)
+void __blk_drain_queue(struct request_queue *q, bool drain_all)
 	__releases(q->queue_lock)
 	__acquires(q->queue_lock)
 {
@@ -1537,6 +1537,11 @@ void init_request_from_bio(struct request *req, struct bio *bio)
 	req->cmd_flags |= bio->bi_rw & REQ_COMMON_MASK;
 	if (bio->bi_rw & REQ_RAHEAD)
 		req->cmd_flags |= REQ_FAILFAST_MASK;
+
+#ifdef CONFIG_JOURNAL_DATA_TAG
+       if (bio_flagged(bio, BIO_JMETA) || bio_flagged(bio, BIO_JOURNAL))
+               req->cmd_flags |= REQ_META;
+#endif
 
 	req->errors = 0;
 	req->__sector = bio->bi_iter.bi_sector;

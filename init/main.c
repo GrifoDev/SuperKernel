@@ -79,6 +79,14 @@
 #include <linux/random.h>
 #include <linux/list.h>
 
+#if defined(CONFIG_SEC_BSP)
+#include <linux/sec_bsp.h>
+#endif
+
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+#include <linux/sec_debug.h>
+#endif
+
 #include <asm/io.h>
 #include <asm/bugs.h>
 #include <asm/setup.h>
@@ -87,6 +95,14 @@
 
 #ifdef CONFIG_X86_LOCAL_APIC
 #include <asm/smp.h>
+#endif
+
+#ifdef CONFIG_TIMA_RKP
+#include <linux/vmm.h>
+#include <linux/rkp_entry.h> 
+#endif //CONFIG_TIMA_RKP
+#ifdef CONFIG_RELOCATABLE_KERNEL
+#include <linux/memblock.h>
 #endif
 
 static int kernel_init(void *);
@@ -98,6 +114,14 @@ extern void radix_tree_init(void);
 static inline void mark_rodata_ro(void) { }
 #endif
 
+#ifdef CONFIG_PTRACK_DEBUG
+extern void ptrack_init(void);
+#endif
+
+#ifdef CONFIG_TIMA_RKP
+int rkp_support_large_memory;
+EXPORT_SYMBOL(rkp_support_large_memory);
+#endif
 /*
  * Debug helper: via this flag we know that we are in 'early bootup code'
  * where only the boot processor is running with IRQ disabled.  This means
@@ -158,6 +182,28 @@ static int __init set_reset_devices(char *str)
 }
 
 __setup("reset_devices", set_reset_devices);
+
+#ifdef CONFIG_RELOCATABLE_KERNEL
+static unsigned long kaslr_mem  __initdata; 
+static unsigned long kaslr_size  __initdata; 
+
+static int __init set_kaslr_region(char *str){
+	char *endp;
+
+	kaslr_size = memparse(str, &endp);
+	if( *endp == '@')
+	  kaslr_mem = memparse(endp+1, NULL);
+
+	if (memblock_reserve(kaslr_mem, kaslr_size)) {
+			pr_err("%s: failed reserving size %lx " \
+						"at base 0x%lx\n", __func__, kaslr_size, kaslr_mem);
+			return -1;
+	}
+	pr_info("kaslr :%s, base:%lx, size:%lx \n", __func__, kaslr_mem, kaslr_size);
+	return 0;
+}
+__setup("kaslr_region=", set_kaslr_region);
+#endif
 
 static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
 const char *envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
@@ -433,6 +479,14 @@ static int __init do_early_param(char *param, char *val, const char *unused)
 		}
 	}
 	/* We accept everything at this stage. */
+#ifdef CONFIG_KNOX_KAP
+	if ((strncmp(param, "androidboot.security_mode", 26) == 0)) {
+		pr_warn("val = %d\n",*val);
+	        if ((strncmp(val, "1526595585", 10) == 0)) {
+				pr_info("Security Boot Mode \n");
+			}
+	}
+#endif
 	return 0;
 }
 
@@ -495,8 +549,78 @@ static void __init mm_init(void)
 	percpu_init_late();
 	pgtable_init();
 	vmalloc_init();
+#ifdef CONFIG_PTRACK_DEBUG
+	ptrack_init();
+#endif
 }
+#ifdef	CONFIG_TIMA_RKP
 
+__attribute__((section(".rkp.bitmap"))) u8 rkp_pgt_bitmap_arr[0x20000] = {0};
+__attribute__((section(".rkp.dblmap"))) u8 rkp_map_bitmap_arr[0x20000] = {0};
+
+extern void* vmm_extra_mem;
+u8 rkp_started = 0;
+static void rkp_init(void)
+{
+	rkp_init_t init;
+	init.magic = RKP_INIT_MAGIC;
+	init.vmalloc_start = VMALLOC_START;
+	init.vmalloc_end = (u64)high_memory;
+	init.init_mm_pgd = (u64)__pa(swapper_pg_dir);
+	init.id_map_pgd = (u64)__pa(idmap_pg_dir);
+	init.rkp_pgt_bitmap = (u64)__pa(rkp_pgt_bitmap);
+	init.rkp_map_bitmap = (u64)__pa(rkp_map_bitmap);
+	init.rkp_pgt_bitmap_size = RKP_PGT_BITMAP_LEN;
+	init.zero_pg_addr = page_to_phys(empty_zero_page);
+	init._text = (u64) _text;
+	init._etext = (u64) _etext;
+	if (!vmm_extra_mem) {
+		printk(KERN_ERR"Disable RKP: Failed to allocate extra mem\n");
+		return;
+	}
+	init.extra_memory_addr = __pa(vmm_extra_mem);
+	init.extra_memory_size = 0x600000;
+	init._srodata = (u64) __start_rodata;
+	init._erodata =(u64) __end_rodata;
+	init.large_memory = rkp_support_large_memory;
+
+	rkp_call(RKP_INIT, (u64)&init, 0, 0, 0, 0);
+	rkp_started = 1;
+	return;
+}
+#endif
+#ifdef CONFIG_RKP_KDP
+
+void kdp_init(void)
+{
+	kdp_init_t cred;
+
+	cred.credSize 	= sizeof(struct cred);
+	cred.sp_size	= rkp_get_task_sec_size();
+	cred.pgd_mm 	= offsetof(struct mm_struct,pgd);
+	cred.uid_cred	= offsetof(struct cred,uid);
+	cred.euid_cred	= offsetof(struct cred,euid);
+	cred.gid_cred	= offsetof(struct cred,gid);
+	cred.egid_cred	= offsetof(struct cred,egid);
+
+	cred.bp_pgd_cred 	= offsetof(struct cred,bp_pgd);
+	cred.bp_task_cred 	= offsetof(struct cred,bp_task);
+	cred.type_cred 		= offsetof(struct cred,type);
+	cred.security_cred 	= offsetof(struct cred,security);
+	cred.usage_cred 	= offsetof(struct cred,use_cnt);
+
+	cred.cred_task  	= offsetof(struct task_struct,cred);
+	cred.mm_task 		= offsetof(struct task_struct,mm);
+	cred.pid_task		= offsetof(struct task_struct,pid);
+	cred.rp_task		= offsetof(struct task_struct,real_parent);
+	cred.comm_task 		= offsetof(struct task_struct,comm);
+
+	cred.bp_cred_secptr 	= rkp_get_offset_bp_cred();
+
+	cred.task_threadinfo = offsetof(struct thread_info,task);
+	rkp_call(RKP_CMDID(0x40),(u64)&cred,0,0,0,0);
+}
+#endif /*CONFIG_RKP_KDP*/
 asmlinkage __visible void __init start_kernel(void)
 {
 	char *command_line;
@@ -560,6 +684,21 @@ asmlinkage __visible void __init start_kernel(void)
 	sort_main_extable();
 	trap_init();
 	mm_init();
+
+#if defined(CONFIG_SEC_BSP)
+	sec_boot_stat_get_start_kernel();
+#endif
+
+#ifdef CONFIG_TIMA_RKP
+	vmm_init();
+	rkp_init();
+#ifdef CONFIG_RELOCATABLE_KERNEL
+	rkp_call(KASLR_MEM_RESERVE, kaslr_mem, kaslr_size, 0, 0, 0); 
+#endif 
+#ifdef CONFIG_RKP_KDP
+	rkp_cred_enable = 1;
+#endif /*CONFIG_RKP_KDP*/
+#endif //CONFIG_TIMA_RKP
 
 	/*
 	 * Set up the scheduler prior starting any interrupts (such as the
@@ -648,12 +787,20 @@ asmlinkage __visible void __init start_kernel(void)
 	init_espfix_bsp();
 #endif
 	thread_info_cache_init();
+#ifdef CONFIG_RKP_KDP
+	if (rkp_cred_enable) 
+		kdp_init();
+#endif /*CONFIG_RKP_KDP*/
 	cred_init();
 	fork_init(totalram_pages);
 	proc_caches_init();
 	buffer_init();
 	key_init();
 	security_init();
+#ifdef CONFIG_RKP_KDP
+	if (rkp_cred_enable) 
+		rkp_call(RKP_CMDID(0x51),(u64)__rkp_ro_start,0,0,0,0);
+#endif /*CONFIG_RKP_KDP*/
 	dbg_late_init();
 	vfs_caches_init(totalram_pages);
 	signals_init();
@@ -764,14 +911,22 @@ static int __init_or_module do_one_initcall_debug(initcall_t fn)
 	unsigned long long duration;
 	int ret;
 
-	printk(KERN_DEBUG "calling  %pF @ %i\n", fn, task_pid_nr(current));
+	if (initcall_debug)
+		pr_debug("calling  %pF @ %i\n", fn, task_pid_nr(current));
+
 	calltime = ktime_get();
 	ret = fn();
 	rettime = ktime_get();
 	delta = ktime_sub(rettime, calltime);
 	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
-	printk(KERN_DEBUG "initcall %pF returned %d after %lld usecs\n",
-		 fn, ret, duration);
+	if (initcall_debug)
+		pr_debug("initcall %pF returned %d after %lld usecs\n",
+			 fn, ret, duration);
+
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+	if (SEC_INITCALL_DEBUG_MIN_TIME < duration)
+		sec_initcall_debug_add(fn, duration);
+#endif
 
 	return ret;
 }
@@ -785,10 +940,14 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	if (initcall_blacklisted(fn))
 		return -EPERM;
 
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+	ret = do_one_initcall_debug(fn);
+#else
 	if (initcall_debug)
 		ret = do_one_initcall_debug(fn);
 	else
 		ret = fn();
+#endif
 
 	msgbuf[0] = 0;
 
@@ -854,6 +1013,10 @@ static void __init do_initcall_level(int level)
 
 	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)
 		do_one_initcall(*fn);
+
+#if defined(CONFIG_SEC_BSP)
+	sec_boot_stat_add_initcall(initcall_level_names[level]);
+#endif
 }
 
 static void __init do_initcalls(void)
@@ -925,6 +1088,38 @@ static int try_to_run_init_process(const char *init_filename)
 	return ret;
 }
 
+#ifdef CONFIG_DEFERRED_INITCALLS
+extern initcall_t __deferred_initcall_start[], __deferred_initcall_end[];
+
+/* call deferred init routines */
+void __ref do_deferred_initcalls(void)
+{
+	initcall_t *call;
+	static int already_run=0;
+
+	if (already_run) {
+		printk("do_deferred_initcalls() has already run\n");
+		return;
+	}
+
+	already_run=1;
+
+	printk("Running do_deferred_initcalls()\n");
+
+	for(call = __deferred_initcall_start;
+		call < __deferred_initcall_end; call++)
+		do_one_initcall(*call);
+
+	flush_scheduled_work();
+
+	free_initmem();
+}
+#endif
+
+#ifdef CONFIG_SEC_GPIO_DVS
+extern void gpio_dvs_check_initgpio(void);
+#endif
+
 static noinline void __init kernel_init_freeable(void);
 
 static int __ref kernel_init(void *unused)
@@ -932,9 +1127,20 @@ static int __ref kernel_init(void *unused)
 	int ret;
 
 	kernel_init_freeable();
+#ifdef CONFIG_SEC_GPIO_DVS
+	/************************ Caution !!! ****************************/
+	/* This function must be located in appropriate INIT position
+	 * in accordance with the specification of each BB vendor.
+	 */
+	/************************ Caution !!! ****************************/
+	pr_info("%s: GPIO DVS: check init gpio\n", __func__);
+	gpio_dvs_check_initgpio();
+#endif
 	/* need to finish all async __init code before freeing the memory */
 	async_synchronize_full();
+#ifndef CONFIG_DEFERRED_INITCALLS
 	free_initmem();
+#endif
 	mark_rodata_ro();
 	system_state = SYSTEM_RUNNING;
 	numa_default_policy();

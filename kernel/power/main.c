@@ -46,7 +46,7 @@ int pm_notifier_call_chain(unsigned long val)
 }
 
 /* If set, devices may be suspended and resumed asynchronously. */
-int pm_async_enabled = 1;
+int pm_async_enabled = 0;
 
 static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
 			     char *buf)
@@ -65,7 +65,7 @@ static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
 	if (val > 1)
 		return -EINVAL;
 
-	pm_async_enabled = val;
+	pm_async_enabled = 0;
 	return n;
 }
 
@@ -583,6 +583,63 @@ power_attr(pm_freeze_timeout);
 
 #endif	/* CONFIG_FREEZER*/
 
+#ifdef CONFIG_SW_SELF_DISCHARGING
+static char selfdischg_usage_str[] =
+	"[START]\n"
+	"/sys/power/cpufreq_self_discharging 1\n"
+	"/sys/power/cpuhotplug/enabled 0\n"
+	"[STOP]\n"
+	"/sys/power/cpuhotplug/enabled 1\n"
+	"/sys/power/cpufreq_self_discharging 0\n"
+	"[END]\n";
+
+static ssize_t selfdischg_usage_show(struct kobject *kobj,
+					struct kobj_attribute *attr,
+					char *buf)
+{
+	pr_info("%s\n", __func__);
+	return sprintf(buf, "%s", selfdischg_usage_str);
+}
+
+static struct kobj_attribute selfdischg_usage_attr = {
+	.attr	= {
+		.name = __stringify(selfdischg_usage),
+		.mode = 0440,
+	},
+	.show	= selfdischg_usage_show,
+};
+#endif /* CONFIG_SW_SELF_DISCHARGING */
+
+extern void update_cp_available(bool open);
+int call_enable;
+
+static ssize_t call_state_show(struct kobject *kobj, struct kobj_attribute *attr,
+		char *buf)
+{
+	return sprintf(buf, "%d\n", call_enable);
+}
+
+static ssize_t call_state_store(struct kobject *kobj, struct kobj_attribute *attr,
+	       const char *buf, size_t n)
+{
+	int val;
+
+	if (sscanf(buf, "%d", &val) == 1) {
+		call_enable = !!val;
+		if (call_enable) {
+			pr_info("call state : true\n");
+			update_cp_available(true);
+		} else {
+			pr_info("call state : false\n");
+			update_cp_available(false);
+		}
+		return n;
+	}
+	return -EINVAL;
+}
+
+power_attr(call_state);
+
 static struct attribute * g[] = {
 	&state_attr.attr,
 #ifdef CONFIG_PM_TRACE
@@ -609,6 +666,10 @@ static struct attribute * g[] = {
 #ifdef CONFIG_FREEZER
 	&pm_freeze_timeout_attr.attr,
 #endif
+#ifdef CONFIG_SW_SELF_DISCHARGING
+	&selfdischg_usage_attr.attr,
+#endif
+	&call_state_attr.attr,
 	NULL,
 };
 

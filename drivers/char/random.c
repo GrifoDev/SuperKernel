@@ -260,6 +260,7 @@
 #include <linux/irq.h>
 #include <linux/syscalls.h>
 #include <linux/completion.h>
+#include <linux/freezer.h>
 
 #include <asm/processor.h>
 #include <asm/uaccess.h>
@@ -300,14 +301,22 @@
  * The minimum number of bits of entropy before we wake up a read on
  * /dev/random.  Should be enough to do a significant reseed.
  */
+#ifdef CONFIG_CRYPTO_FIPS
+static int random_read_wakeup_bits = 256;
+#else
 static int random_read_wakeup_bits = 64;
+#endif
 
 /*
  * If the entropy count falls under this number of bits, then we
  * should wake up processes which are selecting or polling on write
  * access to /dev/random.
  */
+#ifdef CONFIG_CRYPTO_FIPS
+static int random_write_wakeup_bits = 320;
+#else
 static int random_write_wakeup_bits = 28 * OUTPUT_POOL_WORDS;
+#endif
 
 /*
  * The minimum number of seconds between urandom pool reseeding.  We
@@ -1772,7 +1781,7 @@ void add_hwgenerator_randomness(const char *buffer, size_t count,
 	 * We'll be woken up again once below random_write_wakeup_thresh,
 	 * or when the calling thread is about to terminate.
 	 */
-	wait_event_interruptible(random_write_wait, kthread_should_stop() ||
+	wait_event_freezable(random_write_wait, kthread_should_stop() ||
 			ENTROPY_BITS(&input_pool) <= random_write_wakeup_bits);
 	mix_pool_bytes(poolp, buffer, count);
 	credit_entropy_bits(poolp, entropy);

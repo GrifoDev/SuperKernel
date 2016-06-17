@@ -53,5 +53,7 @@
 #define ESR_EL1_EC_WATCHPT_EL1	(0x35)
 #define ESR_EL1_EC_BKPT32	(0x38)
 #define ESR_EL1_EC_BRK64	(0x3C)
+#define ESR_EL1_ISS_DFSC_MASK	(0x3F)
+#define ESR_EL1_ISS_DFSC_TLB_CONFLICT	(0x30)
 
 #endif /* __ASM_ESR_H */

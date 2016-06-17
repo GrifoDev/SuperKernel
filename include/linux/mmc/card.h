@@ -92,6 +92,8 @@ struct mmc_ext_csd {
 	u8			raw_partition_support;	/* 160 */
 	u8			raw_rpmb_size_mult;	/* 168 */
 	u8			raw_erased_mem_count;	/* 181 */
+	u8			enhanced_strobe_support;	/* 184 */
+#define MMC_STROBE_ENHANCED_SUPPORT	BIT(0)
 	u8			raw_ext_csd_structure;	/* 194 */
 	u8			raw_card_type;		/* 196 */
 	u8			out_of_int_time;	/* 198 */
@@ -306,6 +308,7 @@ struct mmc_card {
 	struct dentry		*debugfs_root;
 	struct mmc_part	part[MMC_NUM_PHY_PARTITION]; /* physical partitions */
 	unsigned int    nr_parts;
+	u8 en_strobe_enhanced;	/*enhanced strobe ctrl */
 };
 
 /*

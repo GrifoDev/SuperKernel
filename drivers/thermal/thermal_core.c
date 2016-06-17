@@ -35,6 +35,7 @@
 #include <linux/reboot.h>
 #include <linux/string.h>
 #include <linux/of.h>
+#include <linux/suspend.h>
 #include <net/netlink.h>
 #include <net/genetlink.h>
 
@@ -58,6 +59,15 @@ static LIST_HEAD(thermal_governor_list);
 
 static DEFINE_MUTEX(thermal_list_lock);
 static DEFINE_MUTEX(thermal_governor_lock);
+
+#ifdef CONFIG_SCHED_HMP
+#define BOUNDED_CPU		1
+static void start_poll_queue(struct thermal_zone_device *tz, int delay)
+{
+	mod_delayed_work_on(tz->poll_queue_cpu, system_freezable_wq, &tz->poll_queue,
+			msecs_to_jiffies(delay));
+}
+#endif
 
 static struct thermal_governor *def_governor;
 
@@ -330,11 +340,19 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
 					    int delay)
 {
 	if (delay > 1000)
+#ifdef CONFIG_SCHED_HMP
+		start_poll_queue(tz, delay);
+#else
 		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
 				 round_jiffies(msecs_to_jiffies(delay)));
+#endif
 	else if (delay)
+#ifdef CONFIG_SCHED_HMP
+		start_poll_queue(tz, delay);
+#else
 		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
 				 msecs_to_jiffies(delay));
+#endif
 	else
 		cancel_delayed_work(&tz->poll_queue);
 }
@@ -475,15 +493,33 @@ static void update_temperature(struct thermal_zone_device *tz)
 
 void thermal_zone_device_update(struct thermal_zone_device *tz)
 {
-	int count;
+	int count, result;
+	enum thermal_device_mode mode;
+#if defined(CONFIG_EXYNOS_BIG_FREQ_BOOST)
+	struct thermal_instance *instance;
+#endif
 
-	if (!tz->ops->get_temp)
+	if (!tz->ops->get_mode)
 		return;
 
 	update_temperature(tz);
 
-	for (count = 0; count < tz->trips; count++)
-		handle_thermal_trip(tz, count);
+	result = tz->ops->get_mode(tz, &mode);
+	if (result)
+		return;
+
+	if (mode == THERMAL_DEVICE_ENABLED) {
+		for (count = 0; count < tz->trips; count++)
+			handle_thermal_trip(tz, count);
+#if defined(CONFIG_EXYNOS_BIG_FREQ_BOOST)
+	} else if (mode == THERMAL_DEVICE_PAUSED) {
+		list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+			instance->target = 0;
+			instance->cdev->updated = false;
+			thermal_cdev_update(instance->cdev);
+		}
+#endif
+	}
 }
 EXPORT_SYMBOL_GPL(thermal_zone_device_update);
 
@@ -493,6 +529,9 @@ static void thermal_zone_device_check(struct work_struct *work)
 						      thermal_zone_device,
 						      poll_queue.work);
 	thermal_zone_device_update(tz);
+
+	if (tz->ops->throttle_cpu_hotplug)
+		tz->ops->throttle_cpu_hotplug(tz);
 }
 
 /* sys I/F for thermal zone */
@@ -546,16 +585,31 @@ mode_store(struct device *dev, struct device_attribute *attr,
 	   const char *buf, size_t count)
 {
 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+#if defined(CONFIG_EXYNOS_BIG_FREQ_BOOST)
+	struct thermal_zone_device *pos = NULL;
+#endif
 	int result;
 
 	if (!tz->ops->set_mode)
 		return -EPERM;
 
-	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
+	if (!strncmp(buf, "enabled", sizeof("enabled") - 1)) {
+#if defined(CONFIG_EXYNOS_BIG_FREQ_BOOST)
+		list_for_each_entry(pos, &thermal_tz_list, node) {
+			if (tz->ops->throttle_cpu_hotplug)
+				pos->device_enable = THERMAL_DEVICE_ENABLED;
+		}
+#endif
 		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
-	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
+	} else if (!strncmp(buf, "disabled", sizeof("disabled") - 1)) {
+#if defined(CONFIG_EXYNOS_BIG_FREQ_BOOST)
+		list_for_each_entry(pos, &thermal_tz_list, node) {
+			if (tz->ops->throttle_cpu_hotplug)
+				pos->device_enable = THERMAL_DEVICE_DISABLED;
+		}
+#endif
 		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
-	else
+	} else
 		result = -EINVAL;
 
 	if (result)
@@ -733,6 +787,9 @@ passive_store(struct device *dev, struct device_attribute *attr,
 
 	thermal_zone_device_update(tz);
 
+	if (tz->ops->throttle_cpu_hotplug)
+		tz->ops->throttle_cpu_hotplug(tz);
+
 	return count;
 }
 
@@ -798,8 +855,12 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
 		ret = tz->ops->set_emul_temp(tz, temperature);
 	}
 
-	if (!ret)
+	if (!ret) {
 		thermal_zone_device_update(tz);
+
+		if (tz->ops->throttle_cpu_hotplug)
+			tz->ops->throttle_cpu_hotplug(tz);
+	}
 
 	return ret ? ret : count;
 }
@@ -1275,6 +1336,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
 {
 	struct thermal_instance *instance;
 	unsigned long target = 0;
+	int ret;
 
 	/* cooling device is updated*/
 	if (cdev->updated)
@@ -1291,10 +1353,12 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
 			target = instance->target;
 	}
 	mutex_unlock(&cdev->lock);
-	cdev->ops->set_cur_state(cdev, target);
-	cdev->updated = true;
-	trace_cdev_update(cdev, target);
-	dev_dbg(&cdev->device, "set to state %lu\n", target);
+	ret = cdev->ops->set_cur_state(cdev, target);
+	if (!ret) {
+		cdev->updated = true;
+		trace_cdev_update(cdev, target);
+		dev_dbg(&cdev->device, "set to state %lu\n", target);
+	}
 }
 EXPORT_SYMBOL(thermal_cdev_update);
 
@@ -1493,6 +1557,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
 	tz->trips = trips;
 	tz->passive_delay = passive_delay;
 	tz->polling_delay = polling_delay;
+#if defined(CONFIG_EXYNOS_BIG_FREQ_BOOST)
+	tz->device_enable = THERMAL_DEVICE_ENABLED;
+#endif
+#ifdef CONFIG_SCHED_HMP
+	tz->poll_queue_cpu = BOUNDED_CPU;
+#endif
 
 	dev_set_name(&tz->device, "thermal_zone%d", tz->id);
 	result = device_register(&tz->device);
@@ -1574,6 +1644,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
 		thermal_zone_device_set_polling(tz, 0);
 
 	thermal_zone_device_update(tz);
+
+	if (tz->ops->throttle_cpu_hotplug)
+		tz->ops->throttle_cpu_hotplug(tz);
 
 	return tz;
 
@@ -1811,6 +1884,73 @@ static void thermal_unregister_governors(void)
 	thermal_gov_user_space_unregister();
 }
 
+#ifdef CONFIG_SCHED_HMP
+static int __cpuinit thermal_cpu_callback(struct notifier_block *nfb,
+					unsigned long action, void *hcpu)
+{
+	unsigned int cpu = (unsigned long)hcpu;
+	struct thermal_zone_device *pos;
+
+	switch (action) {
+	case CPU_ONLINE:
+		if (cpu == BOUNDED_CPU) {
+			list_for_each_entry(pos, &thermal_tz_list, node) {
+				pos->poll_queue_cpu = BOUNDED_CPU;
+				if (pos->polling_delay) {
+					start_poll_queue(pos, pos->polling_delay);
+				}
+			}
+		}
+		break;
+	case CPU_DOWN_PREPARE:
+		list_for_each_entry(pos, &thermal_tz_list, node) {
+			if (pos->poll_queue_cpu == cpu) {
+				pos->poll_queue_cpu = 0;
+				if (pos->polling_delay)
+					start_poll_queue(pos, pos->polling_delay);
+			}
+		}
+		break;
+	}
+	return NOTIFY_OK;
+}
+
+static struct notifier_block __cpuinitdata thermal_cpu_notifier =
+{
+	.notifier_call = thermal_cpu_callback,
+};
+#endif
+
+static int exynos_thermal_pm_notifier(struct notifier_block *notifier,
+			unsigned long event, void *v)
+{
+	struct thermal_zone_device *pos;
+	unsigned int polling_interval = 100;
+
+	switch (event) {
+	case PM_SUSPEND_PREPARE:
+		list_for_each_entry(pos, &thermal_tz_list, node) {
+			if (delayed_work_pending(&pos->poll_queue))
+				cancel_delayed_work(&pos->poll_queue);
+		}
+		break;
+	case PM_POST_SUSPEND:
+		list_for_each_entry(pos, &thermal_tz_list, node) {
+			if (!pos->polling_delay) {
+				start_poll_queue(pos, polling_interval);
+			}
+		}
+		break;
+	}
+
+	return NOTIFY_OK;
+}
+
+static struct notifier_block thermal_pm_notifier = {
+	.notifier_call = exynos_thermal_pm_notifier,
+	.priority = (INT_MIN + 1),
+};
+
 static int __init thermal_init(void)
 {
 	int result;
@@ -1831,6 +1971,11 @@ static int __init thermal_init(void)
 	if (result)
 		goto exit_netlink;
 
+#ifdef CONFIG_SCHED_HMP
+	register_hotcpu_notifier(&thermal_cpu_notifier);
+#endif
+	register_pm_notifier(&thermal_pm_notifier);
+
 	return 0;
 
 exit_netlink:
@@ -1850,6 +1995,10 @@ error:
 
 static void __exit thermal_exit(void)
 {
+	unregister_pm_notifier(&thermal_pm_notifier);
+#ifdef CONFIG_SCHED_HMP
+	unregister_hotcpu_notifier(&thermal_cpu_notifier);
+#endif
 	of_thermal_destroy_zones();
 	genetlink_exit();
 	class_unregister(&thermal_class);

@@ -66,6 +66,10 @@
 
 #include <trace/events/sched.h>
 
+#ifdef CONFIG_RKP_KDP
+#define rkp_is_nonroot(x) ((x->cred->type)>>1 & 1)
+#endif /*CONFIG_RKP_KDP*/
+
 int suid_dumpable = 0;
 
 static LIST_HEAD(formats);
@@ -1071,6 +1075,11 @@ int flush_old_exec(struct linux_binprm * bprm)
 	retval = exec_mmap(bprm->mm);
 	if (retval)
 		goto out;
+#ifdef CONFIG_RKP_KDP
+	if(rkp_cred_enable){
+		rkp_call(RKP_CMDID(0x43),(unsigned long long)current_cred(), (unsigned long long)bprm->mm->pgd,0,0,0);
+	}
+#endif /*CONFIG_RKP_KDP*/
 
 	bprm->mm = NULL;		/* We're using it now */
 
@@ -1422,6 +1431,151 @@ int search_binary_handler(struct linux_binprm *bprm)
 }
 EXPORT_SYMBOL(search_binary_handler);
 
+#if defined CONFIG_SEC_RESTRICT_FORK
+#if defined CONFIG_SEC_RESTRICT_ROOTING_LOG
+#define PRINT_LOG(...)	printk(KERN_ERR __VA_ARGS__)
+#else
+#define PRINT_LOG(...)
+#endif	// End of CONFIG_SEC_RESTRICT_ROOTING_LOG
+
+#define CHECK_ROOT_UID(x) (x->cred->uid.val == 0 || x->cred->gid.val == 0 || \
+			x->cred->euid.val == 0 || x->cred->egid.val == 0 || \
+			x->cred->suid.val == 0 || x->cred->sgid.val == 0)
+
+/*  sec_check_execpath
+    return value : give task's exec path is matched or not
+*/
+int sec_check_execpath(struct mm_struct *mm, char *denypath)
+{
+	struct file *exe_file;
+	char *path, *pathbuf = NULL;
+	unsigned int path_length = 0, denypath_length = 0;
+	int ret = 0;
+
+	if (mm == NULL)
+		return 0;
+
+	if (!(exe_file = get_mm_exe_file(mm))) {
+		PRINT_LOG("Cannot get exe from task->mm.\n");
+		goto out_nofile;
+	}
+
+	if (!(pathbuf = kmalloc(PATH_MAX, GFP_TEMPORARY))) {
+		PRINT_LOG("failed to kmalloc for pathbuf\n");
+		goto out;
+	}
+
+	path = d_path(&exe_file->f_path, pathbuf, PATH_MAX);
+	if (IS_ERR(path)) {
+		PRINT_LOG("Error get path..\n");
+		goto out;
+	}
+
+	path_length = strlen(path);
+	denypath_length = strlen(denypath);
+
+	if (!strncmp(path, denypath, (path_length < denypath_length) ?
+				path_length : denypath_length)) {
+		ret = 1;
+	}
+out:
+	fput(exe_file);
+out_nofile:
+	if (pathbuf)
+		kfree(pathbuf);
+
+	return ret;
+}
+EXPORT_SYMBOL(sec_check_execpath);
+
+#ifdef CONFIG_RKP_KDP
+static int rkp_restrict_fork(void)
+{
+	struct cred *shellcred;
+
+	if(rkp_is_nonroot(current)){
+		shellcred = prepare_creds();
+		if (!shellcred) {
+			return 1;
+		}
+		shellcred->uid.val = 2000;
+		shellcred->gid.val = 2000;
+		shellcred->euid.val = 2000;
+		shellcred->egid.val = 2000;
+
+		commit_creds(shellcred);
+	}
+	return 0;
+}
+#endif /*CONFIG_RKP_KDP*/
+static int sec_restrict_fork(void)
+{
+	struct cred *shellcred;
+	int ret = 0;
+	struct task_struct *parent_tsk;
+	struct mm_struct *parent_mm = NULL;
+	const struct cred *parent_cred;
+
+	read_lock(&tasklist_lock);
+	parent_tsk = current->parent;
+	if (!parent_tsk) {
+		read_unlock(&tasklist_lock);
+		return 0;
+	}
+
+	get_task_struct(parent_tsk);
+	/* holding on to the task struct is enough so just release
+	 * the tasklist lock here */
+	read_unlock(&tasklist_lock);
+
+	if (current->pid == 1 || parent_tsk->pid == 1)
+		goto out;
+
+	/* get current->parent's mm struct to access it's mm
+	 * and to keep it alive */
+	parent_mm = get_task_mm(parent_tsk);
+
+	if (current->mm == NULL || parent_mm == NULL)
+		goto out;
+
+	if (sec_check_execpath(parent_mm, "/sbin/adbd")) {
+		shellcred = prepare_creds();
+		if (!shellcred) {
+			ret = 1;
+			goto out;
+		}
+
+		shellcred->uid.val = 2000;
+		shellcred->gid.val = 2000;
+		shellcred->euid.val = 2000;
+		shellcred->egid.val = 2000;
+		commit_creds(shellcred);
+		ret = 0;
+		goto out;
+	}
+
+	if (sec_check_execpath(current->mm, "/data/")) {
+		ret = 1;
+		goto out;
+	}
+
+	parent_cred = get_task_cred(parent_tsk);
+	if (!parent_cred)
+		goto out;
+	if (!CHECK_ROOT_UID(parent_tsk))
+	{
+		ret = 1;
+	}
+	put_cred(parent_cred);
+out:
+	if (parent_mm)
+		mmput(parent_mm);
+	put_task_struct(parent_tsk);
+
+	return ret;
+}
+#endif	/* End of CONFIG_SEC_RESTRICT_FORK */
+
 static int exec_binprm(struct linux_binprm *bprm)
 {
 	pid_t old_pid, old_vpid;
@@ -1626,6 +1780,41 @@ SYSCALL_DEFINE3(execve,
 		const char __user *const __user *, argv,
 		const char __user *const __user *, envp)
 {
+#if defined CONFIG_SEC_RESTRICT_FORK
+#ifdef CONFIG_RKP_KDP
+	struct filename *path = getname(filename);
+	int error = PTR_ERR(path);
+
+	if(IS_ERR(path))
+		return error;
+
+	if(rkp_cred_enable){
+		rkp_call(RKP_CMDID(0x4b),(u64)path->name,0,0,0,0);
+	}
+	putname(path);
+#endif
+	if(CHECK_ROOT_UID(current)){
+		if(sec_restrict_fork()){
+			PRINT_LOG("Restricted making process. PID = %d(%s) "
+							"PPID = %d(%s)\n",
+			current->pid, current->comm,
+			current->parent->pid, current->parent->comm);
+			return -EACCES;
+		}
+	}
+#ifdef CONFIG_RKP_KDP
+	if(CHECK_ROOT_UID(current) && rkp_cred_enable) {
+		if(rkp_restrict_fork()){
+			PRINT_LOG("RKP_KDP Restricted making process. PID = %d(%s) "
+							"PPID = %d(%s)\n",
+			current->pid, current->comm,
+			current->parent->pid, current->parent->comm);
+			return -EACCES;
+		}
+	}
+#endif
+#endif	// End of CONFIG_SEC_RESTRICT_FORK
+
 	return do_execve(getname(filename), argv, envp);
 }
 #ifdef CONFIG_COMPAT
