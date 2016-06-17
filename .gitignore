@@ -84,6 +84,8 @@ GTAGS
 
 *.orig
 *~
+*.dts
+*.dtb
 \#*#
 
 #
