@@ -392,7 +392,9 @@
 		/* For CPUFREQ table */
 		/* APO */
 		cl0_idx_num = <19>;
-		cl0_max_support_idx = <2>;
+		high_cl0_max_support_idx = <2>;
+		mid_cl0_max_support_idx = <3>;
+		low_cl0_max_support_idx = <4>;
 		cl0_min_support_idx = <16>;
 		cl0_boot_max_qos = <1586000>;
 		cl0_boot_min_qos = <1586000>;
