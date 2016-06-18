@@ -81,10 +81,6 @@ static cpumask_t speedchange_cpumask;
 static spinlock_t speedchange_cpumask_lock;
 static struct mutex gov_lock;
 
-static int set_window_count;
-static int migration_register_count;
-static struct mutex sched_lock;
-
 #ifdef CONFIG_PMU_COREMEM_RATIO
 static cpumask_t regionchange_cpumask;
 static spinlock_t regionchange_cpumask_lock;
