@@ -1,0 +1,39 @@
+#
+# ADDITIONAL_DEFAULT_PROPERTIES
+#
+telephony.lteOnCdmaDevice=0
+rild.libpath=/system/lib64/libsec-ril.so
+rild.libpath2=/system/lib64/libsec-ril-dsds.so
+persist.security.ams.enforcing=1
+ro.secure=0
+ro.allow.mock.location=0
+ro.debuggable=1
+ro.adb.secure=1
+persist.sys.usb.config=mtp,adb
+persist.service.adb.enable=1
+ro.zygote=zygote64_32
+dalvik.vm.image-dex2oat-Xms=64m
+dalvik.vm.image-dex2oat-Xmx=64m
+dalvik.vm.dex2oat-Xms=64m
+dalvik.vm.dex2oat-Xmx=512m
+ro.dalvik.vm.native.bridge=0
+debug.atrace.tags.enableflags=0
+
+ro.config.tima=0
+ro.config.dmverity=false
+ro.config.rkp=false
+ro.config.kap_default_on=false
+ro.config.kap=false
+ro.config.knox=false
+ro.securestorage.support=false
+
+ro.hardware.keystore=false
+security.mdpp.mass=false
+
+
+#
+# BOOTIMAGE_BUILD_PROPERTIES
+#
+ro.bootimage.build.date=Wed Jun 1 18:22:55 KST 2016
+ro.bootimage.build.date.utc=1464772975
+ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:6.0.1/MMB29K/G935FXXU1APF2:user/test-keys
