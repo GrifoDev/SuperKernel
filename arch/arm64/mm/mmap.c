@@ -52,11 +52,11 @@ static unsigned long mmap_rnd(void)
 	unsigned long rnd;
 
 #ifdef CONFIG_COMPAT
-		if (test_thread_flag(TIF_32BIT))
-			rnd = (unsigned long)get_random_int() & ((1 << mmap_rnd_compat_bits) - 1);
-		else
+	if (test_thread_flag(TIF_32BIT))
+		rnd = (unsigned long)get_random_int() & ((1 << mmap_rnd_compat_bits) - 1);
+	else
 #endif
-			rnd = (unsigned long)get_random_int() & ((1 << mmap_rnd_bits) - 1);
+		rnd = (unsigned long)get_random_int() & ((1 << mmap_rnd_bits) - 1);
 	return rnd << PAGE_SHIFT;
 }
 
@@ -69,7 +69,7 @@ static unsigned long mmap_base(unsigned long rnd)
 	else if (gap > MAX_GAP)
 		gap = MAX_GAP;
 
-	return PAGE_ALIGN(STACK_TOP - gap - rnd());
+	return PAGE_ALIGN(STACK_TOP - gap - rnd);
 }
 
 /*
