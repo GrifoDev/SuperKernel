@@ -762,6 +762,7 @@ static int cpufreq_governor_smartass(struct cpufreq_policy *new_policy,
 	return 0;
 }
 
+#ifdef (CONFIG_HAS_EARLYSUSPEND || CONFIG_POWERSUSPEND)
 static void smartass_suspend(int cpu, int suspend)
 {
 	struct smartass_info_s *this_smartass = &per_cpu(smartass_info, smp_processor_id());
@@ -792,6 +793,7 @@ static void smartass_suspend(int cpu, int suspend)
 
 	reset_timer(smp_processor_id(),this_smartass);
 }
+#endif
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
 static void smartass_early_suspend(struct early_suspend *handler) {
