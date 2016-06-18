@@ -23,6 +23,10 @@
 
 #include "power.h"
 
+static bool enable_sensorhub_ws = true;
+module_param(enable_sensorhub_ws, bool, 0644);
+static bool enable_ssp_ws = true;
+module_param(enable_ssp_ws, bool, 0644);
 static bool enable_wlan_rx_wake_ws = true;
 module_param(enable_wlan_rx_wake_ws, bool, 0644);
 static bool enable_wlan_ctrl_wake_ws = true;
@@ -543,6 +547,12 @@ static void wakeup_source_deactivate(struct wakeup_source *ws)
 static void wakeup_source_activate(struct wakeup_source *ws)
 {
 	unsigned int cec;
+
+	if (!enable_sensorhub_ws && !strcmp(ws->name, "ssp_sensorhub_wake_lock"))
+		return;
+
+	if (!enable_ssp_ws && !strcmp(ws->name, "ssp_wake_lock"))
+		return;
 
 	if (((!enable_wlan_rx_wake_ws && !strcmp(ws->name, "wlan_rx_wake")) ||
 		(!enable_wlan_ctrl_wake_ws &&
