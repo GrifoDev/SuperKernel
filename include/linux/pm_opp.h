@@ -17,48 +17,14 @@
 #include <linux/err.h>
 #include <linux/notifier.h>
 
-struct dev_pm_opp {
-	struct list_head node;
-
-	bool available;
-	bool dynamic;
-	bool turbo;
-	unsigned long rate;
-
-	unsigned long u_volt;
-	unsigned long u_volt_min;
-	unsigned long u_volt_max;
-	unsigned long u_amp;
-	unsigned long clock_latency_ns;
-
-	struct device_opp *dev_opp;
-	struct rcu_head rcu_head;
-
-	struct device_node *np;
-};
-
+struct dev_pm_opp;
 struct device;
-
-struct device_opp {
-	struct list_head node;
-
-	struct srcu_notifier_head srcu_head;
-	struct rcu_head rcu_head;
-	struct list_head dev_list;
-	struct list_head opp_list;
-
-	struct device_node *np;
-	unsigned long clock_latency_ns_max;
-	bool shared_opp;
-	struct dev_pm_opp *suspend_opp;
-};
 
 enum dev_pm_opp_event {
 	OPP_EVENT_ADD, OPP_EVENT_REMOVE, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
 };
 
 #if defined(CONFIG_PM_OPP)
-struct device_opp *_find_device_opp(struct device *dev);
 
 unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp);
 

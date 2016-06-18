@@ -28,6 +28,7 @@
 #include <linux/printk.h>
 #include <linux/hrtimer.h>
 #include "governor.h"
+#include "../base/power/opp/opp.h"
 
 #ifdef CONFIG_SOC_EXYNOS8890
 #define DF_MAX_VOLT		900000
