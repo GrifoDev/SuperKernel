@@ -2623,6 +2623,7 @@ static int exynos_mp_cpufreq_parse_dt(struct device_node *np, cluster_type cl)
 	int ret;
 	int not_using_ect = true;
 	unsigned int asv_big = asv_get_information(cal_asv_dvfs_big, dvfs_group, 0);
+	unsigned int asv_little = asv_get_information(cal_asv_dvfs_little, dvfs_group, 0);
 
 	if (!np) {
 		pr_info("%s: cpufreq_dt is not existed. \n", __func__);
@@ -2633,9 +2634,22 @@ static int exynos_mp_cpufreq_parse_dt(struct device_node *np, cluster_type cl)
 				&ptr->max_idx_num))
 		return -ENODEV;
 
-	if (of_property_read_u32(np, (cl ? "cl1_max_support_idx" : "cl0_max_support_idx"),
-				&ptr->max_support_idx))
-		return -ENODEV;
+	/* For Grade D and E phones, use stock for LITTLE freq_table */
+	if (asv_little < 7) {
+		if (of_property_read_u32(np, (cl ? "cl1_max_support_idx" : "low_cl0_max_support_idx"),
+						&ptr->max_support_idx))
+			return -ENODEV;
+	/* For Grade C and B phones, use mid OC for LITTLE freq_table */
+	} else if (asv_little < 13) {
+		if (of_property_read_u32(np, (cl ? "cl1_max_support_idx" : "mid_cl0_max_support_idx"),
+						&ptr->max_support_idx))
+			return -ENODEV;
+	/* Grade A phones? That's amazing, let's unleash the Exynos */
+	} else {
+		if (of_property_read_u32(np, (cl ? "cl1_max_support_idx" : "high_cl0_max_support_idx"),
+						&ptr->max_support_idx))
+			return -ENODEV;
+	}
 
 	if (of_property_read_u32(np, (cl ? "cl1_min_support_idx" : "cl0_min_support_idx"),
 				&ptr->min_support_idx))
@@ -2672,12 +2686,12 @@ static int exynos_mp_cpufreq_parse_dt(struct device_node *np, cluster_type cl)
 		ptr->max_support_idx_table = kzalloc(sizeof(unsigned int)
 				* (NR_CLUST1_CPUS + 1), GFP_KERNEL);
 
-		/* For Grade D,E phones, use stock freq_table */
+		/* For Grade D and E phones, use stock for BIG freq_table */
 		if (asv_big < 7) {
 		ret = of_property_read_u32_array(np, "low_cl1_max_support_idx_table",
 				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
-		/* For Grade C and B phones, use mid OC freq_table */
-		} else if (asv_big < 14) {
+		/* For Grade C and B phones, use mid OC for BIG freq_table */
+		} else if (asv_big < 13) {
 		ret = of_property_read_u32_array(np, "mid_cl1_max_support_idx_table",
 				(unsigned int *)ptr->max_support_idx_table, NR_CLUST1_CPUS + 1);
 		/* Grade A phones? That's amazing, let's unleash the Exynos */
