@@ -12,15 +12,7 @@ fi;
 
 
 # Variant detection for supported devices
-if [ "$(grep "N920C" /proc/cmdline)" != "" ] || [ "$(grep "N920CD" /proc/cmdline)" != "" ] || [ "$(grep "N920G" /proc/cmdline)" != "" ] || [ "$(grep "N920I" /proc/cmdline)" != "" ] || [ "$(grep "N920P" /proc/cmdline)" != "" ] || [ "$(grep "N920T" /proc/cmdline)" != "" ] || [ "$(grep "N920W8" /proc/cmdline)" != "" ] || [ "$(grep "N9200" /proc/cmdline)" != "" ] || [ "$(grep "N9208" /proc/cmdline)" != "" ] || [ "$(grep "G928C" /proc/cmdline)" != "" ] || [ "$(grep "G928F" /proc/cmdline)" != "" ] || [ "$(grep "G928G" /proc/cmdline)" != "" ] || [ "$(grep "G928I" /proc/cmdline)" != "" ] || [ "$(grep "G9287C" /proc/cmdline)" != "" ] || [ "$(grep "G928T" /proc/cmdline)" != "" ] || [ "$(grep "G928W8" /proc/cmdline)" != "" ]; then
-
-
-	# Set SELinux permissive by default (parse defaults from prop)
-	if [ "$(grep "selinux_permissive" /system/Super.prop)" != "" ]; then
-		setenforce 0
-	elif [ "$(grep "selinux_enforcing" /system/Super.prop)" != "" ]; then
-		setenforce 1
-	fi;
+if [ "$(grep "G930F" /proc/cmdline)" != "" ] || [ "$(grep "G930FD" /proc/cmdline)" != "" ] || [ "$(grep "G930W8" /proc/cmdline)" != "" ] || [ "$(grep "G935F" /proc/cmdline)" != "" ] || [ "$(grep "G935FD" /proc/cmdline)" != "" ] || [ "$(grep "G935W8" /proc/cmdline)" != "" ]; then
 
 
 	# Setup for Cron Task
@@ -85,71 +77,6 @@ if [ "$(grep "N920C" /proc/cmdline)" != "" ] || [ "$(grep "N920CD" /proc/cmdline
 	if [ -d "/sys/class/misc/arizona_control" ]; then
 		echo "1" >/sys/class/misc/arizona_control/switch_eq_hp
 	fi;
-
-
-	# CPU governor (parse defaults from prop)
-	if [ "$(grep "cpugov_interactive" /system/Super.prop)" != "" ]; then
-		echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor;
-		echo "interactive" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor;
-	elif [ "$(grep "cpugov_conservative" /system/Super.prop)" != "" ]; then
-		echo "conservative" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor;
-		echo "conservative" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor;
-	elif [ "$(grep "cpugov_ktoonservative" /system/Super.prop)" != "" ]; then
-		echo "ktoonservative" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor;
-		echo "ktoonservative" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor;
-	elif [ "$(grep "cpugov_performance" /system/Super.prop)" != "" ]; then
-		echo "performance" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor;
-		echo "performance" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor;
-	fi;
-
-
-	# IO scheduler (parse defaults from prop)
-	if [ "$(grep "sched_row" /system/Super.prop)" != "" ]; then
-		for i in /sys/block/sd*/queue/scheduler; do
-			$BB echo "row" > "$i" 2> /dev/null;
-		done;
-	elif [ "$(grep "sched_cfq" /system/Super.prop)" != "" ]; then
-		for i in /sys/block/sd*/queue/scheduler; do
-			$BB echo "cfq" > "$i" 2> /dev/null;
-		done;
-	elif [ "$(grep "sched_fiops" /system/Super.prop)" != "" ]; then
-		for i in /sys/block/sd*/queue/scheduler; do
-			$BB echo "fiops" > "$i" 2> /dev/null;
-		done;
-	elif [ "$(grep "sched_noop" /system/Super.prop)" != "" ]; then
-		for i in /sys/block/sd*/queue/scheduler; do
-			$BB echo "noop" > "$i" 2> /dev/null;
-		done;
-	elif [ "$(grep "sched_bfq" /system/Super.prop)" != "" ]; then
-		for i in /sys/block/sd*/queue/scheduler; do
-			$BB echo "bfq" > "$i" 2> /dev/null;
-		done;
-	elif [ "$(grep "sched_sioplus" /system/Super.prop)" != "" ]; then
-		for i in /sys/block/sd*/queue/scheduler; do
-			$BB echo "sioplus" > "$i" 2> /dev/null;
-		done;
-#	elif [ "$(grep "sched_deadline" /system/Super.prop)" != "" ]; then
-#		for i in /sys/block/sd*/queue/scheduler; do
-#			$BB echo "deadline" > "$i" 2> /dev/null;
-#		done;
-	fi;
-
-
-	# CortexBrain (parse defaults from prop)
-	if [ "$(grep "cortex_enabled" /system/Super.prop)" != "" ]; then
-		echo "1" > /res/synapse/Super/cortexbrain_background_process;
-	else
-		echo "0" > /res/synapse/Super/cortexbrain_background_process;
-	fi;
-
-
-	# Crontab (parse defaults from prop)
-	if [ "$(grep "crontab_enabled" /system/Super.prop)" != "" ]; then
-		echo "1" > /res/synapse/Super/cron_master;
-	else
-		echo "0" > /res/synapse/Super/cron_master;
-	fi;
-
 
 	# Synapse
 	$BB chmod -R 755 /res/*
