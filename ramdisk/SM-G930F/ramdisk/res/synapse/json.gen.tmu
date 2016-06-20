@@ -9,7 +9,7 @@ cat << CTAG
 	{ SLiveLabel:{
 		title:"Temperature Sensors",
 		refresh:500,
-		action:"echo \$(echo \$(cat /sys/devices/10060000.tmu/curr_temp | tr , \"\\n\") | { read S0 S1 S2 S3; echo \"A57: \${S0}°C@nA53: \${S1}°C@nGPU: \${S2}°C@n ISP: \${S3}°C\"; })"
+		action:"echo \$(echo \$(cat /sys/devices/10060000.tmuctrl/curr_temp | tr , \"\\n\") | { read S0 S1 S2 S3; echo \"A57: \${S0}°C@nA53: \${S1}°C@nGPU: \${S2}°C@n ISP: \${S3}°C\"; })"
 	}},
 	{ SSpacer:{
 		height:1

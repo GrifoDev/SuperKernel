@@ -25,7 +25,7 @@ cat << CTAG
 	}},
 	{ SPane:{
 		title:"HMP Thresholds up/down ratios for task migrating",
-		description:"Adjust HMP ratios for up/down scaling for tasks migrating between A53 LITTLE cores and A57 big cores. Higher up-threshold values use less battery because use more of the power efficient Little cores."
+		description:"Adjust HMP ratios for up/down scaling for tasks migrating between A53 LITTLE cores and A72 BIG cores. Higher up-threshold values use less battery because use more of the power efficient Little cores."
 	}},
 	{ SSpacer:{
 		height:1
@@ -52,7 +52,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"HMP UP Thresholds",
-		description:"Min load required for migrating tasks to the faster A57 big cores.\n",
+		description:"Min load required for migrating tasks to the faster A72 big cores.\n",
 		min:1, max:1000, unit:"", step:1,
 		default:$(cat /sys/kernel/hmp/up_threshold),
 		action:"hmp /sys/kernel/hmp/up_threshold"

@@ -1,11 +1,11 @@
 #!/system/bin/sh
 
-A57=/data/aroma/A57;
-A57_volt=/data/aroma/A57_volt;
+A72=/data/aroma/A72;
+A72_volt=/data/aroma/A72_volt;
 A53=/data/aroma/A53;
 A53_volt=/data/aroma/A53_volt;
 cpu_gov=/data/aroma/cpu_gov;
-A57_gov=/data/aroma/A57_gov;
+A72_gov=/data/aroma/A72_gov;
 A53_gov=/data/aroma/A53_gov;
 hmp=/data/aroma/hmp;
 cpu_stats=/data/aroma/cpu_stats;
@@ -37,12 +37,12 @@ cat << CTAG
 {
     sections: [
 		`. /res/synapse/json.gen.myabout`,
-		`[ -e $A57 ] && . /res/synapse/json.gen.A57`,
-		`[ -e $A57_volt ] && . /res/synapse/json.gen.A57_volt`,
+		`[ -e $A72 ] && . /res/synapse/json.gen.A72`,
+		`[ -e $A72_volt ] && . /res/synapse/json.gen.A72_volt`,
 		`[ -e $A53 ] && . /res/synapse/json.gen.A53`,
 		`[ -e $A53_volt ] && . /res/synapse/json.gen.A53_volt`,
 		`[ -e $cpu_gov ] && . /res/synapse/json.gen.cpu_gov`,
-		`[ -e $A57_gov ] && . /res/synapse/json.gen.A57_gov`,
+		`[ -e $A72_gov ] && . /res/synapse/json.gen.A72_gov`,
 		`[ -e $A53_gov ] && . /res/synapse/json.gen.A53_gov`,
 		`[ -e $hmp ] && . /res/synapse/json.gen.hmp`,
 		`[ -e $cpu_stats ] && . /res/synapse/json.gen.cpu_stats`,

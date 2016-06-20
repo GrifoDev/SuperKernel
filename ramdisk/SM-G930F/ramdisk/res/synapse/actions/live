@@ -64,7 +64,7 @@ lux)
 actual_brightness)
   echo "$(cat /sys/class/backlight/panel/actual_brightness)"
   ;;
-Live_A57_Time)
+Live_A72_Time)
 if [ -f /sys/devices/system/cpu/cpu4/cpufreq/stats/time_in_state ]; then
   STATE="";
   CNT=0;
@@ -149,7 +149,7 @@ if [ -d /sys/devices/system/cpu/cpu4/cpufreq/interactive ]; then
   done < /sys/devices/system/cpu/cpu4/cpufreq/interactive/cpu_util 2> /dev/null;
   $BB echo "Core 4: $C4@nCore 5: $C5@nCore 6: $C6@nCore 7: $C7";
 else
-  $BB echo "A57 Interactive Offline";
+  $BB echo "A72 Interactive Offline";
 fi;
 ;;
 LiveMemory)
