@@ -14,7 +14,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Storage scheduler",
+		title:"Storage scheduler Internal",
 		description:" ",
 		default:$(cat /sys/block/sda/queue/scheduler | $BB awk 'NR>1{print $1}' RS=[ FS=]),
 		action:"ioset scheduler",
@@ -35,8 +35,30 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
+	{ SOptionList:{
+		title:"Storage scheduler SD card",
+		description:" ",
+		default:$(cat /sys/block/mmcblk0/queue/scheduler | $BB awk 'NR>1{print $1}' RS=[ FS=]),
+		action:"ioset scheduler_ext",
+		values:[`while read values; do $BB printf "%s, \n" $values | $BB tr -d '[]'; done < /sys/block/mmcblk0/queue/scheduler`],
+		notify:[
+			{
+				on:APPLY,
+				do:[ REFRESH, CANCEL ],
+				to:"/sys/block/mmcblk0/queue/iosched"
+			},
+			{
+				on:REFRESH,
+				do:REFRESH,
+				to:"/sys/block/mmcblk0/queue/iosched"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
 	{ SSeekBar:{
-		title:"Storage Read-Ahead",
+		title:"Storage Read-Ahead Internal",
 		description:" ",
 		max:4096,
 		min:64,
@@ -44,6 +66,19 @@ cat << CTAG
 		step:64,
 		default:$(cat /sys/block/sda/queue/read_ahead_kb),
 		action:"ioset queue read_ahead_kb"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Storage Read-Ahead SD Card",
+		description:" ",
+		max:4096,
+		min:64,
+		unit:" KB",
+		step:64,
+		default:$(cat /sys/block/mmcblk0/queue/read_ahead_kb),
+		action:"ioset queue_ext read_ahead_kb"
 	}},
 	{ SSpacer:{
 		height:1
@@ -116,7 +151,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"NR Requests",
+		title:"NR Requests Internal",
 		description:"Maximum number of read (or write) requests that can be queued to the scheduler in the block layer.\n",
 		step:128,
 		min:128,
@@ -127,14 +162,42 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
+	{ SSeekBar:{
+		title:"NR Requests SD Card",
+		description:"Maximum number of read (or write) requests that can be queued to the scheduler in the block layer.\n",
+		step:128,
+		min:128,
+		max:2048,
+		default:$(cat /sys/block/mmcblk0/queue/nr_requests),
+		action:"ioset queue_ext nr_requests"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
 	{ SPane:{
-		title:"I/O Scheduler Tunables"
+		title:"I/O Scheduler Tunables Internal"
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ STreeDescriptor:{
 		path:"/sys/block/sda/queue/iosched",
+		generic: {
+			directory: {},
+			element: {
+				SGeneric: { title:"@BASENAME" }
+			}
+		},
+		exclude: [ "weights", "wr_max_time" ]
+	}},
+	{ SPane:{
+		title:"I/O Scheduler Tunables SD Card"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ STreeDescriptor:{
+		path:"/sys/block/mmcblk0/queue/iosched",
 		generic: {
 			directory: {},
 			element: {

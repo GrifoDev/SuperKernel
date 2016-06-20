@@ -55,17 +55,17 @@ cat << CTAG
 		height:1
 	}},
 	{ SPane:{
-		title:"Arch Power",
-		description:"Arch Power uses arch dependent power functions to be used instead of generic high resolution timer ticks and double ticks to reflect the relative capacity of each core."
+		title:"Exynos Hotplug",
+		description:"If you enable exynos hotplug it will automatically hotplug 2 cores (so min cores online are 6) if you disable hotplugging, all 8 cores will be online."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Arch Power",
+		title:"Enable Exynos Hotplug",
 		description:" ",
 		default:1,
-		action:"generic /sys/kernel/sched/arch_power",
+		action:"generic /sys/power/cpuhotplug/enabled",
 		values:{
 			0:"Disabled", 1:"Enabled"
 		}

@@ -27,7 +27,7 @@ cat << CTAG
 `
 while read -r FREQ VOLT; do
 	echo '{ SSeekBar:{ default:'"$VOLT"', title:"'$(($FREQ / 1000))' MHz"'
-	echo ', action:"c0volt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, step:6250, max:1175000 }},'
+	echo ', action:"c0volt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, step:6250, max:1475000 }},'
 done < /sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster0_volt_table
 `
 	{ SSpacer:{

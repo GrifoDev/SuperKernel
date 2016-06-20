@@ -16,6 +16,17 @@ case "$1" in
 			$BB echo $($BB cat /sys/block/sda/queue/"$2");
 		fi;
 	;;
+	queue_ext)
+		if [ -f /sys/block/mmcblk0/queue/"$2" ]; then
+			if [[ ! -z $3 ]]; then
+				for i in /sys/block/*/queue; do
+					$BB echo "$3" > "$i"/"$2" 2> /dev/null;
+				done;
+			fi;
+
+			$BB echo $($BB cat /sys/block/mmcblk0/queue/"$2");
+		fi;
+	;;
 	scheduler)
 		if [ -f /sys/block/sda/queue/scheduler ]; then
 			if [[ ! -z $2 ]]; then
@@ -25,6 +36,17 @@ case "$1" in
 			fi;
 
 			$BB echo $($BB cat /sys/block/sda/queue/scheduler | $BB sed -n -e '/\[[^]]/s/^[^[]*\[\([^]]*\)].*$/\1/p');
+		fi;
+	;;
+	scheduler_ext)
+		if [ -f /sys/block/mmcblk0/queue/scheduler ]; then
+			if [[ ! -z $2 ]]; then
+				for i in /sys/block/mmcblk*/queue/scheduler; do
+					$BB echo "$2" > "$i" 2> /dev/null;
+				done;
+			fi;
+
+			$BB echo $($BB cat /sys/block/mmcblk0/queue/scheduler | $BB sed -n -e '/\[[^]]/s/^[^[]*\[\([^]]*\)].*$/\1/p');
 		fi;
 	;;
 esac;

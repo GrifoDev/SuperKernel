@@ -8,7 +8,7 @@ cat << CTAG
 		title:"HPM Voltage Control",
 	}},
 	{ SSeekBar:{
-		title:"Atlas HPM voltage margin",
+		title:"MNGS HPM voltage margin",
 		description:"Set the maximum voltage margin the APM undervolts down to.\n",
 		default:$(cat /sys/kernel/debug/mailbox/atl_cl_margin),
 		action:"generic /sys/kernel/debug/mailbox/atl_cl_margin",
@@ -27,7 +27,7 @@ cat << CTAG
 `
 while read -r FREQ VOLT; do
 	echo '{ SSeekBar:{ default:'"$VOLT"', title:"'$(($FREQ / 1000))' MHz"'
-	echo ', action:"c1volt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, step:6250, max:1225000 }},'
+	echo ', action:"c1volt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, step:6250, max:1575000 }},'
 done < /sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster1_volt_table
 `
 	{ SSpacer:{

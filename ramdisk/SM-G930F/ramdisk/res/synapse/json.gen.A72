@@ -28,8 +28,8 @@ cat << CTAG
 	{ SSeekBar:{
 		title:"A72 big Cores MAX frequency",
 		description:"Set the maximum frequency the CPU scales up to.\n",
-		default:2100000,
-		action:"generic /sys/devices/system/cpu/cpu4/cpufreq/ren_max_freq",
+		default:2600000,
+		action:"generic /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq",
 		values:{
 `
 			for FREQ in $(cat /sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster1_freq_table); do
@@ -45,7 +45,7 @@ cat << CTAG
 	{ SSeekBar:{
 		title:"A72 big Cores MIN frequency",
 		description:"Set the minimum frequency the CPU scales down to.\n",
-		default:800000,
+		default:312000,
 		action:"generic /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq",
 		values:{
 `

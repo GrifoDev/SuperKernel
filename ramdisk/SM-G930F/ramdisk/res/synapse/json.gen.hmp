@@ -5,25 +5,6 @@ cat << CTAG
     name:MULTICORE,
     elements:[
 	{ SPane:{
-		title:"Display State",
-		description:"If enabled, you can reduce the power consumption of Always on Display application or Edge display by allowing cores to hotplug off and sleep."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Hotplug Display State",
-		description:"Force LCD 'state' OFF when screen is OFF & hotplug cores whilst screen is ON.\n",
-		default:0,
-		action:"generic /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SPane:{
 		title:"HMP Thresholds up/down ratios for task migrating",
 		description:"Adjust HMP ratios for up/down scaling for tasks migrating between A53 LITTLE cores and A72 BIG cores. Higher up-threshold values use less battery because use more of the power efficient Little cores."
 	}},
@@ -71,72 +52,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SPane:{
-		title:"HMP UP / DOWN Hysteresis",
-		description:"Maximum total capacity difference in percentage to enact scheduler power migration."
-        }},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SSeekBar:{
-		title:"HMP UP Perf Hysteresis",
-		description:"Lower = faster migration response (more battery drain).\n",
-		min:1, max:1000, unit:"", step:1,
-		default:$(cat /sys/kernel/hmp/up_perf_hysteresis),
-		action:"generic /sys/kernel/hmp/up_perf_hysteresis"
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SSeekBar:{
-		title:"HMP DOWN Perf Hysteresis",
-		description:"Lower = faster migration response (more battery drain).\n",
-		min:1, max:1000, unit:"", step:1,
-		default:$(cat /sys/kernel/hmp/down_perf_hysteresis),
-		action:"generic /sys/kernel/hmp/down_perf_hysteresis"
-        }},
-	{ SSpacer:{
-		height:1
-	}},
-        { SPane:{
-                title:"Power Aware Scheduling",
-                description:"Power aware scheduling is a CPU capacity managing 'power scheduler' which lives by the side of the existing process scheduler. Its role is to monitor the system load and decide which CPUs that should be available to the process scheduler. It will basically attempt to “pack” small tasks into the “leftmost” CPU cores (ie. starting cpu0) to keep the other CPU cores as idle as possible, instead of spreading them evenly across all online cores. Theoretically this should increase power efficiency, with a very small cost to performance."
-        }},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Enable Power Aware Scheduling",
-		description:" ",
-		default:0,
-		action:"generic /sys/kernel/hmp/power_migration",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-        { SPane:{
-                title:"HMP LITTLE Packing",
-                description:"Allows the HMP Scheduler to pack small tasks into CPUs in the smallest HMP domain. Power savings at a slight cost to performance."
-        }},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Enable HMP LITTLE Packing",
-		description:" ",
-		default:0,
-		action:"generic /sys/kernel/hmp/packing_enable",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SPane:{
-		title:"PEWQ (Power-efficient Workqueues)",
+		title:"PEWQ (Power-Efficient Workqueues)",
 		description:"Enable or disable PEWQ will help to reduce power consumption at the cost of slight performance overhead. By enabling this, PEWQ are used for unbound scheduled work to save load on sibling CPU cores and queuing work on CPU 0."
 	}},
 	{ SSpacer:{
@@ -145,7 +61,7 @@ cat << CTAG
 	{ SOptionList:{
 		title:"Enable PEWQ",
 		description:" ",
-		default:N,
+		default:Y,
 		action:"generic /sys/module/workqueue/parameters/power_efficient",
 		values:{
 			N:"Disabled", Y:"Enabled"
@@ -157,21 +73,6 @@ cat << CTAG
 	{ SPane:{
 		title:"Exynos Core Control Interface",
 		description:"Set the maximum number of online CPU Cores when screen is on."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SSeekBar:{
-		title:"MAX CPU Cores",
-		description:"Default is 8 (all cores).\n",
-		default:$(cat /sys/power/cpucore_max_num_limit),
-		action:"generic /sys/power/cpucore_max_num_limit",
-		values:{
-			"5":"5 Cores",
-			"6":"6 Cores",
-			"7":"7 Cores",
-			"8":"8 Cores"
-		}
 	}},
 	{ SSpacer:{
 		height:1
