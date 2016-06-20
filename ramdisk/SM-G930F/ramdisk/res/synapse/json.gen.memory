@@ -338,6 +338,47 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
+		`if [ -f "/sys/devices/virtual/block/zram0/disksize" ]; then
+		ZRAM=\`$BB cat /sys/devices/virtual/block/zram0/disksize\`;
+		ZRAM=$((ZRAM / 1024 / 1024));
+		$BB echo '{ SPane:{
+			title:"Z-RAM",
+			description:"Attempts to increase performance by avoiding paging on physical storage, instead using a compressed virtual device in RAM. Paging takes place in RAM until it is necessary to use the swap space on physical storage."
+		}},
+			{ SSeekBar:{
+				unit:" MB",
+				step:10,
+				min:0,
+				max:2048, 
+				default:'$ZRAM',
+				action:"zram /sys/devices/virtual/block/zram0/disksize"
+			}},'
+		fi`
+		`if [ -f "/sys/block/zram0/comp_algorithm" ]; then
+		CA=\`$BB echo $(/res/synapse/actions/bracket-option /sys/block/zram0/comp_algorithm)\`;
+			$BB echo '{ SOptionList:{
+				title:"Compression Algorithm",
+				description:"Applying a different option will reset Z-RAM. LZ4 algorithm tends to have a faster decompression. More info: <a href='https://code.google.com/p/lz4/'>HERE</a>.",
+				default:'$CA',
+				action:"zram-bracket-option /sys/block/zram0/comp_algorithm",
+				values:['
+					for COMPALG in \`$BB cat /sys/block/zram0/comp_algorithm | $BB sed -e "s/\]//;s/\[//"\`; do
+						echo "\"$COMPALG\",";
+					done;
+				$BB echo '],
+			}},'
+		fi`
+		`if [ -f "/sys/block/zram0/max_comp_streams" ]; then
+		MCS=\`$BB cat /sys/block/zram0/max_comp_streams\`;
+			$BB echo '{ SSeekBar:{
+				title:"Max Compression Streams",
+				description:"Applying a different option will reset Z-RAM. Can have N write operations (depending on size of streams list) executing in parallel.",
+				min:1,	max:5,
+				step:1,
+				default:'$MCS',
+				action:"zram-generic /sys/block/zram0/max_comp_streams",
+			}},'
+fi`
     ]
 }
 CTAG

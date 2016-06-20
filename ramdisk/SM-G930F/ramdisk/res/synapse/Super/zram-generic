@@ -1,0 +1,20 @@
+if [ -f $1 ];then
+	if [[ ! -z $2 ]]; then
+		BB=/sbin/busybox;
+		SWAP=/dev/block/zram0;
+		RESET=/sys/devices/virtual/block/zram0/reset;
+
+		ZRAM=`$BB cat /sys/devices/virtual/block/zram0/disksize`
+		$BB swapoff $SWAP > /dev/null 2>&1;
+		$BB echo "1" > $RESET 2> /dev/null;
+		echo $2 > $1
+
+		if [ $ZRAM -gt 0 ]; then
+			$BB echo $ZRAM > /sys/devices/virtual/block/zram0/disksize;
+			$BB mkswap $SWAP > /dev/null 2>&1;
+			$BB swapon $SWAP > /dev/null 2>&1;
+		fi;
+	fi
+
+	echo `cat $1`
+fi
