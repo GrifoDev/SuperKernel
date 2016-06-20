@@ -20,7 +20,6 @@ advanced=/data/aroma/advanced;
 powersuspend=/data/aroma/powersuspend;
 doze=/data/aroma/doze;
 wakelocks=/data/aroma/wakelocks;
-audio=/data/aroma/audio;
 battery=/data/aroma/battery;
 led=/data/aroma/led;
 screen=/data/aroma/screen;
@@ -58,7 +57,6 @@ cat << CTAG
 		`[ -e $powersuspend ] && . /res/synapse/json.gen.powersuspend`,
 		`[ -e $doze ] && . /res/synapse/json.gen.doze`,
 		`[ -e $wakelocks ] && . /res/synapse/json.gen.wakelocks`,
-		`[ -e $audio ] && . /res/synapse/json.gen.audio`,
 		`[ -e $battery ] && . /res/synapse/json.gen.battery`,
 		`[ -e $led ] && . /res/synapse/json.gen.led`,
 		`[ -e $screen ] && . /res/synapse/json.gen.screen`,

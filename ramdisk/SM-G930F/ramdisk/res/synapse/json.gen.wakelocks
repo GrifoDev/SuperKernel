@@ -379,26 +379,6 @@ cat << CTAG
 					}},'
 				fi
 			fi`
-			`if [ -f "/sys/module/snd_soc_noble_arizona/parameters/wl_arizona" ]; then
-				VWU=\`$BB cat /sys/module/snd_soc_noble_arizona/parameters/wl_arizona\`
-				$BB echo '{ SPane:{
-					title:"Voice Wakeup",
-					description:" "
-				}},
-					{ SSeekBar:{
-						title:"voicewakeup",
-						description:"Default = 5000. Stock = 5000 (Lower = lower wake time)\n",
-						unit:"",
-						min:1000,
-						max:5000,
-						step:1000,
-						default:'$VWU',
-						action:"generic sys/module/snd_soc_noble_arizona/parameters/wl_arizona"
-					}},'
-					$BB echo '{ SSpacer:{
-						height:1
-					}},'
-			fi`
 			`if [ -f "/sys/module/wacom_i2c/parameters/wl_divide_pen" ]; then
 				PEN=\`$BB cat /sys/module/wacom_i2c/parameters/wl_divide_pen\`
 				$BB echo '{ SPane:{
