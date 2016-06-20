@@ -1,0 +1,33 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:GPU VOLT,
+    elements:[
+	{ SPane:{
+		title:"HPM Voltage Control",
+	}},
+	{ SSeekBar:{
+		title:"Mali HPM voltage margin",
+		description:"Set the maximum voltage margin the APM undervolts down to.\n",
+		default:$(cat /sys/kernel/debug/mailbox/g3d_cl_margin),
+		action:"generic /sys/kernel/debug/mailbox/g3d_cl_margin",
+		unit:" µV", weight:6250.0, min:0, step:1, max:10
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ title:"GPU voltage control" }},
+`
+	while read -r FREQ VOLT; do
+		echo '{ SSeekBar:{'
+			echo 'title:"'"$FREQ"' MHz", default:'"$VOLT"', '
+			echo 'action:"gpuvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:1018750, step:6250 }}, '
+	done < /sys/devices/14ac0000.mali/volt_table
+`
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

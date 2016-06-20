@@ -1,0 +1,236 @@
+BB=/system/xbin/busybox;
+
+# SQLite log location
+LOGS=/sdcard/Super/Logs/SQLite.txt;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+if [ "$($BB mount | grep system | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /system;
+fi;
+
+case $1 in
+  reboot)
+	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	$BB sync;
+	$BB sleep 1;
+	reboot "$2";
+  ;;
+  hot_reboot)
+	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	$BB sync;
+	$BB sleep 1;
+	pkill zygote
+  ;;
+  cleardata)
+	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	am force-stop com.af.synapse 2> /dev/null;
+	$BB rm -R /data/data/com.af.synapse/*;
+	$BB rm -f /data/dalvik-cache/arm64/data@app@com.af.synapse*;
+	$BB rm -f /data/dalvik-cache/profiles/com.af.synapse;
+	$BB sync;
+	$BB sleep 1;
+	/system/bin/reboot;
+  ;;
+  restart)
+    	am force-stop com.af.synapse 2> /dev/null;
+    	reset_uci;
+	$BB sync;
+    	$BB sleep 1;
+    	am start -a android.intent.action.MAIN -n com.af.synapse/.MainActivity 2> /dev/null;
+  ;;
+  fix_wifi)
+	svc wifi disable 2> /dev/null;
+	rm -f /data/misc/dhcp/dhcpcd*;
+	svc wifi enable 2> /dev/null;
+	echo "WIFI Release Renew is DONE";
+  ;;
+  selinux)	
+	if [[ ! -z $2 ]]; then
+		if [ "$2" == Enforcing ]; then
+			setenforce 1;
+		elif [ "$2" == Permissive ]; then
+			setenforce 0;
+		fi;
+	fi;
+
+	$BB echo "$(getenforce)";
+  ;;
+  optimizedb)
+	if [ -e $LOGS ]; then
+		rm $LOGS;
+	fi;
+
+	# Create Log folder on sdcard
+	LOG=/sdcard/Super/Logs;
+
+	[ ! -d "$LOG" ] && mkdir -p "$LOG";
+	chmod 755 $LOG
+
+	echo "SQLite database VACUUM and REINDEX started at $( date +"%m-%d-%Y %H:%M:%S" )" | tee -a $LOGS;
+
+	for i in $($BB find /data -iname "*.db"); do
+		/system/xbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
+			resVac=$?
+			if [ $resVac == 0 ]; then
+				resVac="SUCCESS";
+			else
+				resVac="ERRCODE-$resVac";
+			fi;
+		/system/xbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
+			resIndex=$?
+			if [ $resIndex == 0 ]; then
+				resIndex="SUCCESS";
+			else
+				resIndex="ERRCODE-$resIndex";
+			fi;
+		echo "Database $i:  VACUUM=$resVac  REINDEX=$resIndex" | tee -a $LOGS;
+	done;
+
+	for i in $($BB find /data -iname "*.db"); do
+		/system/xbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
+			resVac=$?
+			if [ $resVac == 0 ]; then
+				resVac="SUCCESS";
+			else
+				resVac="ERRCODE-$resVac";
+			fi;
+		/system/xbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
+			resIndex=$?
+			if [ $resIndex == 0 ]; then
+				resIndex="SUCCESS";
+			else
+				resIndex="ERRCODE-$resIndex";
+			fi;
+		echo "Database $i:  VACUUM=$resVac  REINDEX=$resIndex" | tee -a $LOGS;
+	done;
+		echo "SQLite database VACUUM and REINDEX finished at $( date +"%m-%d-%Y %H:%M:%S" )" | tee -a $LOGS;
+		
+	$BB echo "Databases have been optimized";
+  ;;
+  fstrim)
+	echo -e "Trim /data"
+	/system/xbin/fstrim -v /data
+	echo -e ""
+	echo -e "Trim /cache"
+	/system/xbin/fstrim -v /cache
+	echo -e ""
+	echo -e "Trim /system"
+	/system/xbin/fstrim -v /system
+	echo -e ""
+	$BB sync
+  ;;
+  wipe_cache_reboot)
+	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	$BB rm -rf /cache/*
+	$BB sync;
+	$BB sleep 1;
+	/system/bin/reboot;
+  ;;
+  wipe_dalvik_reboot)
+	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	$BB rm -rf /data/dalvik-cache/*
+	$BB sync;
+	$BB sleep 1;
+	/system/bin/reboot;
+  ;;
+  wipe_cache-dalvik_reboot)
+	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	$BB rm -rf /cache/*
+	$BB rm -rf /data/dalvik-cache/*
+	$BB sync;
+	$BB sleep 1;
+	/system/bin/reboot;
+  ;;
+  clean_up)
+	$BB rm -rf /cache/lost+found/*
+	$BB rm -rf /data/anr/*
+	$BB rm -rf /data/clipboard/*
+	$BB rm -rf /data/lost+found/*
+	$BB rm -rf /data/system/dropbox/*
+	$BB rm -rf /data/tombstones/*
+	$BB sync;
+	$BB sleep 1;
+	echo "Clean up done";
+  ;;
+  clean_initd)
+	$BB rm -rf /system/etc/init.d/*
+	$BB sync;
+	$BB sleep 1;
+	echo "init.d folder cleaned";
+  ;;
+scr_cache)
+  P=/res/synapse/Super/scr_cache
+  if [ ! -z "$2" ]; then
+  if [ "$2" == 0 ]; then
+    echo 0 > $P
+	setprop persist.sys.scrollingcache 0
+  elif [ "$2" == 1 ]; then
+    echo 1 > $P
+	setprop persist.sys.scrollingcache 1
+  elif [ "$2" == 2 ]; then
+    echo 2 > $P
+	setprop persist.sys.scrollingcache 2
+  elif [ "$2" == 3 ]; then
+    echo 3 > $P
+	setprop persist.sys.scrollingcache 3
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo 0
+  elif [ "$copy" == 1 ]; then
+    echo 1
+  elif [ "$copy" == 2 ]; then
+    echo 2
+  elif [ "$copy" == 3 ]; then
+    echo 3
+  fi
+  ;;
+spcm_service)
+  P=/res/synapse/Super/spcm_service
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Enabled ]; then
+    echo Enabled > $P
+	setprop sys.config.spcm_enable true
+  elif [ "$2" == Disabled ]; then
+    echo Disabled > $P
+	setprop sys.config.spcm_enable false
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == Enabled ]; then
+    echo Enabled
+  elif [ "$copy" == Disabled ]; then
+    echo Disabled
+  fi
+  ;;
+SystemUpdateService)
+  P=/res/synapse/Super/SystemUpdateService
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Enabled ]; then
+    echo Enabled > $P
+	pm enable com.google.android.gms/.update.SystemUpdateActivity
+	pm enable com.google.android.gms/.update.SystemUpdateService
+	pm enable com.google.android.gms/.update.SystemUpdateService$ActiveReceiver
+	pm enable com.google.android.gms/.update.SystemUpdateService$Receiver
+	pm enable com.google.android.gms/.update.SystemUpdateService$SecretCodeReceiver
+	pm enable com.google.android.gsf/.update.SystemUpdateActivity
+	pm enable com.google.android.gsf/.update.SystemUpdatePanoActivity
+	pm enable com.google.android.gsf/.update.SystemUpdateService
+	pm enable com.google.android.gsf/.update.SystemUpdateService$Receiver
+	pm enable com.google.android.gsf/.update.SystemUpdateService$SecretCodeReceiver
+  elif [ "$2" == Disabled ]; then
+    echo Disabled > $P
+	# Nothing to do here
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == Enabled ]; then
+    echo Enabled
+  elif [ "$copy" == Disabled ]; then
+    echo Disabled
+  fi
+  ;;
+esac;
+
+$BB mount -t rootfs -o remount,ro rootfs;
+$BB mount -o remount,ro /system;

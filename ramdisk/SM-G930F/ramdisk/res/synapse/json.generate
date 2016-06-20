@@ -1,0 +1,78 @@
+#!/system/bin/sh
+
+A57=/data/aroma/A57;
+A57_volt=/data/aroma/A57_volt;
+A53=/data/aroma/A53;
+A53_volt=/data/aroma/A53_volt;
+cpu_gov=/data/aroma/cpu_gov;
+A57_gov=/data/aroma/A57_gov;
+A53_gov=/data/aroma/A53_gov;
+hmp=/data/aroma/hmp;
+cpu_stats=/data/aroma/cpu_stats;
+boost=/data/aroma/boost;
+gpu=/data/aroma/gpu;
+gpu_volt=/data/aroma/gpu_volt;
+tmu=/data/aroma/tmu;
+bus=/data/aroma/bus;
+io=/data/aroma/io;
+memory=/data/aroma/memory;
+advanced=/data/aroma/advanced;
+powersuspend=/data/aroma/powersuspend;
+doze=/data/aroma/doze;
+wakelocks=/data/aroma/wakelocks;
+audio=/data/aroma/audio;
+battery=/data/aroma/battery;
+led=/data/aroma/led;
+screen=/data/aroma/screen;
+network=/data/aroma/network;
+security=/data/aroma/security;
+fs=/data/aroma/fs;
+cortex=/data/aroma/cortex;
+crontab=/data/aroma/crontab;
+storage=/data/aroma/storage;
+modules=/data/aroma/modules;
+backup_restore=/data/aroma/backup-restore;
+
+cat << CTAG
+
+{
+    sections: [
+		`. /res/synapse/json.gen.myabout`,
+		`[ -e $A57 ] && . /res/synapse/json.gen.A57`,
+		`[ -e $A57_volt ] && . /res/synapse/json.gen.A57_volt`,
+		`[ -e $A53 ] && . /res/synapse/json.gen.A53`,
+		`[ -e $A53_volt ] && . /res/synapse/json.gen.A53_volt`,
+		`[ -e $cpu_gov ] && . /res/synapse/json.gen.cpu_gov`,
+		`[ -e $A57_gov ] && . /res/synapse/json.gen.A57_gov`,
+		`[ -e $A53_gov ] && . /res/synapse/json.gen.A53_gov`,
+		`[ -e $hmp ] && . /res/synapse/json.gen.hmp`,
+		`[ -e $cpu_stats ] && . /res/synapse/json.gen.cpu_stats`,
+		`[ -e $boost ] && . /res/synapse/json.gen.boost`,
+		`[ -e $gpu ] && . /res/synapse/json.gen.gpu`,
+		`[ -e $gpu_volt ] && . /res/synapse/json.gen.gpu_volt`,
+		`[ -e $tmu ] && . /res/synapse/json.gen.tmu`,
+		`[ -e $bus ] && . /res/synapse/json.gen.bus`,
+		`[ -e $io ] && . /res/synapse/json.gen.io`,
+		`[ -e $memory ] && . /res/synapse/json.gen.memory`,
+		`[ -e $advanced ] && . /res/synapse/json.gen.advanced`,
+		`[ -e $powersuspend ] && . /res/synapse/json.gen.powersuspend`,
+		`[ -e $doze ] && . /res/synapse/json.gen.doze`,
+		`[ -e $wakelocks ] && . /res/synapse/json.gen.wakelocks`,
+		`[ -e $audio ] && . /res/synapse/json.gen.audio`,
+		`[ -e $battery ] && . /res/synapse/json.gen.battery`,
+		`[ -e $led ] && . /res/synapse/json.gen.led`,
+		`[ -e $screen ] && . /res/synapse/json.gen.screen`,
+		`[ -e $network ] && . /res/synapse/json.gen.network`,
+		`[ -e $security ] && . /res/synapse/json.gen.security`,
+		`[ -e $fs ] && . /res/synapse/json.gen.fs`,
+		`[ -e $cortex ] && . /res/synapse/json.gen.cortex`,
+		`[ -e $crontab ] && . /res/synapse/json.gen.crontab`,
+		`[ -e $storage ] && . /res/synapse/json.gen.storage`,
+		`[ -e $modules ] && . /res/synapse/json.gen.modules`,
+		`[ -e $backup_restore ] && . /res/synapse/json.gen.backup-restore`,
+		`. /res/synapse/json.gen.logs`,
+		`. /res/synapse/json.gen.reboot`,
+		`. /res/synapse/json.gen.info`
+    ]
+}
+CTAG

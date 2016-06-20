@@ -1,0 +1,343 @@
+#!/system/bin/sh
+
+BB=/system/xbin/busybox;
+
+cat << CTAG
+{
+    name:MEMORY,
+    elements:[
+	{ SLiveLabel:{
+		title:"Memory state",
+		refresh:1000,
+		action:"live LiveMemory"
+	}},
+	{ SLiveLabel:{
+		title:"Swap state",
+		refresh:1000,
+		action:"live LiveSwap"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+			`if [ -f "/sys/module/lowmemorykiller/parameters/minfree" ]; then
+				$BB echo '{ SPane:{
+					title:"Low Memory Killer",
+					description:"LMK Minfree controls how much memory each app type can hold, and is responsible for memory management for multitasking. All values are multiplied by 256 pages."
+				}},
+				{ SSpacer:{
+					height:1
+				}},
+				{ SOptionList:{
+					title:"LMK Profile",
+					description:"This option will auto-tune LMK minfree values as per selected profile. More aggressive equals more free RAM but more killed apps (less multi-tasking).\n",
+					default:Default,
+					action:"lmk profile",
+					values:[ Low, Medium, Custom, Default, Aggressive, Exterminate,
+					],
+					notify:[
+							{
+								on:APPLY,
+								do:[ REFRESH, APPLY ],
+								to:[ 
+										"lmk 1",
+										"lmk 2",
+										"lmk 3",
+										"lmk 4",
+										"lmk 5",
+										"lmk 6"
+								],
+							}
+					]
+				}},'
+					for LMK in 1 2 3 4 5 6; do
+						$BB echo '{ SSeekBar:{ '
+							case $LMK in
+								1)
+									$BB echo 'title:"Foreground App", description:"The application currenty on the screen and running.\nDefault is 72.\n", default:72' ;;
+								2)
+									$BB echo 'title:"Visible App", description:"The application that is open and running in background.\nDefault is 90.\n", default:90' ;;
+								3)
+									$BB echo 'title:"Secondary Server", description:"This is a service an application needs that is alive and ready.\nDefault is 108.\n", default:108' ;;
+								4)
+									$BB echo 'title:"Hidden App", description:"An idle process that wakes up on application request.\nDefault is 126.\n", default:126' ;;
+								5)
+									$BB echo 'title:"Content Provider", description:"Apps that provide data (content) to the system.\nDefault is 219.\n", default:219' ;;
+								6)
+									$BB echo 'title:"Empty App", description:"Apps closed by the user but ready to run.\nDefault is 317.\n", default:317' ;;
+							esac
+						$BB echo ', action:"lmk '${LMK}'",
+						unit:" MB", min:1, max:350 }},'
+					done
+			fi`
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Samsung SPCM Service",
+		description:"Enabling will allow the Samsung SPCM service to kill apps running in the background, but those only that haven't been used for a period of time. Disabling will revert to standard OOM killer and may help prevent apps/services meant to run in the background being killed (eg. Facebook and Swiftkey)."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Samsung SPCM Service",
+		description:" ",
+		default:$(echo "$(/res/synapse/actions/devtools spcm_service)"),
+		action:"devtools spcm_service",
+		values:[Enabled, Disabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Ultra Kernel SamePage Merging (UKSM)",
+		description:"Transparently scans and merges memory (duplicated pages) at a significantly improved scan speed & CPU efficiency over stock KSM."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable UKSM",
+		description:" ",
+		default:0,
+		action:"generic /sys/kernel/mm/uksm/run",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SLiveLabel:{
+                title:"UKSM stats",
+		description:"Memory samepage merging is not a quick process, so stats may initially show 0 MB.",
+		refresh:3000,
+		action:"live UKSMStats"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Scan Delay Interval",
+		description:"Set how long the daemon sleeps before it wakes up and starts scanning memory pages. Default is 0.5.\n",
+		unit:" sec",
+		step:100,
+		min:0,
+		max:1000,
+		weight:0.001,
+		default:$(cat /sys/kernel/mm/uksm/sleep_millisecs),
+		action:"generic /sys/kernel/mm/uksm/sleep_millisecs"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"UKSM CPU Governor",
+		description:"Controls how aggressively the daemon uses CPU power. This sets a preset for the maximum CPU consumption below.\n\n full = 18 % \n med = 12 %\n low = 7 %\n quiet = 1 %\n",
+		default:$(cat /sys/kernel/mm/uksm/cpu_governor | $BB awk 'NR>1{print $1}' RS=[ FS=]),
+		action:"UKSM_gov /sys/kernel/mm/uksm/cpu_governor",
+		values:[`while read values; do $BB printf "%s, \n" $values | $BB tr -d '[]'; done < /sys/kernel/mm/uksm/cpu_governor`],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[
+						"generic /sys/kernel/mm/uksm/max_cpu_percentage"
+					],
+				}
+		]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Max CPU Consumption",
+		description:"The maximum CPU consumption the daemon will use while scanning. Higher = better scanning (more battery drain).\n",
+		unit:" %",
+		step:1,
+		min:1,
+		max:75,
+		default:$(cat /sys/kernel/mm/uksm/max_cpu_percentage),
+		action:"generic /sys/kernel/mm/uksm/max_cpu_percentage"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Dynamic FSYNC",
+		description:"While screen is on file sync is disabled, when screen is off a file sync is called to flush all outstanding writes and restore file sync operation as normal. Increases speed, but a possible decrease in data integrity, also could create reboot and kernel panic. Requires PowerSuspend driver ENABLED."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Dynamic FSYNC",
+		description:" ",
+		default:1,
+		action:"generic /sys/kernel/dyn_fsync/Dyn_fsync_active",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Dynamic Dirty Page Writeback",
+		description:"Allows to dynamically manage the dirty page writebacks with two different intervals, one when the screen is on and another when the screen is off."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"A higher interval we have better performance and less battery consumption, with a very low risk of data loss. Disabling will set the value of Dirty Writeback Suspend for both screen on & off."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable dynamic_dirty_writeback",
+		description:" ",
+		default:1,
+		action:"generic /proc/sys/vm/dynamic_dirty_writeback",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Dirty Writeback Active",
+		description:"Time interval between wakeups of the pdflush writeback daemons which write old data out to disk whilst SCREEN is ON.\n",
+		max:5000,
+		min:500,
+		step:500,
+		default:$(cat /proc/sys/vm/dirty_writeback_active_centisecs),
+		action:"generic /proc/sys/vm/dirty_writeback_active_centisecs",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Dirty Writeback Suspend",
+		description:"Time interval between wakeups of the pdflush writeback daemons which write old data out to disk whilst SCREEN is OFF.\n",
+		max:1000,
+		min:100,
+		step:100,
+		default:$(cat /proc/sys/vm/dirty_writeback_suspend_centisecs),
+		action:"generic /proc/sys/vm/dirty_writeback_suspend_centisecs",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ STitleBar:{
+		title:"Virtual Memory",
+		description:"Tune the operation of the VM subsystem of the Linux kernel and the writeout of dirty data to disk."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Virtual NAND Swap",
+		description:"VNSwap attempts to increase performance by avoiding paging on physical storage, instead using a compressed virtual device in RAM. Paging takes place in RAM until it is necessary to use the swap space on physical storage. Depending on the amount of swap currently in use, this process can take ~1 minute with Synapse being UNRESPONSIVE during this time. PLEASE WAIT for the process to finish.\n\n Disabling or Enabling will auto set swappiness to 0 or 190 respectively. Default is Enabled.\n",
+		default:Enabled,
+		action:"swaps vnswap0",
+		values:[Disabled, Enabled,],
+		notify:[
+			{
+				on:APPLY,
+				do:[ REFRESH, APPLY ],
+				to:"generic /proc/sys/vm/swappiness"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ZSwap memory pool",
+		description:"ZSwap memory pool percentage of main memory that may be used as compressed page cache. Default is 50.\n",
+		min:0, max:50, unit:" %", step:1,
+		default:$(cat /sys/module/zswap/parameters/max_pool_percent),
+		action:"generic /sys/module/zswap/parameters/max_pool_percent"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Adaptive dirty_background_ratio on Suspend / Resume",
+		description:"Dirty background memory buffer, more you set, more memory will be used for write buffer for background operations, buffer is released on need to free RAM. The set value is a percentage of total system memory, the number of pages at which the pdflush background writeback daemon will start writing out dirty data.\nDefault: screen ON is 20 & screen OFF is fixed at 10.\n",
+		min:0,
+		max:100, 
+		unit:" %", 
+		step:5,
+		default:$(cat /proc/sys/vm/dirty_background_ratio),
+		action:"generic /proc/sys/vm/dirty_background_ratio"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Adaptive dirty_ratio on Suspend / Resume",
+		description:"Dirty real time memory buffer, more you set, more memory will be used for write buffer for real time operations, buffer is released on need to free RAM. The set value is a percentage of total system memory, the number of pages at which a process which is generating disk writes will itself start writing out dirty data.\nDefault: screen ON is 40 & screen OFF is fixed at 20.\n",
+		min:0,
+		max:100,
+		unit:" %",
+		step:5,
+		default:$(cat /proc/sys/vm/dirty_ratio),
+		action:"generic /proc/sys/vm/dirty_ratio"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Drop Caches (Clear VFS Cache After Boot)",
+		description:"This option will force rebuild of file system cache based on actual app usage rather than boot/startup processes. NOTE: This process can take from 1-2 minutes (Enable for better file system read/write performance).\n",
+		default:0,
+		action:"dropcaches /res/synapse/Super/dropcaches_prof",
+		values:{ 0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Laptop Mode (Auto FS Writeback Delay Mode)",
+		description:"This option will delay the writebacks of file system bits cached in RAM while screen is ON (Enable for better performance @ slight risk of possible data loss if crashed or sudden loss of power).\n",
+		default:0,
+		action:"generic /proc/sys/vm/laptop_mode",
+		values:{ 0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"swappiness",
+		description:"A low value means the kernel will try to avoid swapping as much as possible where a higher value instead will make the kernel aggressively try to use swap space. Default is 190.\n",
+		max:200,
+		min:0,
+		step:10,
+		default:$(cat /proc/sys/vm/swappiness),
+		action:"generic /proc/sys/vm/swappiness",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Adaptive vfs_cache_pressure on Suspend / Resume",
+		description:"Value used to control the tendency of the kernel to reclaim the memory which is used for caching of directory and inode objects. Low values save battery while idle, but may cause stutter with longer up times. Default: screen is ON is 100 & screen OFF is fixed at 20.\n",
+		unit:" %",
+		step:1,
+		min:0,
+		max:150,
+		default:$(cat /proc/sys/vm/vfs_cache_pressure),
+		action:"generic /proc/sys/vm/vfs_cache_pressure"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

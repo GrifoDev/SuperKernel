@@ -1,0 +1,104 @@
+# By UpInTheAir for SkyHigh kernels
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+if [ "$($BB mount | grep system | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /system;
+fi;
+
+case $1 in
+cifs)
+  P=/res/synapse/Super/cifs
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	rmmod /system/lib/modules/cifs.ko;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	insmod /system/lib/modules/cifs.ko;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+ntfs)
+  P=/res/synapse/Super/ntfs
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	rmmod /system/lib/modules/ntfs.ko;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	insmod /system/lib/modules/ntfs.ko;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+isofs)
+  P=/res/synapse/Super/isofs
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	rmmod /system/lib/modules/isofs.ko;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	insmod /system/lib/modules/isofs.ko;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+udf)
+  P=/res/synapse/Super/udf
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	rmmod /system/lib/modules/udf.ko;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	insmod /system/lib/modules/udf.ko;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+xpad)
+  P=/res/synapse/Super/xpad
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	rmmod /system/lib/modules/xpad.ko;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	insmod /system/lib/modules/xpad.ko;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+esac
+
+$BB mount -t rootfs -o remount,ro rootfs;
+$BB mount -o remount,ro /system;

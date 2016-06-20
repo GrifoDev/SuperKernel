@@ -1,0 +1,288 @@
+#!/system/bin/sh
+
+export VOLT
+
+cat << CTAG
+{
+    name:THERMAL,
+    elements:[
+	{ SLiveLabel:{
+		title:"Temperature Sensors",
+		refresh:500,
+		action:"echo \$(echo \$(cat /sys/devices/10060000.tmu/curr_temp | tr , \"\\n\") | { read S0 S1 S2 S3; echo \"A57: \${S0}°C@nA53: \${S1}°C@nGPU: \${S2}°C@n ISP: \${S3}°C\"; })"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"CPU Thermal Control",
+		description:"In this section can control CPU temperature throttle mechanism at your OWN RISK!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"CPU normal temperature",
+		description:"Exynos TMU control decrease CPU freq from max scaling speed.\n", 
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_cpu_normal),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_cpu_normal"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"CPU critical temperature",
+		description:"Exynos TMU control decrease CPU freq from max scaling speed with COLD_TEMP aka CA53 max freq.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_cpu_critical),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_cpu_critical"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"GPU Thermal Control",
+		description:"In this section can control GPU temperature throttle mechanism at your OWN RISK!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Disable GPU Thermal Manager",
+		description:"Your own risk to disable...\n",
+		default:$(cat /sys/devices/14ac0000.mali/tmu),
+		action:"generic /sys/devices/14ac0000.mali/tmu",
+		values:{ 0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 1 temperature",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to last DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp1),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp1"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 1 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 90°C. Default is 600.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling1),
+		action:"generic /sys/devices/14ac0000.mali/throttling1",
+                values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 2 temperature",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to last two DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp2),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp2"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 2 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 95°C. Default is 544.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling2),
+		action:"generic /sys/devices/14ac0000.mali/throttling2",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 3 temperature",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to last three DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp3),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp3"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 3 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 100°C. Default is 420.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling3),
+		action:"generic /sys/devices/14ac0000.mali/throttling3",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 4 temperature",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to last four DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp4),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp4"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 4 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 105°C. Default is 266.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling4),
+		action:"generic /sys/devices/14ac0000.mali/throttling4",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 5 temperature",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to minimum DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp5),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_gpu_temp5"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU tripping frequency",
+		description:"Exynos TMU control trip GPU freq to this freq if GPU temp is 110°C. Default is 266.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/tripping),
+		action:"generic /sys/devices/14ac0000.mali/tripping",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"Memory Interface Thermal Control",
+		description:"In this section can control Memory Interface temperature throttle mechanism at your OWN RISK!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Memory normal temperature",
+		description:"Exynos TMU control decrease Memory freq from max scaling speed.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_mif_normal),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_mif_normal"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Memory critical temperature",
+		description:"Exynos TMU control decrease Memory freq from max scaling speed.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_mif_hot),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_mif_hot"
+        }},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"ISP (Image Signal Processor) Thermal Control",
+		description:"In this section can control ISP temperature throttle mechanism at your OWN RISK!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ISP LEVEL 1 temperature",
+		description:"Exynos TMU control decrease ISP freq from max DVFS step to last DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_isp_temp1),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_isp_temp1"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ISP LEVEL 2 temperature",
+		description:"Exynos TMU control decrease ISP freq from max DVFS step to last two DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_isp_temp2),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_isp_temp2"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ISP LEVEL 3 temperature",
+		description:"Exynos TMU control decrease ISP freq from max DVFS step to last three DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_isp_temp3),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_isp_temp3"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ISP LEVEL 4 temperature",
+		description:"Exynos TMU control decrease ISP freq from max DVFS step to last four DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_isp_temp4),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_isp_temp4"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ISP LEVEL 5 temperature",
+		description:"Exynos TMU control decrease ISP freq from max DVFS step to minimum DVFS step.\n",
+		min:0, max:115, unit:" °C", step:1,
+		default:$(cat /sys/module/exynos7420_thermal/parameters/tmu_isp_temp5),
+		action:"generic /sys/module/exynos7420_thermal/parameters/tmu_isp_temp5"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

@@ -1,0 +1,112 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:"A57 GOV",
+    elements:[
+	{ SPane:{
+		title:"A57 Governor tunables",
+		description:"The various configuration items which are governor-dependent."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ STreeDescriptor:{
+		path:"/sys/devices/system/cpu/cpu4/cpufreq",
+		generic: {
+			directory: {
+				STreeDescriptor:{
+					generic: {
+						directory: {},
+						element: {
+							SGeneric: { title:"@BASENAME" }
+						}
+					},
+					exclude: [
+						"above_hispeed_delay",
+						"boostpulse",
+						"cpu_util",
+						"enforced_mode",
+						"go_hispeed_load",
+						"hispeed_freq",
+						"mode",
+						"param_index",
+						"sampling_rate_min",
+						"single_cluster0_min_freq",
+						"target_loads",
+						"debug_enabled",
+						"disable_hotplug_media",
+						"lockout_changes_when_boosting",
+						"cpu_load_adder_at_max_gpu",
+						"cpu_load_adder_at_max_gpu_ignore_tb",
+						"up_threshold_screen_off_hotplug_1",
+						"up_threshold_screen_off_hotplug_2",
+						"up_threshold_screen_off_hotplug_3",
+						"up_threshold_screen_on_hotplug_1",
+						"up_threshold_screen_on_hotplug_2",
+						"up_threshold_screen_on_hotplug_3",
+						"down_threshold_screen_off_hotplug_1",
+						"down_threshold_screen_off_hotplug_2",
+						"down_threshold_screen_off_hotplug_3",
+						"down_threshold_screen_on_hotplug_1",
+						"down_threshold_screen_on_hotplug_2",
+						"down_threshold_screen_on_hotplug_3",
+						"touch_boost_gpu",
+						"touch_boost_core_1",
+						"touch_boost_core_2",
+						"touch_boost_core_3",
+						"touch_boost_core_4",
+						"touch_boost_core_5",
+						"touch_boost_core_6",
+						"touch_boost_core_7",
+						"touch_boost_core_cpu_cl0",
+						"touch_boost_core_cpu_cl1",
+						"touch_boost_cpu_cl0",
+						"touch_boost_cpu_cl1",
+						"button_boost_screen_off_core_1",
+						"button_boost_screen_off_core_2",
+						"button_boost_screen_off_core_3",
+						"button_boost_screen_off_core_4",
+						"button_boost_screen_off_core_5",
+						"button_boost_screen_off_core_6",
+						"button_boost_screen_off_core_7",
+						"button_boost_screen_on_core_1",
+						"button_boost_screen_on_core_2",
+						"button_boost_screen_on_core_3",
+						"button_boost_screen_on_core_4",
+						"button_boost_screen_on_core_5",
+						"button_boost_screen_on_core_6",
+						"button_boost_screen_on_core_7",
+						"boost_hold_cycles",
+						"disable_hotplug_bt",
+						"disable_hotplug_chrg",
+						"lockout_hotplug_screen_on_core_1",
+						"lockout_hotplug_screen_on_core_2",
+						"lockout_hotplug_screen_on_core_3",
+						"lockout_hotplug_screen_off_core_1",
+						"lockout_hotplug_screen_off_core_2",
+						"lockout_hotplug_screen_off_core_3"
+					]
+				},
+			}
+		},
+		exclude: [
+			"affected_cpus",
+			"cpuinfo_cur_freq",
+			"cpuinfo_max_freq",
+			"cpuinfo_min_freq",
+			"cpuinfo_transition_latency",
+			"related_cpus",
+			"scaling_available_governors",
+			"scaling_cur_freq",
+			"scaling_driver",
+			"scaling_governor",
+			"scaling_max_freq",
+			"scaling_min_freq",
+			"scaling_setspeed",
+			"stats"
+		]
+	}},
+    ]
+}
+CTAG

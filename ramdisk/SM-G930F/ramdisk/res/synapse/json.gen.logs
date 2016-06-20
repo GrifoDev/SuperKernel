@@ -1,0 +1,80 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:LOGS,
+    elements:[
+	{ SDescription:{
+		description:"To report any issue with the kernel, you should share the zip file of logs created by using below button. This will put logcat, dmesg, last_kmsg & other relevant information into one zip file which will be used only for debug purposes."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Save All Logs",
+		action:"log alllogs"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Android Logger",
+		description:"You must set 'Enabled' or 'Auto-Suspend' to save the latest logcat (app/system debug output) to file. Auto-Suspend mode will enable logcat whilst screen-ON & auto disable whilst screen-OFF."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Android logger",
+		description:" ",
+		default:2,
+		action:"generic /sys/module/logger/parameters/log_mode",
+		values:{ 0:"Enabled", 1:"Auto-Suspend", 2:"Disabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Save logcat",
+		action:"log logcat"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Kernel Logger",
+		description:"Save the dmesg (active kernel output) or last_ksmg (same as dmesg but from the last shutdown) to file."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Kernel logger",
+		description:" ",
+		default:1,
+		action:"generic /sys/kernel/printk_mode/printk_mode",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SButton:{
+		label:"Save dmesg",
+		action:"log dmesg"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Save last_kmsg",
+		action:"log kmsg"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

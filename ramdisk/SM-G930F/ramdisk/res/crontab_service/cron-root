@@ -1,0 +1,16 @@
+# This file is at /var/spool/cron/crontabs/root
+#field          allowed values
+#-----          --------------
+#minute         0-59
+#hour           0-23
+#day of month   1-31
+#month          1-12 (or names, see below)
+#day of week    0-7 (0 or 7 is Sun, or use names)
+
+#JOBS
+0 0-23/1 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/drop-cache.sh
+0 0-23/3 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/ram_release.sh
+30 4 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/clear-file-cache.sh
+40 4 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/database_optimizing.sh
+50 4 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/fstrim.sh
+0 5 * * 0 /system/xbin/busybox sh /data/crontab/cron-scripts/reset_battery.sh

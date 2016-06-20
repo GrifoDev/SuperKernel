@@ -1,0 +1,10 @@
+BB=/system/xbin/busybox;
+
+case $1 in
+susp)
+  $BB echo "$(cat /sys/kernel/power_suspend/power_suspend_version)"
+  ;;
+asv)
+  $BB echo "$(cat /sys/kernel/debug/asv_summary)"
+  ;;
+esac

@@ -1,0 +1,164 @@
+# By UpInTheAir for SkyHigh kernels
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+case $1 in
+cortexbrain_background_process)
+  P=/res/synapse/SkyHigh/cortexbrain_background_process
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	pkill -f "/sbin/cortexbrain-tune.sh";
+	sed -i "s/cortexbrain_background_process=[0-1]*/cortexbrain_background_process=0/g" /sbin/cortexbrain-tune.sh;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	sed -i "s/cortexbrain_background_process=[0-1]*/cortexbrain_background_process=1/g" /sbin/cortexbrain-tune.sh;
+	if [ $(pgrep -f "cortexbrain-tune.sh" | wc -l) == 0 ]; then
+		$BB nohup $BB sh /sbin/cortexbrain-tune.sh > /dev/null 2>&1 &
+	fi;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+cortexbrain_alpm_auto)
+  P=/res/synapse/SkyHigh/cortexbrain_alpm_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	echo "0" > /sys/class/lcd/panel/alpm;
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+	echo "1" > /sys/class/lcd/panel/alpm;
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_doze_auto)
+  P=/res/synapse/SkyHigh/cortexbrain_doze_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Stock ]; then
+    echo 0 > $P
+	$BB sync;
+	dumpsys deviceidle step
+  elif [ $2 == Aggressive ]; then
+    echo 1 > $P
+	$BB sync;
+	dumpsys deviceidle force-idle
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Stock
+  elif [ "$copy" == 1 ]; then
+    echo Aggressive
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_wifi_auto)
+  P=/res/synapse/SkyHigh/cortexbrain_wifi_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Auto ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_media_manager)
+  P=/res/synapse/SkyHigh/cortexbrain_media_manager
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	pm disable com.android.providers.media/com.android.providers.media.MediaScannerReceiver;
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+	pm enable com.android.providers.media/com.android.providers.media.MediaScannerReceiver;
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_system)
+  P=/res/synapse/SkyHigh/cortexbrain_system
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+cortexbrain_kernel)
+  P=/res/synapse/SkyHigh/cortexbrain_kernel
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+cortexbrain_nmi_auto)
+  P=/res/synapse/SkyHigh/cortexbrain_nmi_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	echo "0" > /proc/sys/kernel/nmi_watchdog;
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+	echo "1" > /proc/sys/kernel/nmi_watchdog;
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+esac
+
+$BB mount -t rootfs -o remount,ro rootfs;

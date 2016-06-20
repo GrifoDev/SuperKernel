@@ -1,0 +1,100 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:CRONTAB,
+    elements:[
+	{ SPane:{
+		title:"Cron Tasks",
+		description:"Here you can activate some scripts which will automatically run in the background at a specified time or interval."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Crontab (Master Switch)",
+		description:"If you set this to Disabled, then all tasks below will have no effect!\n",
+		default:$(echo "$(/res/synapse/actions/crontab cron_master)"),
+		action:"crontab cron_master",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Clean RAM cache",
+		description:"Clear RAM-cache every hour, but only if CPU is resting (IDLE) and more than 50% of your memory is used! This will free RAM from unused buffers and cache.\n",
+		default:$(echo "$(/res/synapse/actions/crontab drop_cache)"),
+		action:"crontab drop_cache",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Google Service restart",
+		description:"Restart Google Services to release memory leak and CPU non-stop activity. This is one of the LP RAM leak BUGS where the Service can get stuck, drain RAM, and force CPU to work non-stop. Fix this by restarting the service every 3 hours.\n",
+		default:$(echo "$(/res/synapse/actions/crontab google)"),
+		action:"crontab google",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Clean app-cache",
+		description:"Clear app-cache every day at 4:30AM, only if CPU is resting (IDLE)! This can maintain free space on data partition, and clean all old junk folders (clipboard-cache, tombstones, anr logs, dropbox logs & lost+found).\n",
+		default:$(echo "$(/res/synapse/actions/crontab cache)"),
+		action:"crontab cache",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Optimize Databases",
+		description:"Optimize all databases found in /data & /sdcard every day at 4:40AM, only if CPU is resting (IDLE)! This increases database read/write performance.\n",
+		default:$(echo "$(/res/synapse/actions/crontab sqlite)"),
+		action:"crontab sqlite",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"File System Trim",
+		description:"Cron to trim System, Data and Cache partitions every day at 4:50AM, only if CPU is resting (IDLE)! This will help retain consistant IO throughput.\n",
+		default:$(echo "$(/res/synapse/actions/crontab fstrim)"),
+		action:"crontab fstrim",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Battery Scaling Calibration",
+		description:"Calibrate battery every week at SUN 5:00AM. This will reset your device battery % to scale correctly to the approximate available mV.\n",
+		default:$(echo "$(/res/synapse/actions/crontab fg_reset)"),
+		action:"crontab fg_reset",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Test Cron Task Jobs",
+		description:"Use this button to check if Cron Task Jobs are done as requested. This will show the log for all finished jobs."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Check Jobs",
+		action:"crontab log"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

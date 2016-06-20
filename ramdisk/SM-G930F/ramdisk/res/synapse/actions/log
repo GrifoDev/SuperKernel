@@ -1,0 +1,317 @@
+# BIG original credits to Dorimanx
+# modified UpInTheAir for SkyHigh kernels
+
+BB=/system/xbin/busybox;
+
+TIMESTAMP=$(date +%Y-%m-%d.%H.%M.%S);
+LOGS=/sdcard/Super/logs;
+SYNAPSE_DATA=/data/data/com.af.synapse/databases;
+DEBUG_FILE="/sdcard/Super_debug-$TIMESTAMP.txt";
+DEBUG_FILE_ZIP="/sdcard/Super_debug";
+
+[ ! -d "$LOGS" ] && $BB mkdir -p "$LOGS";
+$BB chmod 755 $LOGS;
+
+if [ -f "/system/xbin/sqlite3" ]; then SQL3=/system/xbin/sqlite3; else SQL3=/system/bin/sqlite3; fi;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+if [ "$($BB mount | grep system | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /system;
+fi;
+
+case $1 in
+	alllogs)
+			# cleaup old debug files.
+			if [ -f $LOGS ]; then
+				$BB rm -rf $LOGS/*;
+			fi;
+			if [ -f $DEBUG_FILE_ZIP ]; then
+				$BB rm -r $DEBUG_FILE_ZIP;
+			fi;
+			if [ -f $DEBUG_FILE ]; then
+				$BB rm -rf $DEBUG_FILE;
+			fi;
+			if [ -f ${DEBUG_FILE_ZIP}.zip ]; then
+				$BB rm -rf ${DEBUG_FILE_ZIP}.zip;
+			fi;
+
+	(
+
+			SEPARATOR()
+			{
+				echo "" >> $DEBUG_FILE;
+				echo " ---------------------------- " >> $DEBUG_FILE;
+				echo "" >> $DEBUG_FILE;
+			}
+
+			# Kernel-Info
+			echo "Kernel-Version:" >> $DEBUG_FILE;
+			cat /proc/version >> $DEBUG_FILE;
+			SEPARATOR;
+
+			if [ -e /system/bin/uptime ]; then
+				/system/bin/uptime >> $DEBUG_FILE;
+			else
+				TOTAL_UPTIME=$($BB awk '{ print $1 }' /proc/uptime);
+				TOTAL_UPTIME=$($BB echo - | $BB awk -v "S=$TOTAL_UPTIME" '{printf "%dh:%dm:%ds",S/(60*60),S%(60*60)/60,S%60}');
+				date +"Last Reboot: %d.%m.%y / %H:%m" >> $DEBUG_FILE;
+				echo "Uptime is $TOTAL_UPTIME" >> $DEBUG_FILE;
+			fi;
+			if [ -e /system/xbin/uptime ]; then
+				/system/xbin/uptime | cut -c 22-54 >> $DEBUG_FILE;
+			fi;
+			SEPARATOR;
+
+			# System
+			echo "ROM-Version:" >> $DEBUG_FILE;
+			echo "Display ID: $(getprop ro.build.display.id)" >> $DEBUG_FILE;
+			echo "Build Description: $(getprop ro.build.description)" >> $DEBUG_FILE;
+			echo "Build Date: $(getprop ro.build.date)" >> $DEBUG_FILE;
+			echo "Product: $(getprop ro.build.product)" >> $DEBUG_FILE;
+			echo "Bootloader: $(getprop ro.boot.bootloader)" >> $DEBUG_FILE;
+			echo "Modem/Baseband: $(getprop gsm.version.baseband)" >> $DEBUG_FILE;
+			echo "CSC: $(getprop ro.csc.country_code)" >> $DEBUG_FILE;
+			SEPARATOR;
+
+			# SU
+			echo "SuperSU-Version:" >> $DEBUG_FILE;
+			echo "SuperSU app: $(dumpsys package eu.chainfire.supersu | grep versionName | cut -d"=" -f2)" >> $DEBUG_FILE;
+			echo "Binary: $(su -v)" >> $DEBUG_FILE;
+			SEPARATOR;
+
+			# Memory
+			echo "Memory-Info:" >> $DEBUG_FILE;
+			free >> $DEBUG_FILE;
+			cat /proc/meminfo >> $DEBUG_FILE;
+			SEPARATOR;
+
+
+			# low mem kill info
+			echo "App-Info for 'low memory killer':" >> $DEBUG_FILE;
+			for i in $(ls /proc/ | grep -E '^[0-9]+'); do
+				if [ "$i" -ne "0" ] && [ "$(cat /proc/$i/oom_score_adj)" -ge "-300" ] && [ -f  "/proc/$i/oom_score_adj" ] && [ "$(cat /proc/$i/cmdline)" ]; then
+					cat /proc/$i/oom_score_adj >> $DEBUG_FILE;
+					cat /proc/$i/cmdline >> $DEBUG_FILE;
+				fi;
+			done;
+			SEPARATOR;
+
+			# CPU 0-3
+			echo "CPU-Info:" >> $DEBUG_FILE;
+			cd /sys/devices/system/cpu/cpu0/cpufreq/;
+			grep . * | grep -v "cpuinfo" | grep -v "scaling_available" | grep -v "scaling_setspeed" >> $DEBUG_FILE;
+			cd /;
+			SEPARATOR;
+
+			total_trans=$(cat /sys/devices/system/cpu/cpu0/cpufreq/stats/total_trans);
+			echo "Total freq-switch: $total_trans" >> $DEBUG_FILE;
+			echo "" >> $DEBUG_FILE;
+			echo "Time-In-State:" >> $DEBUG_FILE;
+			cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state >> $DEBUG_FILE;
+			for i in `cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state | cut -f 2 -d ' '`; do
+				summe=$(($summe+$i));
+			done;
+			summe=$(($summe/100));
+			summe=$(($summe/60));
+			if [ $summe -lt 60 ]; then
+				echo "uptime with CPU on: $summe min" >> $DEBUG_FILE;
+			else
+				summe=$(($summe/60));
+				echo "uptime with CPU on: $summe h" >> $DEBUG_FILE;
+			fi;
+			echo "" >> $DEBUG_FILE;
+			SEPARATOR;
+
+			echo "more CPU-Infos:" >> $DEBUG_FILE;
+			cpuinfo_cur_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq);
+			for i in `ls /sys/devices/system/cpu/cpu0/cpufreq/`; do
+				if [ ! -d "/sys/devices/system/cpu/cpu0/cpufreq/${i}" ]; then
+					echo $i >> $DEBUG_FILE;
+					cat /sys/devices/system/cpu/cpu0/cpufreq/$i >> $DEBUG_FILE 2>&1;
+					echo "" >> $DEBUG_FILE;
+				fi;
+			done;
+			SEPARATOR;
+
+			# CPU 4-7
+			echo "CPU-Info:" >> $DEBUG_FILE;
+			cd /sys/devices/system/cpu/cpu4/cpufreq/;
+			grep . * | grep -v "cpuinfo" | grep -v "scaling_available" | grep -v "scaling_setspeed" >> $DEBUG_FILE;
+			cd /;
+			SEPARATOR;
+
+			total_trans=$(cat /sys/devices/system/cpu/cpu4/cpufreq/stats/total_trans);
+			echo "Total freq-switch: $total_trans" >> $DEBUG_FILE;
+			echo "" >> $DEBUG_FILE;
+			echo "Time-In-State:" >> $DEBUG_FILE;
+			cat /sys/devices/system/cpu/cpu4/cpufreq/stats/time_in_state >> $DEBUG_FILE;
+			for i in `cat /sys/devices/system/cpu/cpu4/cpufreq/stats/time_in_state | cut -f 2 -d ' '`; do
+				summe=$(($summe+$i));
+			done;
+			summe=$(($summe/100));
+			summe=$(($summe/60));
+			if [ $summe -lt 60 ]; then
+				echo "uptime with CPU on: $summe min" >> $DEBUG_FILE;
+			else
+				summe=$(($summe/60));
+				echo "uptime with CPU on: $summe h" >> $DEBUG_FILE;
+			fi;
+			echo "" >> $DEBUG_FILE;
+			SEPARATOR;
+
+			echo "more CPU-Infos:" >> $DEBUG_FILE;
+			cpuinfo_cur_freq=$(cat /sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_cur_freq);
+			for i in `ls /sys/devices/system/cpu/cpu4/cpufreq/`; do
+				if [ ! -d "/sys/devices/system/cpu/cpu4/cpufreq/${i}" ]; then
+					echo $i >> $DEBUG_FILE;
+					cat /sys/devices/system/cpu/cpu4/cpufreq/$i >> $DEBUG_FILE 2>&1;
+					echo "" >> $DEBUG_FILE;
+				fi;
+			done;
+			SEPARATOR;
+
+			# Interrupts
+			#echo "Interrupts-Info:" >> $DEBUG_FILE;
+			#cat /proc/interrupts >> $DEBUG_FILE;
+			#SEPARATOR;
+
+			# Wakeup
+			#echo "Wakeup-Info:" >> $DEBUG_FILE;
+			#cat /sys/kernel/debug/wakeup_sources >> $DEBUG_FILE;
+			#SEPARATOR;
+
+			# Suspend
+			echo "Suspend-Info:" >> $DEBUG_FILE;
+			cat /sys/kernel/debug/suspend_stats >> $DEBUG_FILE;
+			SEPARATOR;
+
+			# NET
+			#echo "NET-Info:" >> $DEBUG_FILE;
+			#ifconfig wlan0 >> $DEBUG_FILE;
+			#SEPARATOR;
+
+			# lsmod
+			echo "lsmod-Info:" >> $DEBUG_FILE;
+			lsmod >> $DEBUG_FILE;
+			SEPARATOR;
+
+			# Partitions
+			echo "Partitions-Info:" >> $DEBUG_FILE;
+			mount >> $DEBUG_FILE;
+			cat /proc/partitions >> $DEBUG_FILE;
+			SEPARATOR;
+
+			# Processes
+			echo "Process-Info: top" >> $DEBUG_FILE;
+			top -n 2 -m 10 >> $DEBUG_FILE;
+			SEPARATOR;
+
+			echo "Process-Info: ps" >> $DEBUG_FILE;
+			ps >> $DEBUG_FILE;
+			SEPARATOR;
+
+			#echo "Process-Info: nice (priority)" >> $DEBUG_FILE;
+			#for z in `ls /proc/*/stat`; do
+			#	tmp=`cat $z` && echo $tmp | cut -f 2 -d ' ' >> $DEBUG_FILE && echo $tmp | cut -f 19 -d ' ' >> $DEBUG_FILE && echo " " >> $DEBUG_FILE;
+			#done;
+			#SEPARATOR;
+
+			# last kmsg
+			echo "Last Kernel dmesg Info before BUG/Opps/Panic triggered:" >> $DEBUG_FILE;
+			if [ -e /proc/last_kmsg ]; then
+				cat /proc/last_kmsg | tail -n 500 >> $DEBUG_FILE;
+				SEPARATOR;
+			else
+				echo "there was no /proc/last_kmsg to read from" >> $DEBUG_FILE;
+				SEPARATOR;
+			fi;
+
+			# dmesg
+			echo "current dmesg last 200 lines:" >> $DEBUG_FILE;
+			dmesg | tail -n 200 >> $DEBUG_FILE;
+			SEPARATOR;
+
+			echo "dmesg-Error:" >> $DEBUG_FILE;
+			dmesg | grep -i "Error" >> $DEBUG_FILE;
+			SEPARATOR;
+
+			echo "dmesg-Warning:" >> $DEBUG_FILE;
+			dmesg | grep -i "Warning" >> $DEBUG_FILE;
+			SEPARATOR;
+
+			echo "dmesg-Fail:" >> $DEBUG_FILE;
+			dmesg | grep -i "Fail" >> $DEBUG_FILE;
+			SEPARATOR;
+
+			# System
+			echo "System-Info:" >> $DEBUG_FILE;
+			echo "sysctl:" >> $DEBUG_FILE;
+			sysctl -a | grep -v net.* >> $DEBUG_FILE;
+			echo "" >> $DEBUG_FILE;
+			echo "getprop:" >> $DEBUG_FILE;
+			getprop >> $DEBUG_FILE;
+			SEPARATOR;
+
+			# Synapse Profile
+			cd $SYNAPSE_DATA || exit;
+			echo "Synapse-Profile:" >> $DEBUG_FILE;
+			$SQL3 -separator '=' actionValueStore "SELECT key, value FROM action_value WHERE context = 'global' AND key NOT IN ($DISABLED_SETTINGS) $DISABLED_ACTIONS ORDER BY key ASC;" >> $DEBUG_FILE 2> /dev/null;
+			SEPARATOR;
+
+			cd /;
+
+			# Archive
+			if [ -e /system/xbin/zip ]; then
+				chmod 755 /system/xbin/zip
+				if [ -e /proc/last_kmsg ]; then
+					/system/xbin/zip ${DEBUG_FILE_ZIP}.zip $DEBUG_FILE > /dev/null;
+					sleep 5;
+					$BB mv /sdcard/Super_debug.zip $LOGS/SkyHigh_debug.zip;
+				fi;
+				$BB rm -r $DEBUG_FILE;
+			fi;
+
+	)&
+		$BB echo "Logs saved to $LOGS/Super_debug.zip";
+	;;
+
+	logcat)
+		saved="$LOGS/logcat-$TIMESTAMP.txt";
+		[ ! -d "$LOGS" ] && $BB mkdir -p "$LOGS";
+		$BB chmod 755 $LOGS;
+
+		logcat -d > $saved;
+	;;
+
+	dmesg)
+		saved="$LOGS/dmesg-$TIMESTAMP.txt";
+		[ ! -d "$LOGS" ] && $BB mkdir -p "$LOGS";
+		$BB chmod 755 $LOGS;
+
+		$BB dmesg > $saved;
+	;;
+
+	kmsg)
+		kmsg=/proc/last_kmsg;
+		if [ -f $kmsg ]; then
+			saved="$LOGS/last_kmsg-$TIMESTAMP.txt";
+			[ ! -d "$LOGS" ] && $BB mkdir -p "$LOGS";
+			$BB chmod 755 $LOGS;
+
+			$BB cp -f $kmsg $saved;
+		else
+			$BB echo "$kmsg not found.";
+		fi;
+	;;
+esac;
+
+case $1 in
+	logcat|dmesg|kmsg)
+		echo "Logfile saved to $saved";
+	;;
+esac;
+
+$BB mount -t rootfs -o remount,ro rootfs;
+$BB mount -o remount,ro /system;

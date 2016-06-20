@@ -1,0 +1,19 @@
+refresh () {
+	am startservice -n com.af.synapse/.lib.ActionService -e json '{ SDirectoryParser: { id:"/sys/devices/system/cpu/cpufreq"}}' &> /dev/null;
+}
+
+if [ -f "$1" ];then
+	OLD=$(cat "$1")
+	if [[ ! -z $2 ]]; then
+		echo "$2" > "$1"
+		echo "$2" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+	fi
+
+	NEW=$(cat "$1")
+
+	if [ "$OLD" != "$NEW" ]; then
+		refresh &
+	fi
+
+	echo "$NEW"
+fi
