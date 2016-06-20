@@ -1070,7 +1070,7 @@ static void ipa_setup_power_tables(void)
 			/ c_eff[CL_ZERO].p_states[i].power;
 		pr_info("cluster: %d freq: %d power=%d\n", CL_ZERO, t.freq, little_cpu_coeffs[i].power);
 	}
-	
+
 	t.cluster = CL_ONE;
 	for (i = 0; i < nr_big_coeffs; i++) {
 		c_eff[CL_ONE].p_states[i].freq = t.freq = MHZ_TO_KHZ(big_cpu_coeffs[i].frequency);
