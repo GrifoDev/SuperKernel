@@ -268,7 +268,7 @@ case $1 in
 				if [ -e /proc/last_kmsg ]; then
 					/system/xbin/zip ${DEBUG_FILE_ZIP}.zip $DEBUG_FILE > /dev/null;
 					sleep 5;
-					$BB mv /sdcard/Super_debug.zip $LOGS/SkyHigh_debug.zip;
+					$BB mv /sdcard/Super_debug.zip $LOGS/Super_debug.zip;
 				fi;
 				$BB rm -r $DEBUG_FILE;
 			fi;

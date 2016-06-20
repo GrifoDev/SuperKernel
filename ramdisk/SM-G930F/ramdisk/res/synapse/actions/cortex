@@ -8,7 +8,7 @@ fi;
 
 case $1 in
 cortexbrain_background_process)
-  P=/res/synapse/SkyHigh/cortexbrain_background_process
+  P=/res/synapse/Super/cortexbrain_background_process
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
     echo 0 > $P
@@ -29,7 +29,7 @@ cortexbrain_background_process)
   fi
   ;;
 cortexbrain_alpm_auto)
-  P=/res/synapse/SkyHigh/cortexbrain_alpm_auto
+  P=/res/synapse/Super/cortexbrain_alpm_auto
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
     echo 0 > $P
@@ -50,7 +50,7 @@ cortexbrain_alpm_auto)
   fi
   ;;
 cortexbrain_doze_auto)
-  P=/res/synapse/SkyHigh/cortexbrain_doze_auto
+  P=/res/synapse/Super/cortexbrain_doze_auto
   if [ ! -z "$2" ]; then
   if [ "$2" == Stock ]; then
     echo 0 > $P
@@ -73,7 +73,7 @@ cortexbrain_doze_auto)
   fi
   ;;
 cortexbrain_wifi_auto)
-  P=/res/synapse/SkyHigh/cortexbrain_wifi_auto
+  P=/res/synapse/Super/cortexbrain_wifi_auto
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
     echo 0 > $P
@@ -88,7 +88,7 @@ cortexbrain_wifi_auto)
   fi
   ;;
 cortexbrain_media_manager)
-  P=/res/synapse/SkyHigh/cortexbrain_media_manager
+  P=/res/synapse/Super/cortexbrain_media_manager
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
     echo 0 > $P
@@ -109,7 +109,7 @@ cortexbrain_media_manager)
   fi
   ;;
 cortexbrain_system)
-  P=/res/synapse/SkyHigh/cortexbrain_system
+  P=/res/synapse/Super/cortexbrain_system
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
     echo 0 > $P
@@ -124,7 +124,7 @@ cortexbrain_system)
   fi
   ;;
 cortexbrain_kernel)
-  P=/res/synapse/SkyHigh/cortexbrain_kernel
+  P=/res/synapse/Super/cortexbrain_kernel
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
     echo 0 > $P
@@ -139,7 +139,7 @@ cortexbrain_kernel)
   fi
   ;;
 cortexbrain_nmi_auto)
-  P=/res/synapse/SkyHigh/cortexbrain_nmi_auto
+  P=/res/synapse/Super/cortexbrain_nmi_auto
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
     echo 0 > $P
