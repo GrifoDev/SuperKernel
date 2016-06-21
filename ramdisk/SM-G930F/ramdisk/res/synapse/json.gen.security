@@ -58,18 +58,6 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-	{ SOptionList:{
-		title:"Force Audit",
-		description:"Enable for debugging SELinux driver.\n",
-		default:N,
-		action:"generic /sys/module/selinux/parameters/force_audit",
-		values:{
-			N:"Disabled", Y:"Enabled"
-		}
-	}},
-	{ SSpacer:{
-		height:1
-	}},
     ]
 }
 CTAG

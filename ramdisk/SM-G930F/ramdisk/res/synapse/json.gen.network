@@ -62,20 +62,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SPane:{
-		title:"WiFi DTIM Interval",
-		description:"The Delivery Traffic Indication Message (DTIM) corresponds to every beacon sent by the WiFi access point, and lets clients know data is about to be exchanged. This interval allows your WiFi chip to sleep longer before it has to wake up and listen for broadcasts and multicasts. By default the driver uses a value of 0, which means it defaults to what the WiFi access point defaults to. Often times that default is 1 (as frequently as possible). The higher this number, the less power the WiFi radio will use, but the longer it will take before it knows data has arrived (aka push notifications may be slow)."
+		title:"WiFi WakeLock",
+		description:""
         }},
 	{ SSpacer:{
 		   height:1
 	}},
 	{ SDescription:{
-		description:"Note: You MUST suspend and resume display for changes to take effect!"
-	}},
-	{ SSpacer:{
-		   height:1
-	}},
-	{ SDescription:{
-		description:"0 = use access point's default value.\n1:1 = every time (as fast as possible).\n1:2 = every other one."
+		description:"0 = Stock and bigger the number the more the wakelock gets devided."
 	}},
 	{ SSpacer:{
 		   height:1

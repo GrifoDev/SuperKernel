@@ -19,7 +19,7 @@ intvolt)
 ispvolt)
 	P=/sys/class/devfreq/17000030.devfreq_disp/volt_table
 	;;
-ispvolt)
+camvolt)
 	P=/sys/class/devfreq/17000040.devfreq_cam/volt_table
 	;;
 esac

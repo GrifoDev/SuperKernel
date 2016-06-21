@@ -35,7 +35,7 @@ cat << CTAG
 		`. /res/synapse/json.gen.backup-restore`,
 		`. /res/synapse/json.gen.logs`,
 		`. /res/synapse/json.gen.reboot`,
-		`. /res/synapse/json.gen.info`
+		`. /res/synapse/json.gen.info`,
     ]
 }
 CTAG

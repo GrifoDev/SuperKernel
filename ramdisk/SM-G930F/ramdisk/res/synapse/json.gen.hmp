@@ -78,13 +78,6 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-        { SPane:{
-                title:"Power Aware Scheduling",
-                description:"Power aware scheduling is a CPU capacity managing 'power scheduler' which lives by the side of the existing process scheduler. Its role is to monitor the system load and decide which CPUs that should be available to the process scheduler. It will basically attempt to “pack” small tasks into the “leftmost” CPU cores (ie. starting cpu0) to keep the other CPU cores as idle as possible, instead of spreading them evenly across all online cores. Theoretically this should increase power efficiency, with a very small cost to performance."
-        }},
-	{ SSpacer:{
-		height:1
-	}},
 	{ SPane:{
 		title:"PEWQ (Power-Efficient Workqueues)",
 		description:"Enable or disable PEWQ will help to reduce power consumption at the cost of slight performance overhead. By enabling this, PEWQ are used for unbound scheduled work to save load on sibling CPU cores and queuing work on CPU 0."
