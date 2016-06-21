@@ -249,7 +249,7 @@ static void sec_debug_dump_task_info(struct task_struct *tsk, bool is_main)
 	int permitted;
 	struct mm_struct *mm;
 
-	permitted = ptrace_may_access(tsk, PTRACE_MODE_READ);
+	permitted = ptrace_may_access(tsk, PTRACE_MODE_READ_REALCREDS);
 	mm = get_task_mm(tsk);
 	if (mm) {
 		if (permitted)
@@ -258,7 +258,7 @@ static void sec_debug_dump_task_info(struct task_struct *tsk, bool is_main)
 
 	wchan = get_wchan(tsk);
 	if (lookup_symbol_name(wchan, symname) < 0) {
-		if (!ptrace_may_access(tsk, PTRACE_MODE_READ))
+		if (!ptrace_may_access(tsk, PTRACE_MODE_READ_REALCREDS))
 			sprintf(symname, "_____");
 		else
 			sprintf(symname, "%lu", wchan);
