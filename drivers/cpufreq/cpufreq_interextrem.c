@@ -42,7 +42,7 @@
 #endif
 
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
-#include <mach/cpufreq.h>
+#include <soc/samsung/cpufreq.h>
 #endif
 #include "cpu_load_metric.h"
 #ifdef CONFIG_PMU_COREMEM_RATIO
@@ -241,46 +241,7 @@ static struct cpufreq_interextrem_tunables *tuned_parameters[NR_CPUS] = {NULL, }
 
 static struct attribute_group *get_sysfs_attr(void);
 
-static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
-						  cputime64_t *wall)
-{
-	u64 idle_time;
-	u64 cur_wall_time;
-	u64 busy_time;
-
-	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-
-	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-
-	idle_time = cur_wall_time - busy_time;
-	if (wall)
-		*wall = jiffies_to_usecs(cur_wall_time);
-
-	return jiffies_to_usecs(idle_time);
-}
-
-static inline cputime64_t get_cpu_idle_time(
-	unsigned int cpu,
-	cputime64_t *wall,
-	bool io_is_busy)
-
 #define DOWN_LOW_LOAD_THRESHOLD 5
-
-{
-	u64 idle_time = get_cpu_idle_time_us(cpu, wall);
-
-	if (idle_time == -1ULL)
-		idle_time = get_cpu_idle_time_jiffy(cpu, wall);
-	else if (!io_is_busy)
-		idle_time += get_cpu_iowait_time_us(cpu, wall);
-
-	return idle_time;
-}
 
 static void cpufreq_interextrem_timer_resched(
 	struct cpufreq_interextrem_cpuinfo *pcpu)
@@ -2580,7 +2541,7 @@ static int cpufreq_interextrem_cpu_min_qos_handler(struct notifier_block *b,
 	unsigned long flags;
 	int ret = NOTIFY_OK;
 #if defined(CONFIG_ARM_EXYNOS_MP_CPUFREQ)
-	int cpu = NR_CA7;
+	int cpu = NR_CLUST0_CPUS;
 #else
 	int cpu = 0;
 #endif
@@ -2631,7 +2592,7 @@ static int cpufreq_interextrem_cpu_max_qos_handler(struct notifier_block *b,
 	unsigned long flags;
 	int ret = NOTIFY_OK;
 #if defined(CONFIG_ARM_EXYNOS_MP_CPUFREQ)
-	int cpu = NR_CA7;
+	int cpu = NR_CLUST0_CPUS;
 #else
 	int cpu = 0;
 #endif
@@ -2794,8 +2755,8 @@ static int __init cpufreq_interextrem_init(void)
 	mutex_init(&gov_lock);
 
 #ifdef CONFIG_ARCH_EXYNOS
-	pm_qos_add_notifier(PM_QOS_CPU_FREQ_MIN, &cpufreq_interextrem_cpu_min_qos_notifier);
-	pm_qos_add_notifier(PM_QOS_CPU_FREQ_MAX, &cpufreq_interextrem_cpu_max_qos_notifier);
+	pm_qos_add_notifier(PM_QOS_CLUSTER0_FREQ_MIN, &cpufreq_interextrem_cpu_min_qos_notifier);
+	pm_qos_add_notifier(PM_QOS_CLUSTER0_FREQ_MAX, &cpufreq_interextrem_cpu_max_qos_notifier);
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
 	pm_qos_add_notifier(PM_QOS_KFC_FREQ_MIN, &cpufreq_interextrem_kfc_min_qos_notifier);
 	pm_qos_add_notifier(PM_QOS_KFC_FREQ_MAX, &cpufreq_interextrem_kfc_max_qos_notifier);
