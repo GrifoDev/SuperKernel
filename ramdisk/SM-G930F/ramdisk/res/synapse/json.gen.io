@@ -174,6 +174,21 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
+		`if [ -f "/sys/module/mmc_core/parameters/use_spi_crc" ]; then
+		CRCS=\`bool /sys/module/mmc_core/parameters/use_spi_crc\`
+			$BB echo '{ SPane:{
+				title:"Software CRC control"
+			}},
+				{ SCheckBox:{
+					label:"Software CRC control",
+					description:"Enabling software CRCs on the data blocks can be a significant (30%) performance cost. So we allow it to be disabled.",
+					default:'$CRCS',
+					action:"boolean /sys/module/mmc_core/parameters/use_spi_crc"
+				}},'
+		fi`
+	{ SSpacer:{
+		height:1
+	}},
 	{ SPane:{
 		title:"I/O Scheduler Tunables Internal"
 	}},
