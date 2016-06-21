@@ -197,9 +197,9 @@ cat << CTAG
 					description:" "
 				}},'
 				if [ -f "/sys/module/wakeup/parameters/enable_bcmdhd4359_wl" ]; then
-					BCM=\`$BB cat /sys/module/wakeup/parameters/enable_bcm4773_wl\`
+					BCM=\`$BB cat /sys/module/wakeup/parameters/enable_bcmdhd4359_wl\`
 					$BB echo '{ SOptionList:{
-						title:"bcm4773",
+						title:"bcmdhd4359",
 						description:"The bcmdhd4359 Wakelock (GPS chip) is one of the biggest wake sources after Sensorhub & SSP. Disable for better deep sleep and less awake time. Enable for stock behavior.\n",
 						default:'$BCM',
 						action:"generic sys/module/wakeup/parameters/enable_bcmdhd4359_wl",
@@ -238,7 +238,7 @@ cat << CTAG
 						description:"Default = 3. Stock = 1 (Higher = lower wake time)\n",
 						unit:"",
 						min:1,
-						max:3,
+						max:5,
 						step:1,
 						default:'$WIFI',
 						action:"generic sys/module/dhd/parameters/wl_divide"
@@ -258,7 +258,7 @@ cat << CTAG
 						description:"Default = 2. Stock = 2 (Higher = lower wake time)\n",
 						unit:"",
 						min:2,
-						max:4,
+						max:5,
 						step:1,
 						default:'$BT',
 						action:"generic sys/module/bcm4359/parameters/wl_divide_bt"
@@ -279,7 +279,7 @@ cat << CTAG
 						description:"Default = 5. Stock = 5 (Lower = lower wake time)\n",
 						unit:"",
 						min:1,
-						max:5,
+						max:20,
 						step:1,
 						default:'$MAINS',
 						action:"generic sys/module/sec_battery/parameters/wl_polling"
@@ -353,7 +353,7 @@ cat << CTAG
 						description:"Default = 2. Stock = 2 (Lower = lower wake time)\n",
 						unit:"",
 						min:1,
-						max:2,
+						max:5,
 						step:1,
 						default:'$NFC_SEC',
 						action:"generic sys/module/sec_nfc/parameters/wl_nfc"
