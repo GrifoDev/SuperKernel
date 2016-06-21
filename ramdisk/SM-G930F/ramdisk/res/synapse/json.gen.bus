@@ -49,12 +49,12 @@ while read -r FREQ VOLT; do
 		echo 'title:"'$(($FREQ / 1000))' MHz", default:'"$VOLT"', '
 		echo 'action:"ispvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
 done < /sys/class/devfreq/17000030.devfreq_disp/volt_table
-
+`
 	{ SSpacer:{
 		height:1
 	}},
 	{ SPane:{ title:"Camera Bus",
-		description:"Voltage supplied to the cam plane.\n" }},
+		description:"Voltage supplied to the Cam power plane.\n" }},
 `
 while read -r FREQ VOLT; do
 	echo '{ SSeekBar:{'

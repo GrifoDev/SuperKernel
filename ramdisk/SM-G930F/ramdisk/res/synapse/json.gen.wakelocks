@@ -54,9 +54,9 @@ cat << CTAG
 						title:"bluedroid_timer",
 						description:"Bluedroid wakelock\n",
 						default:'$BTW',
+						action:"generic sys/module/wakeup/parameters/enable_bluedroid_timer_ws"
 						values:{ Y:"Enabled", N:"Disabled"
 						}
-						action:"generic sys/module/wakeup/parameters/enable_bluedroid_timer_ws"
 					}},'
 					$BB echo '{ SSpacer:{
 						height:1
@@ -82,9 +82,9 @@ cat << CTAG
 						title:"enable_wlan_ctrl_wake_ws",
 						description:"Wlan ctrl wakelock\n",
 						default:'$WCW',
+						action:"generic sys/module/wakeup/parameters/enable_wlan_ctrl_wake_ws"
 						values:{ Y:"Enabled", N:"Disabled"
 						}
-						action:"generic sys/module/wakeup/parameters/enable_wlan_ctrl_wake_ws"
 					}},'
 					$BB echo '{ SSpacer:{
 						height:1
@@ -96,9 +96,9 @@ cat << CTAG
 						title:"enable_wlan_rx_wake_ws",
 						description:"Wlan RX wakelock\n",
 						default:'$WRW',
+						action:"generic sys/module/wakeup/parameters/enable_wlan_rx_wake_ws"
 						values:{ Y:"Enabled", N:"Disabled"
 						}
-						action:"generic sys/module/wakeup/parameters/enable_wlan_rx_wake_ws"
 					}},'
 					$BB echo '{ SSpacer:{
 						height:1
@@ -110,15 +110,14 @@ cat << CTAG
 						title:"enable_wlan_wake_ws",
 						description:"Wlan Wake wakelock\n",
 						default:'$WWW',
+						action:"generic sys/module/wakeup/parameters/enable_wlan_wake_ws"
 						values:{ Y:"Enabled", N:"Disabled"
 						}
-						action:"generic sys/module/wakeup/parameters/enable_wlan_wake_ws"
 					}},'
 					$BB echo '{ SSpacer:{
 						height:1
 					}},'
 				fi
-
 			fi`
     ]
 }

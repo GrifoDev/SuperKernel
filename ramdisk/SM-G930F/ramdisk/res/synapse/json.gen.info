@@ -39,7 +39,7 @@ cat << CTAG
 		title:"Special Thanks to"
 	}},
 	{ SDescription:{
-		description:"All Devs that inspire me to cherry-pick from and allow me to adapt to this kernel. In particular, AndreiLux and halaszk88. And not to forget, those that support a free project with constructive feedback & support !"
+		description:"UpInTheAir, AndreiLux, Jesec, Halaszk, Neobuddy and Dorimanx!"
 	}},
 	{ SSpacer:{
 		height:1
