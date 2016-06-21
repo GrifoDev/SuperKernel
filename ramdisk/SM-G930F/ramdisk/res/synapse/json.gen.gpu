@@ -65,8 +65,8 @@ cat << CTAG
 		title:"GPU MAX freq",
 		description:"Set the maximum frequency the GPU scales up to. Default is 650MHz.\n",
 		unit:" MHz",
-		default:$(cat /sys/devices/platform/gpusysfs/gpu_max_clock),
-		action:"generic /sys/devices/platform/gpusysfs/gpu_max_clock",
+		default:$(cat /sys/devices/14ac0000.mali/max_clock),
+		action:"generic /sys/devices/14ac0000.mali/max_clock",
 		values:{
 `
 			while read -r FREQ VOLT; do
@@ -83,8 +83,8 @@ cat << CTAG
 		title:"GPU MIN freq",
 		description:"Set the minimum frequency the GPU scales up to. Default is 260MHz.\n",
 		unit:" MHz",
-		default:$(cat /sys/devices/platform/gpusysfs/gpu_min_clock),
-		action:"generic /sys/devices/platform/gpusysfs/gpu_min_clock",
+		default:$(cat /sys/devices/14ac0000.mali/min_clock),
+		action:"generic /sys/devices/14ac0000.mali/min_clock",
 		values:{
 `
 			while read -r FREQ VOLT; do
