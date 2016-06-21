@@ -31,7 +31,7 @@
 #include "gpu_custom_interface.h"
 
 #ifdef CONFIG_SOC_EXYNOS8890
-#define GPU_MAX_VOLT		850000
+#define GPU_MAX_VOLT		1000000
 #define GPU_MIN_VOLT		500000
 #define GPU_VOLT_STEP		6250
 #else
@@ -537,8 +537,8 @@ static ssize_t set_gpu_custom_max_clock(struct device *dev, struct device_attrib
 		return -ENOENT;
 	}
 
-	if ((gpu_max_clock < 100) || (gpu_max_clock > 700)) {
-		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: out of range [100~700] (%d)\n", __func__, gpu_max_clock);
+	if ((gpu_max_clock < 100) || (gpu_max_clock > 803)) {
+		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: out of range [100~803] (%d)\n", __func__, gpu_max_clock);
 		return -ENOENT;
 	}
 
@@ -583,8 +583,8 @@ static ssize_t set_gpu_custom_min_clock(struct device *dev, struct device_attrib
 		return -ENOENT;
 	}
 
-	if ((gpu_min_clock < 100) || (gpu_min_clock > 700)) {
-		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: out of range [100~700] (%d)\n", __func__, gpu_min_clock);
+	if ((gpu_min_clock < 100) || (gpu_min_clock > 803)) {
+		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: out of range [100~803] (%d)\n", __func__, gpu_min_clock);
 		return -ENOENT;
 	}
 
