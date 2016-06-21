@@ -26,6 +26,14 @@ static int wl_prox = 1;
 module_param(wl_prox, int, 0644);
 static int wl_humi = 2;
 module_param(wl_humi, int, 0644);
+static int wl_motion = 2;
+module_param(wl_motion, int, 0644);
+static int wl_pickup = 2;
+module_param(wl_pickup, int, 0644);
+static int wl_tilt = 2;
+module_param(wl_tilt, int, 0644);
+static int wl_grip = 3;
+module_param(wl_grip, int, 0644);
 
 /*************************************************************************/
 /* SSP Kernel -> HAL input evnet function                                */
@@ -242,7 +250,7 @@ void report_sig_motion_data(struct ssp_data *data,
 		data->buf[SIG_MOTION_SENSOR].sig_motion);
 	input_sync(data->sig_motion_input_dev);
 
-	wake_lock_timeout(&data->ssp_wake_lock, 2 * HZ);
+	wake_lock_timeout(&data->ssp_wake_lock, wl_motion * HZ);
 }
 
 void report_rot_data(struct ssp_data *data, struct sensor_value *rotdata)
@@ -506,7 +514,7 @@ void report_grip_data(struct ssp_data *data, struct sensor_value *gripdata)
 			data->buf[GRIP_SENSOR].irq_stat + 1);
 	input_sync(data->grip_input_dev);
 
-	wake_lock_timeout(&data->ssp_wake_lock, 3 * HZ);
+	wake_lock_timeout(&data->ssp_wake_lock, wl_grip * HZ);
 }
 #endif
 
@@ -562,7 +570,7 @@ void report_tilt_data(struct ssp_data *data,
 	data->buf[TILT_DETECTOR].tilt_detector = tilt_data->tilt_detector;
 	ssp_push_iio_buffer(data->tilt_indio_dev, tilt_data->timestamp,
 			&tilt_data->tilt_detector, 1);
-	wake_lock_timeout(&data->ssp_wake_lock, 2 * HZ);
+	wake_lock_timeout(&data->ssp_wake_lock, wl_tilt * HZ);
 	pr_err("[SSP]: %s: %d", __func__,  tilt_data->tilt_detector);
 }
 
@@ -572,7 +580,7 @@ void report_pickup_data(struct ssp_data *data,
 	data->buf[PICKUP_GESTURE].pickup_gesture = pickup_data->pickup_gesture;
 	ssp_push_iio_buffer(data->pickup_indio_dev, pickup_data->timestamp,
 			&pickup_data->pickup_gesture, 1);
-	wake_lock_timeout(&data->ssp_wake_lock, 2 * HZ);
+	wake_lock_timeout(&data->ssp_wake_lock, wl_pickup * HZ);
 	pr_err("[SSP]: %s: %d", __func__,  pickup_data->pickup_gesture);
 }
 int initialize_event_symlink(struct ssp_data *data)

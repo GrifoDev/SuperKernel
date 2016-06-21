@@ -62,32 +62,6 @@ cat << CTAG
 		height:1
 	}},
 	{ SPane:{
-		title:"WiFi WakeLock",
-		description:""
-        }},
-	{ SSpacer:{
-		   height:1
-	}},
-	{ SDescription:{
-		description:"0 = Stock and bigger the number the more the wakelock gets devided."
-	}},
-	{ SSpacer:{
-		   height:1
-	}},
-        { SSeekBar:{
-		title:"Wifi wakelock",
-		description:"Sets how many times the wakelock should be divided by this number.\n",
-		default:2,
-		max:20,
-		min:0,
-		step:1,
-		unit:"",
-		action:"generic /sys/module/dhd/parameters/wl_divide",
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SPane:{
 		title:"TCP/IP Network Security Tweak",
 		description:"Protect against SYN & DoS attack etc."
 	}},

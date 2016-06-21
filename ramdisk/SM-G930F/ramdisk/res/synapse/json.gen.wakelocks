@@ -191,18 +191,18 @@ cat << CTAG
 					}},'
 				fi
 			fi`
-			`if [ -f "/sys/module/wakeup/parameters/enable_bcm4773_wl" ] || [ -f "/sys/module/bcm_gps_spi/parameters/wl_divide_gps" ]; then
+			`if [ -f "/sys/module/wakeup/parameters/enable_bcmdhd4359_wl" ] || [ -f "/sys/module/bcm_gps_spi/parameters/wl_divide_gps" ]; then
 				$BB echo '{ SPane:{
 					title:"GPS",
 					description:" "
 				}},'
-				if [ -f "/sys/module/wakeup/parameters/enable_bcm4773_wl" ]; then
+				if [ -f "/sys/module/wakeup/parameters/enable_bcmdhd4359_wl" ]; then
 					BCM=\`$BB cat /sys/module/wakeup/parameters/enable_bcm4773_wl\`
 					$BB echo '{ SOptionList:{
 						title:"bcm4773",
-						description:"The bcm4773 Wakelock (GPS chip) is one of the biggest wake sources after Sensorhub & SSP. Disable for better deep sleep and less awake time. Enable for stock behavior.\n",
+						description:"The bcmdhd4359 Wakelock (GPS chip) is one of the biggest wake sources after Sensorhub & SSP. Disable for better deep sleep and less awake time. Enable for stock behavior.\n",
 						default:'$BCM',
-						action:"generic sys/module/wakeup/parameters/enable_bcm4773_wl",
+						action:"generic sys/module/wakeup/parameters/enable_bcmdhd4359_wl",
 						values:{ Y:"Enabled", N:"Disabled"
 						}
 					}},'
