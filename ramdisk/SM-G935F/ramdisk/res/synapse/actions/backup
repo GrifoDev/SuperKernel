@@ -1,0 +1,13 @@
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+if [[ ! -z $2 ]]; then
+	echo "$2" > "$1"
+fi
+
+$BB echo "$(cat "$1")"
+
+$BB mount -t rootfs -o remount,ro rootfs;

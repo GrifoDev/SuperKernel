@@ -1,0 +1,38 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:"A53 VOLT",
+    elements:[
+	{ SPane:{
+		title:"HPM Voltage Control",
+	}},
+	{ SSeekBar:{
+		title:"Apollo HPM voltage margin",
+		description:"Set the maximum voltage margin the APM undervolts down to.\n",
+		default:$(cat /sys/kernel/debug/mailbox/apl_cl_margin),
+		action:"generic /sys/kernel/debug/mailbox/apl_cl_margin",
+		unit:" µV", weight:6250.0, min:0, step:1, max:10
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"A53 LITTLE Cores Voltage Control",
+		description:"Decreasing voltage will lower power consumption of the CPU. Increasing it on overclocked frequencies improves stability.\nToo low voltage may cause instabilities and freezes."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+`
+while read -r FREQ VOLT; do
+	echo '{ SSeekBar:{ default:'"$VOLT"', title:"'$(($FREQ / 1000))' MHz"'
+	echo ', action:"c0volt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, step:6250, max:1475000 }},'
+done < /sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster0_volt_table
+`
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

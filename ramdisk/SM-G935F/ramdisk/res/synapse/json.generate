@@ -1,0 +1,41 @@
+#!/system/bin/sh
+
+cat << CTAG
+
+{
+    sections: [
+		`. /res/synapse/json.gen.myabout`,
+		`. /res/synapse/json.gen.A72`,
+		`. /res/synapse/json.gen.A72_volt`,
+		`. /res/synapse/json.gen.A53`,
+		`. /res/synapse/json.gen.A53_volt`,
+		`. /res/synapse/json.gen.cpu_gov`,
+		`. /res/synapse/json.gen.A72_gov`,
+		`. /res/synapse/json.gen.A53_gov`,
+		`. /res/synapse/json.gen.hmp`,
+		`. /res/synapse/json.gen.cpu_stats`,
+		`. /res/synapse/json.gen.boost`,
+		`. /res/synapse/json.gen.gpu`,
+		`. /res/synapse/json.gen.gpu_volt`,
+		`. /res/synapse/json.gen.bus`,
+		`. /res/synapse/json.gen.io`,
+		`. /res/synapse/json.gen.memory`,
+		`. /res/synapse/json.gen.advanced`,
+		`. /res/synapse/json.gen.doze`,
+		`. /res/synapse/json.gen.wakelocks`,
+		`. /res/synapse/json.gen.battery`,
+		`. /res/synapse/json.gen.led`,
+		`. /res/synapse/json.gen.screen`,
+		`. /res/synapse/json.gen.network`,
+		`. /res/synapse/json.gen.security`,
+		`. /res/synapse/json.gen.fs`,
+		`. /res/synapse/json.gen.cortex`,
+		`. /res/synapse/json.gen.crontab`,
+		`. /res/synapse/json.gen.storage`,
+		`. /res/synapse/json.gen.backup-restore`,
+		`. /res/synapse/json.gen.logs`,
+		`. /res/synapse/json.gen.reboot`,
+		`. /res/synapse/json.gen.info`,
+    ]
+}
+CTAG

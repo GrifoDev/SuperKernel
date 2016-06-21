@@ -15,6 +15,7 @@ import /init.sec_debug.rc
 import /init.container.rc
 import /init.rilcommon.rc
 import /init.d_support.sh
+import /init.Super.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
@@ -608,9 +609,9 @@ on boot
     write /proc/sys/vm/overcommit_memory 1
     write /proc/sys/vm/min_free_order_shift 4
     chown root system /sys/module/lowmemorykiller/parameters/adj
-    chmod 0220 /sys/module/lowmemorykiller/parameters/adj
+    chmod 0664 /sys/module/lowmemorykiller/parameters/adj
     chown root system /sys/module/lowmemorykiller/parameters/minfree
-    chmod 0220 /sys/module/lowmemorykiller/parameters/minfree
+    chmod 0664 /sys/module/lowmemorykiller/parameters/minfree
     # for BT MAC address
     mkdir /efs/bluetooth 0775 radio system
     # if already exist
@@ -1022,9 +1023,6 @@ on boot
 # usb disable
     chown system usb /sys/class/usb_notify/usb_control/disable
     chmod 0664 /sys/class/usb_notify/usb_control/disable
-
-    write /sys/block/mmcblk0/queue/scheduler noop
-    write /sys/block/sda/queue/scheduler noop
 
     copy /system/etc/battery_charging_temp.data /sys/class/power_supply/battery/batt_temp_table
 
@@ -1679,6 +1677,12 @@ service daemonsu /sbin/launch_daemonsu.sh
     class late_start
     user root
     seclabel u:r:init:s0
+    oneshot
+
+# Call Post-init script
+service Super-init /sbin/Super.sh
+    class main
+    user root
     oneshot
 
 # SuperSU:PATCH:274

@@ -1,0 +1,81 @@
+# By UpInTheAir for SkyHigh kernels
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+case $1 in
+tk_brightness_sync)
+  P=/res/synapse/Super/tk_brightness_sync
+  if [ ! -z "$2" ]; then
+  if [ "$2" == 0 ]; then
+    echo 0 > $P
+	echo "0" > /sys/devices/13900000.dsim/tk_brightness_sync;
+  elif [ "$2" == 1 ]; then
+    echo 1 > $P
+	echo "1" > /sys/devices/13900000.dsim/tk_brightness_sync;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo 0
+  elif [ "$copy" == 1 ]; then
+    echo 1
+  fi
+  ;;
+
+tk_disable)
+  P=/res/synapse/Super/tk_disable
+  if [ ! -z "$2" ]; then
+  if [ "$2" == 0 ]; then
+    echo 0 > $P
+	chmod 0644 /sys/devices/virtual/sec/sec_touchkey/input/enabled;
+	echo "0" > /sys/devices/virtual/sec/sec_touchkey/input/enabled;
+	chmod 0440 /sys/devices/virtual/sec/sec_touchkey/input/enabled;
+  elif [ "$2" == 1 ]; then
+    echo 1 > $P
+	chmod 0644 /sys/devices/virtual/sec/sec_touchkey/input/enabled;
+	echo "1" > /sys/devices/virtual/sec/sec_touchkey/input/enabled;
+	chmod 0440 /sys/devices/virtual/sec/sec_touchkey/input/enabled;
+
+	# Force tk_brightness to sync if directory exists and enabled
+	if [ -e "/sys/devices/13900000.dsim/tk_brightness_sync" ]; then
+		if [ "$(cat /res/synapse/Super/tk_brightness_sync)" == "1" ]; then
+			echo "0" > /sys/devices/13900000.dsim/tk_brightness_sync;
+			echo "1" > /sys/devices/13900000.dsim/tk_brightness_sync;
+		fi;
+	fi;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo 0
+  elif [ "$copy" == 1 ]; then
+    echo 1
+  fi
+  ;;
+esac
+
+  tk_brightness_sync=$(cat /res/synapse/Super/tk_brightness_sync);
+  if [ "$tk_brightness_sync" == "0" ]; then
+
+	if [ -f "$1" ]; then
+		if [[ ! -z "$2" ]]; then
+			$BB echo "$2" > "$1";
+		fi;
+
+		$BB echo "$($BB cat "$1")";
+		$BB echo "$($BB cat "$1")" > /sys/devices/virtual/sec/sec_touchkey/touchkey_brightness;
+	fi;
+
+  elif [ "$tk_brightness_sync" == "1" ]; then
+	if [ -f "$1" ]; then
+		if [[ ! -z "$2" ]]; then
+			$BB echo "$2" > "$1";
+		fi;
+
+		$BB echo "$($BB cat "$1")";
+	fi;
+  fi;
+
+$BB mount -t rootfs -o remount,ro rootfs;

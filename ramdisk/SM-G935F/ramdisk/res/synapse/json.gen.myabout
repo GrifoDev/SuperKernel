@@ -1,0 +1,71 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:"ABOUT",
+    elements:[
+	{ SLiveLabel:{
+		description:"\n",
+		refresh:10000000,
+		action:"echo Hello"
+	}},
+	{ SLiveLabel:{
+		refresh:10000000,
+		style:"bold",
+		action:"echo Welcome to Super-Kernel!"
+	}},
+	{ SLiveLabel:{
+		refresh:10000000,
+		action:"echo by"
+	}},
+	{ SLiveLabel:{
+		refresh:10000000,
+		style:"bold",
+		action:"echo Tkkg1994"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"PayPal Donation",
+		action:"am start -a android.intent.action.VIEW -d http://forum.xda-developers.com/donatetome.php?u=5899304 > /dev/null;
+		echo Opening browser...;"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	`if [ "$(grep "G930F" /proc/cmdline)" != "" ] || [ "$(grep "G930FD" /proc/cmdline)" != "" ] || [ "$(grep "G930W8" /proc/cmdline)" != "" ]; then
+		echo '{ SButton:{
+			label:"Super-Kernel thread @ XDA",
+			action:"am start -a android.intent.action.VIEW -d http://forum.xda-developers.com/galaxy-s7/development/kernel-superkernel-v1-0-t3389247/ > /dev/null;
+			echo Opening browser...;"
+		}},
+		{ SSpacer:{
+			height:1
+		}},'
+	elif [ "$(grep "G935F" /proc/cmdline)" != "" ] || [ "$(grep "G935FD" /proc/cmdline)" != "" ] || [ "$(grep "G935W8" /proc/cmdline)" != "" ]; then
+		echo '{ SButton:{
+			label:"Super-Kernel thread @ XDA",
+			action:"am start -a android.intent.action.VIEW -d http://forum.xda-developers.com/s7-edge/development/kernel-superkernel-v1-0-t3389255/ > /dev/null;
+			echo Opening browser...;"
+		}},
+		{ SSpacer:{
+			height:1
+		}},'
+	fi;`
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Up Time:"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SLiveLabel:{
+		refresh:1500,
+		action:"live LiveUpTime"
+	}},
+    ]
+}
+CTAG

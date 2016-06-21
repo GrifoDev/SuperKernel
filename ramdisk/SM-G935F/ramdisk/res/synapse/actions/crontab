@@ -1,0 +1,166 @@
+# By UpInTheAir for SkyHigh kernels
+# cron_log by dorimanx and modified from ExTweaks by UpInTheAir for SkyHigh kernels & Synapse
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+case $1 in
+cron_master)
+  P=/res/synapse/Super/cron_master
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	pkill -f crond;
+	pkill -f "/res/crontab_service/service.sh";
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	$BB nohup $BB sh /res/crontab_service/service.sh 2> /dev/null;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+cache)
+  P=/res/synapse/Super/cron_cache
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+sqlite)
+  P=/res/synapse/Super/cron_sqlite
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+drop_cache)
+  P=/res/synapse/Super/cron_drop_cache
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+fg_reset)
+  P=/res/synapse/Super/cron_fg
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+google)
+  P=/res/synapse/Super/cron_google
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+fstrim)
+  P=/res/synapse/Super/cron_fstrim
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+log)
+  if [ ! -e /data/crontab/cron-clear-file-cache ]; then
+	echo "no data" > /data/crontab/cron-clear-file-cache;
+  fi;
+  if [ ! -e /data/crontab/cron-clear-ram-cache ]; then
+	echo "no data" > /data/crontab/cron-clear-ram-cache;
+  fi;
+  if [ ! -e /data/crontab/cron-db-optimizing ]; then
+	echo "no data" > /data/crontab/cron-db-optimizing;
+  fi;
+  if [ ! -e /data/crontab/cron-fstrim ]; then
+	echo "no data" > /data/crontab/cron-fstrim;
+  fi;
+  if [ ! -e /data/crontab/cron-ram-release ]; then
+	echo "no data" > /data/crontab/cron-ram-release;
+  fi;
+  if [ ! -e /data/crontab/cron-reset_battery ]; then
+	echo "no data" > /data/crontab/cron-reset_battery;
+  fi;
+
+  chmod 777 /data/crontab/*
+  cat /data/crontab/cron-clear-file-cache > /data/crontab/cron_log;
+  echo "---" >> /data/crontab/cron_log;
+  cat /data/crontab/cron-clear-ram-cache >> /data/crontab/cron_log;
+  echo "---" >> /data/crontab/cron_log;
+  cat /data/crontab/cron-db-optimizing >> /data/crontab/cron_log;
+  echo "---" >> /data/crontab/cron_log;
+  cat /data/crontab/cron-fstrim >> /data/crontab/cron_log;
+  echo "---" >> /data/crontab/cron_log;
+  cat /data/crontab/cron-ram-release >> /data/crontab/cron_log;
+  echo "---" >> /data/crontab/cron_log;
+  cat /data/crontab/cron-reset_battery >> /data/crontab/cron_log;
+
+
+  # push all to one log.
+  CRON_LOG=$(cat /data/crontab/cron_log);
+  echo "$CRON_LOG";
+  ;;
+
+esac
+
+$BB mount -t rootfs -o remount,ro rootfs;

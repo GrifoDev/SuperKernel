@@ -1,0 +1,86 @@
+#!/system/bin/sh
+
+BB=/system/xbin/busybox;
+
+cat << CTAG
+{
+    name:CORTEX,
+    elements:[
+	{ SLiveLabel:{
+		title:"CortexBrain Status",
+		refresh:3000,
+		action:"live check_cortex"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Cortexbrain-Background-Process (Master Switch)",
+		description:"If you set this to Disabled, then all auto applied screen state (ON or OFF) functions will have no effect!\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_background_process)"),
+		action:"cortex cortexbrain_background_process",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"CortexBrain Functions",
+		description:"This script will manipulate many kernel settings, based on chosen Synapse settings and screen state (ON or OFF) - we call it CortexBrain. All auto functions are applied after the screen is OFF."
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"WiFi Auto",
+		description:"Setting to 'Auto' will disable WiFi when the screen is OFF (if not in-call) & auto enable when the screen is ON (if no data connection). Disabling will allow full userspace control.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_wifi_auto)"),
+		action:"cortex cortexbrain_wifi_auto",
+		values:[Disabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Media Manager",
+		description:"Setting to 'Auto' will disable Media Manager service when the screen is OFF & auto enable when the screen is ON.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_media_manager)"),
+		action:"cortex cortexbrain_media_manager",
+		values:[Disabled, Enabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"System-Tweaks",
+		description:"Enable or Disable System-Tweaks. Possible increase in UI speed. Disabling requires REBOOT.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_system)"),
+		action:"cortex cortexbrain_system",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Kernel-Tweaks",
+		description:"Enable or Disable Kernel-Tweaks. Disabling requires REBOOT.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_kernel)"),
+		action:"cortex cortexbrain_kernel",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"nmi_watchdog",
+		description:"The NMI Watchdog is a debugging feature to catch hardware hangs that cause a kernel panic. On some systems it can generate a lot of interrupts, causing a noticeable increase in power usage. Setting to 'Auto' will disable nmi_watchdog when the screen is OFF & auto enable when the screen is ON. WARNING: may cause instability on some devices if set to anything other than Enabled.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_nmi_auto)"),
+		action:"cortex cortexbrain_nmi_auto",
+		values:[Disabled, Enabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

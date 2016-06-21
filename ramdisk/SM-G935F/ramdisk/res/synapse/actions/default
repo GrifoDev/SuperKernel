@@ -1,0 +1,36 @@
+BB=/system/xbin/busybox;
+
+case $1 in
+version)
+  $BB echo "$(uname -r)"
+  ;;
+build)
+  $BB echo "$(getprop ro.build.PDA)"
+  ;;
+baseband)
+  $BB echo "$(getprop gsm.version.baseband)"
+  ;;
+bootloader)
+  $BB echo "$(getprop ro.bootloader)"
+  ;;
+date)
+  $BB echo "$(getprop ro.build.date)"
+  ;;
+android_version)
+  $BB echo "$(getprop ro.build.version.release)"
+  ;;
+busybox_version)
+  $BB echo "$(busybox | head -1)"
+  ;;
+su_version)
+  $BB echo "SuperSU app: $(dumpsys package eu.chainfire.supersu | grep versionName | cut -d"=" -f2)@nbinary: $(su -v)"
+  ;;
+serial)
+  P=/efs/FactoryApp/serial_no
+  if [ -f $P ]; then
+  $BB echo "$(cat $P)"
+  else
+  $BB echo "$(getprop ro.boot.serialno)"
+  fi
+  ;;
+esac
