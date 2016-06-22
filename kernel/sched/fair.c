@@ -2927,8 +2927,8 @@ static unsigned int hmp_up_power_threshold = 341;
  * Maximum total capacity difference in load scale percentage to enact scheduler power migration.
  * 
  */
-#define UP_PERF_HYS_DEF		SCHED_LOAD_SCALE * 0.05
-#define DOWN_PERF_HYS_DEF	SCHED_LOAD_SCALE * 0.10
+#define UP_PERF_HYS_DEF		SCHED_LOAD_SCALE * 0.04
+#define DOWN_PERF_HYS_DEF	SCHED_LOAD_SCALE * 0.09
 static unsigned int hmp_up_perf_hysteresis = UP_PERF_HYS_DEF;
 static unsigned int hmp_down_perf_hysteresis = DOWN_PERF_HYS_DEF;
 
