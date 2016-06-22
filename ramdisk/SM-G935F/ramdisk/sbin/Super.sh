@@ -25,6 +25,10 @@ $BB chmod 666 /sys/module/lowmemorykiller/parameters/cost;
 $BB chmod 666 /sys/module/lowmemorykiller/parameters/adj;
 $BB chmod 666 /sys/module/lowmemorykiller/parameters/minfree;
 
+# Set stock freqs as default freqs on boot
+echo 1586000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 2496000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+
 # Disable rotational storage for all blocks
 # We need faster I/O so do not try to force moving to other CPU cores (dorimanx)
 for i in /sys/block/*/queue; do
