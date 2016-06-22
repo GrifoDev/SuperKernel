@@ -2,7 +2,7 @@
 
 cat << CTAG
 {
-    name:MULTICORE,
+    name:MULTICORE HMP,
     elements:[
 	{ SPane:{
 		title:"HMP Thresholds up/down ratios for task migrating",

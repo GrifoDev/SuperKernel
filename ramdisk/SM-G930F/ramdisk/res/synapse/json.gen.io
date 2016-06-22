@@ -174,18 +174,15 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-		`if [ -f "/sys/module/mmc_core/parameters/use_spi_crc" ]; then
-				CRCS=\`$BB cat /sys/module/mmc_core/parameters/use_spi_crc\`
-					$BB echo '{ SPane:{
-						title:"Software CRC control"
-					}},
-						{ SCheckBox:{
-							label:"Software CRC control",
-							description:"Enabling software CRCs on the data blocks can be a significant (30%) performance cost. So we allow it to be disabled.",
-							default:'$CRCS',
-							action:"generic /sys/module/mmc_core/parameters/use_spi_crc"
-						}},'
-		fi`
+	{ SOptionList:{
+		title:"Software CRC control",
+		description:"Enabling software CRCs on the data blocks can be a significant (30%) performance cost. So we allow it to be disabled.",
+		default:N,
+		action:"generic /sys/module/mmc_core/parameters/use_spi_crc",
+		values:{
+			N:"Disabled", Y:"Enabled"
+		}
+	}},
 	{ SSpacer:{
 		height:1
 	}},

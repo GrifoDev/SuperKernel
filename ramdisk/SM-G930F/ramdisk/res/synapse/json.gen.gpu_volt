@@ -22,7 +22,7 @@ cat << CTAG
 	while read -r FREQ VOLT; do
 		echo '{ SSeekBar:{'
 			echo 'title:"'"$FREQ"' MHz", default:'"$VOLT"', '
-			echo 'action:"gpuvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:850000, step:6250 }}, '
+			echo 'action:"gpuvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:1187500, step:6250 }}, '
 	done < /sys/devices/14ac0000.mali/volt_table
 `
 	{ SSpacer:{
