@@ -31,7 +31,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"GPU LEVEL 1 throttling frequency",
-		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 90°C. Default is 600.\n",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 90°C. Default is 650.\n",
 		unit:" MHz",
 		default:$(cat /sys/devices/14ac0000.mali/throttling1),
 		action:"generic /sys/devices/14ac0000.mali/throttling1",
@@ -49,7 +49,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"GPU LEVEL 2 throttling frequency",
-		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 95°C. Default is 544.\n",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 95°C. Default is 600.\n",
 		unit:" MHz",
 		default:$(cat /sys/devices/14ac0000.mali/throttling2),
 		action:"generic /sys/devices/14ac0000.mali/throttling2",
@@ -67,7 +67,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"GPU LEVEL 3 throttling frequency",
-		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 100°C. Default is 420.\n",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 100°C. Default is 546.\n",
 		unit:" MHz",
 		default:$(cat /sys/devices/14ac0000.mali/throttling3),
 		action:"generic /sys/devices/14ac0000.mali/throttling3",
@@ -85,7 +85,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"GPU LEVEL 4 throttling frequency",
-		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 105°C. Default is 266.\n",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 105°C. Default is 419.\n",
 		unit:" MHz",
 		default:$(cat /sys/devices/14ac0000.mali/throttling4),
 		action:"generic /sys/devices/14ac0000.mali/throttling4",
@@ -103,7 +103,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"GPU tripping frequency",
-		description:"Exynos TMU control trip GPU freq to this freq if GPU temp is 110°C. Default is 266.\n",
+		description:"Exynos TMU control trip GPU freq to this freq if GPU temp is 110°C. Default is 260.\n",
 		unit:" MHz",
 		default:$(cat /sys/devices/14ac0000.mali/tripping),
 		action:"generic /sys/devices/14ac0000.mali/tripping",

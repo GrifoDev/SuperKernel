@@ -103,7 +103,7 @@ cat << CTAG
 		title:"pm_freeze_timeout",
 		description:" ",
 		unit:" sec",
-		max:2000,
+		max:40000,
 		min:1000,
 		step:100,
 		weight:0.001,
