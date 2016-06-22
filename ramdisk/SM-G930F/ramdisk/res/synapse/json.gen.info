@@ -30,7 +30,7 @@ cat << CTAG
 	fi;`
 	{ SPane:{
 		title:"Source",
-		description:"Available on Github"
+		description:"<a href='https://github.com/Tkkg1994/SuperKernel/'>Github Source Code</a>"
 	}},
 	{ SSpacer:{
 		height:1
