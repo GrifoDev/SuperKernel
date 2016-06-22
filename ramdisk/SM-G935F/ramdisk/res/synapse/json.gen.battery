@@ -496,26 +496,6 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-	{ SSeekBar:{
-		title:"Store Mode Maximum",
-		description:"If current battery capacity < Store Mode Maximum, then charging will STOP when it reaches this MAX value.",
-		min:0, max:100, unit:" %", step:1,
-		default:$(cat /sys/module/sec_battery/parameters/store_mode_max),
-		action:"generic /sys/module/sec_battery/parameters/store_mode_max"
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SSeekBar:{
-		title:"Store Mode Minimum",
-		description:"If current battery capacity > Store Mode Minimum, then charging will START when it reaches this MIN value.",
-		min:0, max:100, unit:" %", step:1,
-		default:$(cat /sys/module/sec_battery/parameters/store_mode_min),
-		action:"generic /sys/module/sec_battery/parameters/store_mode_min"
-	}},
-	{ SSpacer:{
-		height:1
-	}},
 	{ SPane:{
 		title:"Battery Scaling Calibration",
 		description:"If you are having incorrect battery SCALING issues, this will reset your device battery % to scale correctly to the approximate available mV. Give it a few hours after you reset the gauge. It may still show you funny values for that period, then the battery percentage should be fine after a full charge cycle."
