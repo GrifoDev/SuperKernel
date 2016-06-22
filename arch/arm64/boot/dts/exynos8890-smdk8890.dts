@@ -341,14 +341,15 @@
 		trigger_type_6 = <THROTTLE_ACTIVE>;
 		trigger_type_7 = <HW_TRIP>;
 
-		freq_tab_count = <6>;
+		freq_tab_count = <7>;
 
 		freq_clip_max_0 = <600000>;
 		freq_clip_max_1 = <600000>;
 		freq_clip_max_2 = <546000>;
 		freq_clip_max_3 = <419000>;
 		freq_clip_max_4 = <260000>;
-		freq_clip_max_5 = <260000>;
+		freq_clip_max_5 = <160000>;
+		freq_clip_max_6 = <160000>;
 
 		cooling_level_0 = <66>;
 		cooling_level_1 = <71>;
@@ -356,16 +357,18 @@
 		cooling_level_3 = <81>;
 		cooling_level_4 = <86>;
 		cooling_level_5 = <91>;
+		cooling_level_6 = <96>;
 
 		/* gpu cooling related table */
-		gpu_idx_num = <6>;
+		gpu_idx_num = <7>;
 		/* flags, driver_data(index), frequency */
 		gpu_cooling_table = < 0 0 600000
 				      0 1 546000
 				      0 2 419000
 				      0 3 338000
 				      0 4 260000
-				      0 5 TABLE_END>;
+				      0 5 112000
+				      0 6 TABLE_END>;
 	};
 
 	tmuctrl_3: tmuctrl@1006C000 {
