@@ -420,7 +420,7 @@
 				buck2_reg: BUCK2 {
 					regulator-name = "vdd_mngs";
 					regulator-min-microvolt = <500000>;
-					regulator-max-microvolt = <1300000>;
+					regulator-max-microvolt = <1575000>;
 					regulator-always-on;
 					regulator-ramp-delay = <12000>;
 					regulator-initial-mode = <1>;
@@ -429,7 +429,7 @@
 				buck3_reg: BUCK3 {
 					regulator-name = "vdd_apollo";
 					regulator-min-microvolt = <500000>;
-					regulator-max-microvolt = <1200000>;
+					regulator-max-microvolt = <1475000>;
 					regulator-always-on;
 					regulator-ramp-delay = <12000>;
 					regulator-initial-mode = <1>;
