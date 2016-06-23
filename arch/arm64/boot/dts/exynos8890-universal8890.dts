@@ -193,15 +193,19 @@
 
 		/* gpu cooling related table */
 		/* flags, driver_data(index), frequency */
-		gpu_idx_num = <8>;
-		gpu_cooling_table = < 0 0 650000
-		                      0 1 600000
-		                      0 2 546000
-		                      0 3 419000
-		                      0 4 338000
-		                      0 5 260000
-		                      0 6 112000
-		                      0 7 TABLE_END>;
+		gpu_idx_num = <12>;
+		gpu_cooling_table = < 0 0 806000
+		                      0 1 754000
+		                      0 2 728000
+		                      0 3 702000
+		                      0 4 650000
+		                      0 5 600000
+		                      0 6 546000
+		                      0 7 419000
+		                      0 8 338000
+		                      0 9 260000
+		                      0 10 112000
+		                      0 11 TABLE_END>;
 	};
 
 	tmuctrl_3: tmuctrl@1006C000 {

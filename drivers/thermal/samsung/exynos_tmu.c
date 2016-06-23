@@ -1264,6 +1264,8 @@ static int exynos_tmu_ect_set_information(struct platform_device *pdev)
 			function->range_list[i].max_frequency = -1;
 		if (function->range_list[i].max_frequency == 1586000)
 			function->range_list[i].max_frequency = -1;
+		if (function->range_list[i].max_frequency == 650000)
+			function->range_list[i].max_frequency = -1;
 
 		pdata->freq_tab[i].temp_level = function->range_list[i].lower_bound_temperature;
 		pdata->freq_tab[i].freq_clip_max = function->range_list[i].max_frequency;
