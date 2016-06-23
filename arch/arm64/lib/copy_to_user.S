@@ -38,7 +38,7 @@ reg1	.req	x3
 reg2	.req	x4
 end	.req	x5
 
-ENTRY(__copy_to_user)
+ENTRY(__arch_copy_to_user)
 	add	x5, x0, x2		// upper user buffer boundary
 
 	ldr	x3, =exynos_soc_info
@@ -157,7 +157,7 @@ USER(9f, strh	w3, [x0], #2	)
 USER(9f, strb	w3, [x0]	)
 5:	mov	x0, #0
 	ret
-ENDPROC(__copy_to_user)
+ENDPROC(__arch_copy_to_user)
 
 	.section .fixup,"ax"
 	.align	2
@@ -165,7 +165,7 @@ ENDPROC(__copy_to_user)
 	ret
 	.previous
 #else
-ENTRY(__copy_to_user)
+ENTRY(__arch_copy_to_user)
 	add	x4, x0, x2			// upper user buffer boundary
 	subs	x2, x2, #8
 	b.mi	2f
@@ -190,7 +190,7 @@ USER(9f, strh	w3, [x0], #2	)
 USER(9f, strb	w3, [x0]	)
 5:	mov	x0, #0
 	ret
-ENDPROC(__copy_to_user)
+ENDPROC(__arch_copy_to_user)
 
 	.section .fixup,"ax"
 	.align	2
