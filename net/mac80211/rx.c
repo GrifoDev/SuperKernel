@@ -2000,8 +2000,7 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 		/* deliver to local stack */
 		skb->protocol = eth_type_trans(skb, dev);
 		memset(skb->cb, 0, sizeof(skb->cb));
-		if (!(rx->flags & IEEE80211_RX_REORDER_TIMER) &&
-		    rx->local->napi)
+		if (rx->local->napi)
 			napi_gro_receive(rx->local->napi, skb);
 		else
 			netif_receive_skb(skb);
@@ -3071,7 +3070,7 @@ void ieee80211_release_reorder_timeout(struct sta_info *sta, int tid)
 		/* This is OK -- must be QoS data frame */
 		.security_idx = tid,
 		.seqno_idx = tid,
-		.flags = IEEE80211_RX_REORDER_TIMER,
+		.flags = 0,
 	};
 	struct tid_ampdu_rx *tid_agg_rx;
 
@@ -3171,7 +3170,6 @@ static bool prepare_for_handlers(struct ieee80211_rx_data *rx,
 				return false;
 			/* ignore action frames to TDLS-peers */
 			if (ieee80211_is_action(hdr->frame_control) &&
-			    !is_broadcast_ether_addr(bssid) &&
 			    !ether_addr_equal(bssid, hdr->addr1))
 				return false;
 		}

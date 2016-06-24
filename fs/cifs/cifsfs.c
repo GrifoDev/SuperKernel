@@ -1248,7 +1248,7 @@ init_cifs(void)
 		goto out_destroy_mids;
 
 #ifdef CONFIG_CIFS_UPCALL
-	rc = init_cifs_spnego();
+	rc = register_key_type(&cifs_spnego_key_type);
 	if (rc)
 		goto out_destroy_request_bufs;
 #endif /* CONFIG_CIFS_UPCALL */
@@ -1271,7 +1271,7 @@ out_init_cifs_idmap:
 out_register_key_type:
 #endif
 #ifdef CONFIG_CIFS_UPCALL
-	exit_cifs_spnego();
+	unregister_key_type(&cifs_spnego_key_type);
 out_destroy_request_bufs:
 #endif
 	cifs_destroy_request_bufs();

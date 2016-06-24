@@ -49,15 +49,13 @@ int ovl_setattr(struct dentry *dentry, struct iattr *attr)
 	if (err)
 		goto out;
 
-	err = ovl_copy_up(dentry);
-	if (!err) {
-		upperdentry = ovl_dentry_upper(dentry);
-
+	upperdentry = ovl_dentry_upper(dentry);
+	if (upperdentry) {
 		mutex_lock(&upperdentry->d_inode->i_mutex);
 		err = notify_change(upperdentry, attr, NULL);
-		if (!err)
-			ovl_copyattr(upperdentry->d_inode, dentry->d_inode);
 		mutex_unlock(&upperdentry->d_inode->i_mutex);
+	} else {
+		err = ovl_copy_up_last(dentry, attr, false);
 	}
 	ovl_drop_write(dentry);
 out:
@@ -335,33 +333,37 @@ static bool ovl_open_need_copy_up(int flags, enum ovl_path_type type,
 	return true;
 }
 
-struct inode *ovl_d_select_inode(struct dentry *dentry, unsigned file_flags)
+static int ovl_dentry_open(struct dentry *dentry, struct file *file,
+		    const struct cred *cred)
 {
 	int err;
 	struct path realpath;
 	enum ovl_path_type type;
-
-	if (d_is_dir(dentry))
-		return d_backing_inode(dentry);
+	bool want_write = false;
 
 	type = ovl_path_real(dentry, &realpath);
-	if (ovl_open_need_copy_up(file_flags, type, realpath.dentry)) {
+	if (ovl_open_need_copy_up(file->f_flags, type, realpath.dentry)) {
+		want_write = true;
 		err = ovl_want_write(dentry);
 		if (err)
-			return ERR_PTR(err);
+			goto out;
 
-		if (file_flags & O_TRUNC)
+		if (file->f_flags & O_TRUNC)
 			err = ovl_copy_up_last(dentry, NULL, true);
 		else
 			err = ovl_copy_up(dentry);
-		ovl_drop_write(dentry);
 		if (err)
-			return ERR_PTR(err);
+			goto out_drop_write;
 
 		ovl_path_upper(dentry, &realpath);
 	}
 
-	return d_backing_inode(realpath.dentry);
+	err = vfs_open(&realpath, file, cred);
+out_drop_write:
+	if (want_write)
+		ovl_drop_write(dentry);
+out:
+	return err;
 }
 
 static const struct inode_operations ovl_file_inode_operations = {
@@ -372,6 +374,7 @@ static const struct inode_operations ovl_file_inode_operations = {
 	.getxattr	= ovl_getxattr,
 	.listxattr	= ovl_listxattr,
 	.removexattr	= ovl_removexattr,
+	.dentry_open	= ovl_dentry_open,
 };
 
 static const struct inode_operations ovl_symlink_inode_operations = {

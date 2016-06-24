@@ -456,14 +456,14 @@ int radeon_vm_bo_set_addr(struct radeon_device *rdev,
 
 	if (soffset) {
 		/* make sure object fit at this offset */
-		eoffset = soffset + size - 1;
+		eoffset = soffset + size;
 		if (soffset >= eoffset) {
 			return -EINVAL;
 		}
 
 		last_pfn = eoffset / RADEON_GPU_PAGE_SIZE;
-		if (last_pfn >= rdev->vm_manager.max_pfn) {
-			dev_err(rdev->dev, "va above limit (0x%08X >= 0x%08X)\n",
+		if (last_pfn > rdev->vm_manager.max_pfn) {
+			dev_err(rdev->dev, "va above limit (0x%08X > 0x%08X)\n",
 				last_pfn, rdev->vm_manager.max_pfn);
 			return -EINVAL;
 		}
@@ -477,7 +477,7 @@ int radeon_vm_bo_set_addr(struct radeon_device *rdev,
 	eoffset /= RADEON_GPU_PAGE_SIZE;
 	if (soffset || eoffset) {
 		struct interval_tree_node *it;
-		it = interval_tree_iter_first(&vm->va, soffset, eoffset);
+		it = interval_tree_iter_first(&vm->va, soffset, eoffset - 1);
 		if (it && it != &bo_va->it) {
 			struct radeon_bo_va *tmp;
 			tmp = container_of(it, struct radeon_bo_va, it);
@@ -506,12 +506,7 @@ int radeon_vm_bo_set_addr(struct radeon_device *rdev,
 			tmp->bo = radeon_bo_ref(bo_va->bo);
 			spin_lock(&vm->status_lock);
 			list_add(&tmp->vm_status, &vm->freed);
-<<<<<<< HEAD
 			spin_unlock(&vm->status_lock);
-=======
-
-			bo_va->addr = 0;
->>>>>>> b5076139991c6b12c62346d9880eec1d4227d99f
 		}
 
 		interval_tree_remove(&bo_va->it, &vm->va);
@@ -521,7 +516,7 @@ int radeon_vm_bo_set_addr(struct radeon_device *rdev,
 
 	if (soffset || eoffset) {
 		bo_va->it.start = soffset;
-		bo_va->it.last = eoffset;
+		bo_va->it.last = eoffset - 1;
 		interval_tree_insert(&bo_va->it, &vm->va);
 	}
 
@@ -708,15 +703,8 @@ int radeon_vm_update_page_directory(struct radeon_device *rdev,
 			radeon_ib_free(rdev, &ib);
 			return r;
 		}
-<<<<<<< HEAD
 		ib.fence->is_vm_update = true;
 		radeon_bo_fence(pd, ib.fence, false);
-=======
-		radeon_bo_fence(pd, ib.fence, false);
-		radeon_fence_unref(&vm->fence);
-		vm->fence = radeon_fence_ref(ib.fence);
-		radeon_fence_unref(&vm->last_flush);
->>>>>>> b5076139991c6b12c62346d9880eec1d4227d99f
 	}
 	radeon_ib_free(rdev, &ib);
 
@@ -903,31 +891,6 @@ static void radeon_vm_fence_pts(struct radeon_vm *vm,
 }
 
 /**
- * radeon_vm_fence_pts - fence page tables after an update
- *
- * @vm: requested vm
- * @start: start of GPU address range
- * @end: end of GPU address range
- * @fence: fence to use
- *
- * Fence the page tables in the range @start - @end (cayman+).
- *
- * Global and local mutex must be locked!
- */
-static void radeon_vm_fence_pts(struct radeon_vm *vm,
-				uint64_t start, uint64_t end,
-				struct radeon_fence *fence)
-{
-	unsigned i;
-
-	start >>= radeon_vm_block_size;
-	end = (end - 1) >> radeon_vm_block_size;
-
-	for (i = start; i <= end; ++i)
-		radeon_bo_fence(vm->page_tables[i].bo, fence, false);
-}
-
-/**
  * radeon_vm_bo_update - map a bo into the vm page table
  *
  * @rdev: radeon_device pointer
@@ -1051,16 +1014,10 @@ int radeon_vm_bo_update(struct radeon_device *rdev,
 		radeon_ib_free(rdev, &ib);
 		return r;
 	}
-<<<<<<< HEAD
 	ib.fence->is_vm_update = true;
 	radeon_vm_fence_pts(vm, bo_va->it.start, bo_va->it.last + 1, ib.fence);
 	radeon_fence_unref(&bo_va->last_pt_update);
 	bo_va->last_pt_update = radeon_fence_ref(ib.fence);
-=======
-	radeon_vm_fence_pts(vm, bo_va->it.start, bo_va->it.last + 1, ib.fence);
-	radeon_fence_unref(&vm->fence);
-	vm->fence = radeon_fence_ref(ib.fence);
->>>>>>> b5076139991c6b12c62346d9880eec1d4227d99f
 	radeon_ib_free(rdev, &ib);
 
 	return 0;
@@ -1155,13 +1112,8 @@ void radeon_vm_bo_rmv(struct radeon_device *rdev,
 	list_del(&bo_va->bo_list);
 
 	mutex_lock(&vm->mutex);
-<<<<<<< HEAD
 	interval_tree_remove(&bo_va->it, &vm->va);
 	spin_lock(&vm->status_lock);
-=======
-	if (bo_va->it.start || bo_va->it.last)
-		interval_tree_remove(&bo_va->it, &vm->va);
->>>>>>> b5076139991c6b12c62346d9880eec1d4227d99f
 	list_del(&bo_va->vm_status);
 
 	if (bo_va->addr) {

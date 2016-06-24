@@ -225,17 +225,6 @@ static const struct file_operations twa_fops = {
 	.llseek		= noop_llseek,
 };
 
-/*
- * The controllers use an inline buffer instead of a mapped SGL for small,
- * single entry buffers.  Note that we treat a zero-length transfer like
- * a mapped SGL.
- */
-static bool twa_command_mapped(struct scsi_cmnd *cmd)
-{
-	return scsi_sg_count(cmd) != 1 ||
-		scsi_bufflen(cmd) >= TW_MIN_SGL_LENGTH;
-}
-
 /* This function will complete an aen request from the isr */
 static int twa_aen_complete(TW_Device_Extension *tw_dev, int request_id)
 {
@@ -1362,8 +1351,7 @@ static irqreturn_t twa_interrupt(int irq, void *dev_instance)
 				}
 
 				/* Now complete the io */
-				if (twa_command_mapped(cmd))
-					scsi_dma_unmap(cmd);
+				scsi_dma_unmap(cmd);
 				cmd->scsi_done(cmd);
 				tw_dev->state[request_id] = TW_S_COMPLETED;
 				twa_free_request_id(tw_dev, request_id);
@@ -1606,8 +1594,7 @@ static int twa_reset_device_extension(TW_Device_Extension *tw_dev)
 				struct scsi_cmnd *cmd = tw_dev->srb[i];
 
 				cmd->result = (DID_RESET << 16);
-				if (twa_command_mapped(cmd))
-					scsi_dma_unmap(cmd);
+				scsi_dma_unmap(cmd);
 				cmd->scsi_done(cmd);
 			}
 		}
@@ -1790,14 +1777,12 @@ static int twa_scsi_queue_lck(struct scsi_cmnd *SCpnt, void (*done)(struct scsi_
 	retval = twa_scsiop_execute_scsi(tw_dev, request_id, NULL, 0, NULL);
 	switch (retval) {
 	case SCSI_MLQUEUE_HOST_BUSY:
-		if (twa_command_mapped(SCpnt))
-			scsi_dma_unmap(SCpnt);
+		scsi_dma_unmap(SCpnt);
 		twa_free_request_id(tw_dev, request_id);
 		break;
 	case 1:
 		SCpnt->result = (DID_ERROR << 16);
-		if (twa_command_mapped(SCpnt))
-			scsi_dma_unmap(SCpnt);
+		scsi_dma_unmap(SCpnt);
 		done(SCpnt);
 		tw_dev->state[request_id] = TW_S_COMPLETED;
 		twa_free_request_id(tw_dev, request_id);
@@ -1858,7 +1843,8 @@ static int twa_scsiop_execute_scsi(TW_Device_Extension *tw_dev, int request_id, 
 		/* Map sglist from scsi layer to cmd packet */
 
 		if (scsi_sg_count(srb)) {
-			if (!twa_command_mapped(srb)) {
+			if ((scsi_sg_count(srb) == 1) &&
+			    (scsi_bufflen(srb) < TW_MIN_SGL_LENGTH)) {
 				if (srb->sc_data_direction == DMA_TO_DEVICE ||
 				    srb->sc_data_direction == DMA_BIDIRECTIONAL)
 					scsi_sg_copy_to_buffer(srb,
@@ -1931,7 +1917,7 @@ static void twa_scsiop_execute_scsi_complete(TW_Device_Extension *tw_dev, int re
 {
 	struct scsi_cmnd *cmd = tw_dev->srb[request_id];
 
-	if (!twa_command_mapped(cmd) &&
+	if (scsi_bufflen(cmd) < TW_MIN_SGL_LENGTH &&
 	    (cmd->sc_data_direction == DMA_FROM_DEVICE ||
 	     cmd->sc_data_direction == DMA_BIDIRECTIONAL)) {
 		if (scsi_sg_count(cmd) == 1) {

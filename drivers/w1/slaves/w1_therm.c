@@ -59,32 +59,16 @@ MODULE_ALIAS("w1-family-" __stringify(W1_THERM_DS28EA00));
 static int w1_strong_pullup = 1;
 module_param_named(strong_pullup, w1_strong_pullup, int, 0);
 
-struct w1_therm_family_data {
-	uint8_t rom[9];
-	atomic_t refcnt;
-};
-
-/* return the address of the refcnt in the family data */
-#define THERM_REFCNT(family_data) \
-	(&((struct w1_therm_family_data*)family_data)->refcnt)
-
 static int w1_therm_add_slave(struct w1_slave *sl)
 {
-	sl->family_data = kzalloc(sizeof(struct w1_therm_family_data),
-		GFP_KERNEL);
+	sl->family_data = kzalloc(9, GFP_KERNEL);
 	if (!sl->family_data)
 		return -ENOMEM;
-	atomic_set(THERM_REFCNT(sl->family_data), 1);
 	return 0;
 }
 
 static void w1_therm_remove_slave(struct w1_slave *sl)
 {
-	int refcnt = atomic_sub_return(1, THERM_REFCNT(sl->family_data));
-	while(refcnt) {
-		msleep(1000);
-		refcnt = atomic_read(THERM_REFCNT(sl->family_data));
-	}
 	kfree(sl->family_data);
 	sl->family_data = NULL;
 }
@@ -210,22 +194,13 @@ static ssize_t w1_slave_show(struct device *device,
 	struct w1_slave *sl = dev_to_w1_slave(device);
 	struct w1_master *dev = sl->master;
 	u8 rom[9], crc, verdict, external_power;
-	int i, ret, max_trying = 10;
+	int i, max_trying = 10;
 	ssize_t c = PAGE_SIZE;
-	u8 *family_data = sl->family_data;
 
-	ret = mutex_lock_interruptible(&dev->bus_mutex);
-	if (ret != 0)
-		goto post_unlock;
+	i = mutex_lock_interruptible(&dev->bus_mutex);
+	if (i != 0)
+		return i;
 
-	if(!sl->family_data)
-	{
-		ret = -ENODEV;
-		goto pre_unlock;
-	}
-
-	/* prevent the slave from going away in sleep */
-	atomic_inc(THERM_REFCNT(family_data));
 	memset(rom, 0, sizeof(rom));
 
 	while (max_trying--) {
@@ -255,19 +230,17 @@ static ssize_t w1_slave_show(struct device *device,
 				mutex_unlock(&dev->bus_mutex);
 
 				sleep_rem = msleep_interruptible(tm);
-				if (sleep_rem != 0) {
-					ret = -EINTR;
-					goto post_unlock;
-				}
+				if (sleep_rem != 0)
+					return -EINTR;
 
-				ret = mutex_lock_interruptible(&dev->bus_mutex);
-				if (ret != 0)
-					goto post_unlock;
+				i = mutex_lock_interruptible(&dev->bus_mutex);
+				if (i != 0)
+					return i;
 			} else if (!w1_strong_pullup) {
 				sleep_rem = msleep_interruptible(tm);
 				if (sleep_rem != 0) {
-					ret = -EINTR;
-					goto pre_unlock;
+					mutex_unlock(&dev->bus_mutex);
+					return -EINTR;
 				}
 			}
 
@@ -296,24 +269,19 @@ static ssize_t w1_slave_show(struct device *device,
 	c -= snprintf(buf + PAGE_SIZE - c, c, ": crc=%02x %s\n",
 			   crc, (verdict) ? "YES" : "NO");
 	if (verdict)
-		memcpy(family_data, rom, sizeof(rom));
+		memcpy(sl->family_data, rom, sizeof(rom));
 	else
 		dev_warn(device, "Read failed CRC check\n");
 
 	for (i = 0; i < 9; ++i)
 		c -= snprintf(buf + PAGE_SIZE - c, c, "%02x ",
-			      ((u8 *)family_data)[i]);
+			      ((u8 *)sl->family_data)[i]);
 
 	c -= snprintf(buf + PAGE_SIZE - c, c, "t=%d\n",
 		w1_convert_temp(rom, sl->family->fid));
-	ret = PAGE_SIZE - c;
-
-pre_unlock:
 	mutex_unlock(&dev->bus_mutex);
 
-post_unlock:
-	atomic_dec(THERM_REFCNT(family_data));
-	return ret;
+	return PAGE_SIZE - c;
 }
 
 static int __init w1_therm_init(void)

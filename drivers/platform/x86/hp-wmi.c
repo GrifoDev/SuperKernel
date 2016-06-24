@@ -54,9 +54,8 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
 #define HPWMI_HARDWARE_QUERY 0x4
 #define HPWMI_WIRELESS_QUERY 0x5
 #define HPWMI_BIOS_QUERY 0x9
-#define HPWMI_FEATURE_QUERY 0xb
 #define HPWMI_HOTKEY_QUERY 0xc
-#define HPWMI_FEATURE2_QUERY 0xd
+#define HPWMI_FEATURE_QUERY 0xd
 #define HPWMI_WIRELESS2_QUERY 0x1b
 #define HPWMI_POSTCODEERROR_QUERY 0x2a
 
@@ -296,33 +295,25 @@ static int hp_wmi_tablet_state(void)
 	return (state & 0x4) ? 1 : 0;
 }
 
-static int __init hp_wmi_bios_2008_later(void)
+static int __init hp_wmi_bios_2009_later(void)
 {
 	int state = 0;
 	int ret = hp_wmi_perform_query(HPWMI_FEATURE_QUERY, 0, &state,
 				       sizeof(state), sizeof(state));
-	if (!ret)
-		return 1;
+	if (ret)
+		return ret;
 
-	return (ret == HPWMI_RET_UNKNOWN_CMDTYPE) ? 0 : -ENXIO;
+	return (state & 0x10) ? 1 : 0;
 }
 
-static int __init hp_wmi_bios_2009_later(void)
+static int hp_wmi_enable_hotkeys(void)
 {
-	int state = 0;
-	int ret = hp_wmi_perform_query(HPWMI_FEATURE2_QUERY, 0, &state,
-				       sizeof(state), sizeof(state));
-	if (!ret)
-		return 1;
+	int ret;
+	int query = 0x6e;
 
-	return (ret == HPWMI_RET_UNKNOWN_CMDTYPE) ? 0 : -ENXIO;
-}
+	ret = hp_wmi_perform_query(HPWMI_BIOS_QUERY, 1, &query, sizeof(query),
+				   0);
 
-static int __init hp_wmi_enable_hotkeys(void)
-{
-	int value = 0x6e;
-	int ret = hp_wmi_perform_query(HPWMI_BIOS_QUERY, 1, &value,
-				       sizeof(value), 0);
 	if (ret)
 		return -EINVAL;
 	return 0;
@@ -672,7 +663,7 @@ static int __init hp_wmi_input_setup(void)
 			    hp_wmi_tablet_state());
 	input_sync(hp_wmi_input_dev);
 
-	if (!hp_wmi_bios_2009_later() && hp_wmi_bios_2008_later())
+	if (hp_wmi_bios_2009_later() == 4)
 		hp_wmi_enable_hotkeys();
 
 	status = wmi_install_notify_handler(HPWMI_EVENT_GUID, hp_wmi_notify, NULL);

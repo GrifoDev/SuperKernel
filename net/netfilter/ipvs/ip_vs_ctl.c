@@ -828,16 +828,15 @@ __ip_vs_update_dest(struct ip_vs_service *svc, struct ip_vs_dest *dest,
 	__ip_vs_dst_cache_reset(dest);
 	spin_unlock_bh(&dest->dst_lock);
 
+	sched = rcu_dereference_protected(svc->scheduler, 1);
 	if (add) {
 		ip_vs_start_estimator(svc->net, &dest->stats);
 		list_add_rcu(&dest->n_list, &svc->destinations);
 		svc->num_dests++;
-		sched = rcu_dereference_protected(svc->scheduler, 1);
-		if (sched && sched->add_dest)
+		if (sched->add_dest)
 			sched->add_dest(svc, dest);
 	} else {
-		sched = rcu_dereference_protected(svc->scheduler, 1);
-		if (sched && sched->upd_dest)
+		if (sched->upd_dest)
 			sched->upd_dest(svc, dest);
 	}
 }
@@ -1071,7 +1070,7 @@ static void __ip_vs_unlink_dest(struct ip_vs_service *svc,
 		struct ip_vs_scheduler *sched;
 
 		sched = rcu_dereference_protected(svc->scheduler, 1);
-		if (sched && sched->del_dest)
+		if (sched->del_dest)
 			sched->del_dest(svc, dest);
 	}
 }
@@ -1162,14 +1161,11 @@ ip_vs_add_service(struct net *net, struct ip_vs_service_user_kern *u,
 	ip_vs_use_count_inc();
 
 	/* Lookup the scheduler by 'u->sched_name' */
-	if (strcmp(u->sched_name, "none")) {
-		sched = ip_vs_scheduler_get(u->sched_name);
-		if (!sched) {
-			pr_info("Scheduler module ip_vs_%s not found\n",
-				u->sched_name);
-			ret = -ENOENT;
-			goto out_err;
-		}
+	sched = ip_vs_scheduler_get(u->sched_name);
+	if (sched == NULL) {
+		pr_info("Scheduler module ip_vs_%s not found\n", u->sched_name);
+		ret = -ENOENT;
+		goto out_err;
 	}
 
 	if (u->pe_name && *u->pe_name) {
@@ -1230,12 +1226,10 @@ ip_vs_add_service(struct net *net, struct ip_vs_service_user_kern *u,
 	spin_lock_init(&svc->stats.lock);
 
 	/* Bind the scheduler */
-	if (sched) {
-		ret = ip_vs_bind_scheduler(svc, sched);
-		if (ret)
-			goto out_err;
-		sched = NULL;
-	}
+	ret = ip_vs_bind_scheduler(svc, sched);
+	if (ret)
+		goto out_err;
+	sched = NULL;
 
 	/* Bind the ct retriever */
 	RCU_INIT_POINTER(svc->pe, pe);
@@ -1283,20 +1277,17 @@ ip_vs_add_service(struct net *net, struct ip_vs_service_user_kern *u,
 static int
 ip_vs_edit_service(struct ip_vs_service *svc, struct ip_vs_service_user_kern *u)
 {
-	struct ip_vs_scheduler *sched = NULL, *old_sched;
+	struct ip_vs_scheduler *sched, *old_sched;
 	struct ip_vs_pe *pe = NULL, *old_pe = NULL;
 	int ret = 0;
 
 	/*
 	 * Lookup the scheduler, by 'u->sched_name'
 	 */
-	if (strcmp(u->sched_name, "none")) {
-		sched = ip_vs_scheduler_get(u->sched_name);
-		if (!sched) {
-			pr_info("Scheduler module ip_vs_%s not found\n",
-				u->sched_name);
-			return -ENOENT;
-		}
+	sched = ip_vs_scheduler_get(u->sched_name);
+	if (sched == NULL) {
+		pr_info("Scheduler module ip_vs_%s not found\n", u->sched_name);
+		return -ENOENT;
 	}
 	old_sched = sched;
 
@@ -1324,20 +1315,14 @@ ip_vs_edit_service(struct ip_vs_service *svc, struct ip_vs_service_user_kern *u)
 
 	old_sched = rcu_dereference_protected(svc->scheduler, 1);
 	if (sched != old_sched) {
-		if (old_sched) {
-			ip_vs_unbind_scheduler(svc, old_sched);
-			RCU_INIT_POINTER(svc->scheduler, NULL);
-			/* Wait all svc->sched_data users */
-			synchronize_rcu();
-		}
 		/* Bind the new scheduler */
-		if (sched) {
-			ret = ip_vs_bind_scheduler(svc, sched);
-			if (ret) {
-				ip_vs_scheduler_put(sched);
-				goto out;
-			}
+		ret = ip_vs_bind_scheduler(svc, sched);
+		if (ret) {
+			old_sched = sched;
+			goto out;
 		}
+		/* Unbind the old scheduler on success */
+		ip_vs_unbind_scheduler(svc, old_sched);
 	}
 
 	/*
@@ -1977,7 +1962,6 @@ static int ip_vs_info_seq_show(struct seq_file *seq, void *v)
 		const struct ip_vs_iter *iter = seq->private;
 		const struct ip_vs_dest *dest;
 		struct ip_vs_scheduler *sched = rcu_dereference(svc->scheduler);
-		char *sched_name = sched ? sched->name : "none";
 
 		if (iter->table == ip_vs_svc_table) {
 #ifdef CONFIG_IP_VS_IPV6
@@ -1986,18 +1970,18 @@ static int ip_vs_info_seq_show(struct seq_file *seq, void *v)
 					   ip_vs_proto_name(svc->protocol),
 					   &svc->addr.in6,
 					   ntohs(svc->port),
-					   sched_name);
+					   sched->name);
 			else
 #endif
 				seq_printf(seq, "%s  %08X:%04X %s %s ",
 					   ip_vs_proto_name(svc->protocol),
 					   ntohl(svc->addr.ip),
 					   ntohs(svc->port),
-					   sched_name,
+					   sched->name,
 					   (svc->flags & IP_VS_SVC_F_ONEPACKET)?"ops ":"");
 		} else {
 			seq_printf(seq, "FWM  %08X %s %s",
-				   svc->fwmark, sched_name,
+				   svc->fwmark, sched->name,
 				   (svc->flags & IP_VS_SVC_F_ONEPACKET)?"ops ":"");
 		}
 
@@ -2417,15 +2401,13 @@ static void
 ip_vs_copy_service(struct ip_vs_service_entry *dst, struct ip_vs_service *src)
 {
 	struct ip_vs_scheduler *sched;
-	char *sched_name;
 
 	sched = rcu_dereference_protected(src->scheduler, 1);
-	sched_name = sched ? sched->name : "none";
 	dst->protocol = src->protocol;
 	dst->addr = src->addr.ip;
 	dst->port = src->port;
 	dst->fwmark = src->fwmark;
-	strlcpy(dst->sched_name, sched_name, sizeof(dst->sched_name));
+	strlcpy(dst->sched_name, sched->name, sizeof(dst->sched_name));
 	dst->flags = src->flags;
 	dst->timeout = src->timeout / HZ;
 	dst->netmask = src->netmask;
@@ -2854,7 +2836,6 @@ static int ip_vs_genl_fill_service(struct sk_buff *skb,
 	struct nlattr *nl_service;
 	struct ip_vs_flags flags = { .flags = svc->flags,
 				     .mask = ~0 };
-	char *sched_name;
 
 	nl_service = nla_nest_start(skb, IPVS_CMD_ATTR_SERVICE);
 	if (!nl_service)
@@ -2873,9 +2854,8 @@ static int ip_vs_genl_fill_service(struct sk_buff *skb,
 	}
 
 	sched = rcu_dereference_protected(svc->scheduler, 1);
-	sched_name = sched ? sched->name : "none";
 	pe = rcu_dereference_protected(svc->pe, 1);
-	if (nla_put_string(skb, IPVS_SVC_ATTR_SCHED_NAME, sched_name) ||
+	if (nla_put_string(skb, IPVS_SVC_ATTR_SCHED_NAME, sched->name) ||
 	    (pe && nla_put_string(skb, IPVS_SVC_ATTR_PE_NAME, pe->name)) ||
 	    nla_put(skb, IPVS_SVC_ATTR_FLAGS, sizeof(flags), &flags) ||
 	    nla_put_u32(skb, IPVS_SVC_ATTR_TIMEOUT, svc->timeout / HZ) ||

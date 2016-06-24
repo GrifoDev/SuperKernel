@@ -235,8 +235,6 @@ static int radeon_verify_access(struct ttm_buffer_object *bo, struct file *filp)
 {
 	struct radeon_bo *rbo = container_of(bo, struct radeon_bo, tbo);
 
-	if (radeon_ttm_tt_has_userptr(bo->ttm))
-		return -EPERM;
 	return drm_vma_node_verify_access(&rbo->gem_base.vma_node, filp);
 }
 
@@ -593,7 +591,8 @@ static void radeon_ttm_tt_unpin_userptr(struct ttm_tt *ttm)
 {
 	struct radeon_device *rdev = radeon_get_rdev(ttm->bdev);
 	struct radeon_ttm_tt *gtt = (void *)ttm;
-	struct sg_page_iter sg_iter;
+	struct scatterlist *sg;
+	int i;
 
 	int write = !(gtt->userflags & RADEON_GEM_USERPTR_READONLY);
 	enum dma_data_direction direction = write ?
@@ -606,8 +605,9 @@ static void radeon_ttm_tt_unpin_userptr(struct ttm_tt *ttm)
 	/* free the sg table and pages again */
 	dma_unmap_sg(rdev->dev, ttm->sg->sgl, ttm->sg->nents, direction);
 
-	for_each_sg_page(ttm->sg->sgl, &sg_iter, ttm->sg->nents, 0) {
-		struct page *page = sg_page_iter_page(&sg_iter);
+	for_each_sg(ttm->sg->sgl, sg, ttm->sg->nents, i) {
+		struct page *page = sg_page(sg);
+
 		if (!(gtt->userflags & RADEON_GEM_USERPTR_READONLY))
 			set_page_dirty(page);
 
@@ -760,7 +760,7 @@ static int radeon_ttm_tt_populate(struct ttm_tt *ttm)
 						       0, PAGE_SIZE,
 						       PCI_DMA_BIDIRECTIONAL);
 		if (pci_dma_mapping_error(rdev->pdev, gtt->ttm.dma_address[i])) {
-			while (i--) {
+			while (--i) {
 				pci_unmap_page(rdev->pdev, gtt->ttm.dma_address[i],
 					       PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
 				gtt->ttm.dma_address[i] = 0;

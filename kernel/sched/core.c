@@ -2416,20 +2416,13 @@ unsigned long nr_running(void)
 
 /*
  * Check if only the current task is running on the cpu.
- *
- * Caution: this function does not check that the caller has disabled
- * preemption, thus the result might have a time-of-check-to-time-of-use
- * race.  The caller is responsible to use it correctly, for example:
- *
- * - from a non-preemptable section (of course)
- *
- * - from a thread that is bound to a single CPU
- *
- * - in a loop with very short iterations (e.g. a polling loop)
  */
 bool single_task_running(void)
 {
-	return raw_rq()->nr_running == 1;
+	if (cpu_rq(smp_processor_id())->nr_running == 1)
+		return true;
+	else
+		return false;
 }
 EXPORT_SYMBOL(single_task_running);
 
@@ -3351,18 +3344,15 @@ extern struct cpumask hmp_slow_cpu_mask;
 
 /* Actually do priority change: must hold pi & rq lock. */
 static void __setscheduler(struct rq *rq, struct task_struct *p,
-			   const struct sched_attr *attr, bool keep_boost)
+			   const struct sched_attr *attr)
 {
 	__setscheduler_params(p, attr);
 
 	/*
-	 * Keep a potential priority boosting if called from
-	 * sched_setscheduler().
+	 * If we get here, there was no pi waiters boosting the
+	 * task. It is safe to use the normal prio.
 	 */
-	if (keep_boost)
-		p->prio = rt_mutex_get_effective_prio(p, normal_prio(p));
-	else
-		p->prio = normal_prio(p);
+	p->prio = normal_prio(p);
 
 	if (dl_prio(p->prio))
 		p->sched_class = &dl_sched_class;
@@ -3452,7 +3442,7 @@ static int __sched_setscheduler(struct task_struct *p,
 	int newprio = dl_policy(attr->sched_policy) ? MAX_DL_PRIO - 1 :
 		      MAX_RT_PRIO - 1 - attr->sched_priority;
 	int retval, oldprio, oldpolicy = -1, queued, running;
-	int new_effective_prio, policy = attr->sched_policy;
+	int policy = attr->sched_policy;
 	unsigned long flags;
 	const struct sched_class *prev_class;
 	struct rq *rq;
@@ -3634,14 +3624,15 @@ change:
 	oldprio = p->prio;
 
 	/*
-	 * Take priority boosted tasks into account. If the new
-	 * effective priority is unchanged, we just store the new
+	 * Special case for priority boosted tasks.
+	 *
+	 * If the new priority is lower or equal (user space view)
+	 * than the current (boosted) priority, we just store the new
 	 * normal parameters and do not touch the scheduler class and
 	 * the runqueue. This will be done when the task deboost
 	 * itself.
 	 */
-	new_effective_prio = rt_mutex_get_effective_prio(p, newprio);
-	if (new_effective_prio == oldprio) {
+	if (rt_mutex_check_prio(p, newprio)) {
 		__setscheduler_params(p, attr);
 		task_rq_unlock(rq, p, &flags);
 		return 0;
@@ -3655,7 +3646,7 @@ change:
 		put_prev_task(rq, p);
 
 	prev_class = p->sched_class;
-	__setscheduler(rq, p, attr, true);
+	__setscheduler(rq, p, attr);
 
 	if (running)
 		p->sched_class->set_curr_task(rq);
@@ -5385,14 +5376,6 @@ static int sched_cpu_active(struct notifier_block *nfb,
 	case CPU_STARTING:
 		set_cpu_rq_start_time();
 		return NOTIFY_OK;
-	case CPU_ONLINE:
-		/*
-		 * At this point a starting CPU has marked itself as online via
-		 * set_cpu_online(). But it might not yet have marked itself
-		 * as active, which is essential from here on.
-		 *
-		 * Thus, fall-through and help the starting CPU along.
-		 */
 	case CPU_DOWN_FAILED:
 		set_cpu_active((long)hcpu, true);
 		return NOTIFY_OK;
@@ -6578,7 +6561,7 @@ static void sched_init_numa(void)
 
 			sched_domains_numa_masks[i][j] = mask;
 
-			for_each_node(k) {
+			for (k = 0; k < nr_node_ids; k++) {
 				if (node_distance(j, k) > sched_domains_numa_distance[i])
 					continue;
 
@@ -7450,7 +7433,7 @@ static void normalize_task(struct rq *rq, struct task_struct *p)
 	queued = task_on_rq_queued(p);
 	if (queued)
 		dequeue_task(rq, p, 0);
-	__setscheduler(rq, p, &attr, false);
+	__setscheduler(rq, p, &attr);
 	if (queued) {
 		enqueue_task(rq, p, 0);
 		resched_curr(rq);

@@ -419,7 +419,6 @@ extern acpi_status acpi_pci_osc_control_set(acpi_handle handle,
 #define ACPI_OST_SC_INSERT_NOT_SUPPORTED	0x82
 
 extern void acpi_early_init(void);
-extern void acpi_subsystem_init(void);
 
 extern int acpi_nvs_register(__u64 start, __u64 size);
 
@@ -469,7 +468,6 @@ static inline const char *acpi_dev_name(struct acpi_device *adev)
 }
 
 static inline void acpi_early_init(void) { }
-static inline void acpi_subsystem_init(void) { }
 
 static inline int early_acpi_boot_init(void)
 {
@@ -721,8 +719,8 @@ int acpi_dev_get_property(struct acpi_device *adev, const char *name,
 int acpi_dev_get_property_array(struct acpi_device *adev, const char *name,
 				acpi_object_type type,
 				const union acpi_object **obj);
-int acpi_dev_get_property_reference(struct acpi_device *adev, const char *name,
-				    const char *cells_name, size_t index,
+int acpi_dev_get_property_reference(struct acpi_device *adev,
+				    const char *name, size_t index,
 				    struct acpi_reference_args *args);
 
 int acpi_dev_prop_get(struct acpi_device *adev, const char *propname,
@@ -731,6 +729,7 @@ int acpi_dev_prop_read_single(struct acpi_device *adev, const char *propname,
 			      enum dev_prop_type proptype, void *val);
 int acpi_dev_prop_read(struct acpi_device *adev, const char *propname,
 		       enum dev_prop_type proptype, void *val, size_t nval);
+
 struct acpi_device *acpi_get_next_child(struct device *dev,
 					struct acpi_device *child);
 #else

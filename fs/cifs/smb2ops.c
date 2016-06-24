@@ -50,13 +50,9 @@ change_conf(struct TCP_Server_Info *server)
 		break;
 	default:
 		server->echoes = true;
-		if (enable_oplocks) {
-			server->oplocks = true;
-			server->oplock_credits = 1;
-		} else
-			server->oplocks = false;
-
+		server->oplocks = true;
 		server->echo_credits = 1;
+		server->oplock_credits = 1;
 	}
 	server->credits -= server->echo_credits + server->oplock_credits;
 	return 0;

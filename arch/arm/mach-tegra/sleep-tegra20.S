@@ -97,10 +97,9 @@ ENDPROC(tegra20_hotplug_shutdown)
 ENTRY(tegra20_cpu_shutdown)
 	cmp	r0, #0
 	reteq	lr			@ must not be called for CPU 0
-	mov32	r1, TEGRA_IRAM_RESET_BASE_VIRT
-	ldr	r2, =__tegra20_cpu1_resettable_status_offset
+	mov32	r1, TEGRA_PMC_VIRT + PMC_SCRATCH41
 	mov	r12, #CPU_RESETTABLE
-	strb	r12, [r1, r2]
+	str	r12, [r1]
 
 	cpu_to_halt_reg r1, r0
 	ldr	r3, =TEGRA_FLOW_CTRL_VIRT
@@ -183,41 +182,38 @@ ENDPROC(tegra_pen_unlock)
 /*
  * tegra20_cpu_clear_resettable(void)
  *
- * Called to clear the "resettable soon" flag in IRAM variable when
+ * Called to clear the "resettable soon" flag in PMC_SCRATCH41 when
  * it is expected that the secondary CPU will be idle soon.
  */
 ENTRY(tegra20_cpu_clear_resettable)
-	mov32	r1, TEGRA_IRAM_RESET_BASE_VIRT
-	ldr	r2, =__tegra20_cpu1_resettable_status_offset
+	mov32	r1, TEGRA_PMC_VIRT + PMC_SCRATCH41
 	mov	r12, #CPU_NOT_RESETTABLE
-	strb	r12, [r1, r2]
+	str	r12, [r1]
 	ret	lr
 ENDPROC(tegra20_cpu_clear_resettable)
 
 /*
  * tegra20_cpu_set_resettable_soon(void)
  *
- * Called to set the "resettable soon" flag in IRAM variable when
+ * Called to set the "resettable soon" flag in PMC_SCRATCH41 when
  * it is expected that the secondary CPU will be idle soon.
  */
 ENTRY(tegra20_cpu_set_resettable_soon)
-	mov32	r1, TEGRA_IRAM_RESET_BASE_VIRT
-	ldr	r2, =__tegra20_cpu1_resettable_status_offset
+	mov32	r1, TEGRA_PMC_VIRT + PMC_SCRATCH41
 	mov	r12, #CPU_RESETTABLE_SOON
-	strb	r12, [r1, r2]
+	str	r12, [r1]
 	ret	lr
 ENDPROC(tegra20_cpu_set_resettable_soon)
 
 /*
  * tegra20_cpu_is_resettable_soon(void)
  *
- * Returns true if the "resettable soon" flag in IRAM variable has been
+ * Returns true if the "resettable soon" flag in PMC_SCRATCH41 has been
  * set because it is expected that the secondary CPU will be idle soon.
  */
 ENTRY(tegra20_cpu_is_resettable_soon)
-	mov32	r1, TEGRA_IRAM_RESET_BASE_VIRT
-	ldr	r2, =__tegra20_cpu1_resettable_status_offset
-	ldrb	r12, [r1, r2]
+	mov32	r1, TEGRA_PMC_VIRT + PMC_SCRATCH41
+	ldr	r12, [r1]
 	cmp	r12, #CPU_RESETTABLE_SOON
 	moveq	r0, #1
 	movne	r0, #0
@@ -260,10 +256,9 @@ ENTRY(tegra20_sleep_cpu_secondary_finish)
 	mov	r0, #TEGRA_FLUSH_CACHE_LOUIS
 	bl	tegra_disable_clean_inv_dcache
 
-	mov32	r0, TEGRA_IRAM_RESET_BASE_VIRT
-	ldr	r4, =__tegra20_cpu1_resettable_status_offset
+	mov32	r0, TEGRA_PMC_VIRT + PMC_SCRATCH41
 	mov	r3, #CPU_RESETTABLE
-	strb	r3, [r0, r4]
+	str	r3, [r0]
 
 	bl	tegra_cpu_do_idle
 
@@ -279,10 +274,10 @@ ENTRY(tegra20_sleep_cpu_secondary_finish)
 
 	bl	tegra_pen_lock
 
-	mov32	r0, TEGRA_IRAM_RESET_BASE_VIRT
-	ldr	r4, =__tegra20_cpu1_resettable_status_offset
+	mov32	r3, TEGRA_PMC_VIRT
+	add	r0, r3, #PMC_SCRATCH41
 	mov	r3, #CPU_NOT_RESETTABLE
-	strb	r3, [r0, r4]
+	str	r3, [r0]
 
 	bl	tegra_pen_unlock
 

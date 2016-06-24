@@ -58,7 +58,6 @@
 #define MMX_SIZE		(0x98)
 
 	.text
-	.arm
 
 /*
  * Lazy switching of Concan coprocessor context
@@ -183,8 +182,6 @@ concan_load:
 	tmcr	wCon, r2
 	ret	lr
 
-ENDPROC(iwmmxt_task_enable)
-
 /*
  * Back up Concan regs to save area and disable access to them
  * (mainly for gdb or sleep mode usage)
@@ -235,8 +232,6 @@ ENTRY(iwmmxt_task_disable)
 1:	msr	cpsr_c, ip			@ restore interrupt mode
 	ldmfd	sp!, {r4, pc}
 
-ENDPROC(iwmmxt_task_disable)
-
 /*
  * Copy Concan state to given memory address
  *
@@ -272,8 +267,6 @@ ENTRY(iwmmxt_task_copy)
 	bl	concan_dump
 	msr	cpsr_c, ip			@ restore interrupt mode
 	ret	r3
-
-ENDPROC(iwmmxt_task_copy)
 
 /*
  * Restore Concan state from given memory address
@@ -311,8 +304,6 @@ ENTRY(iwmmxt_task_restore)
 	msr	cpsr_c, ip			@ restore interrupt mode
 	ret	r3
 
-ENDPROC(iwmmxt_task_restore)
-
 /*
  * Concan handling on task switch
  *
@@ -344,8 +335,6 @@ ENTRY(iwmmxt_task_switch)
 	mrc	p15, 0, r1, c2, c0, 0
 	sub	pc, lr, r1, lsr #32		@ cpwait and return
 
-ENDPROC(iwmmxt_task_switch)
-
 /*
  * Remove Concan ownership of given task
  *
@@ -363,8 +352,6 @@ ENTRY(iwmmxt_task_release)
 	streq	r0, [r3]			@ then clear ownership
 	msr	cpsr_c, r2			@ restore interrupts
 	ret	lr
-
-ENDPROC(iwmmxt_task_release)
 
 	.data
 concan_owner:

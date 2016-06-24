@@ -90,7 +90,7 @@
 &esdhc1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_esdhc1>;
-	cd-gpios = <&gpio2 29 GPIO_ACTIVE_LOW>;
+	cd-gpios = <&gpio2 29 GPIO_ACTIVE_HIGH>;
 	bus-width = <4>;
 	status = "okay";
 };

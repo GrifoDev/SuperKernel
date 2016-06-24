@@ -15,7 +15,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <linux/bitops.h>
 #include <linux/debugfs.h>
 
 #include "main.h"
@@ -106,9 +105,9 @@ static void batadv_nc_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
 					  uint16_t tvlv_value_len)
 {
 	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
-		clear_bit(BATADV_ORIG_CAPA_HAS_NC, &orig->capabilities);
+		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_NC;
 	else
-		set_bit(BATADV_ORIG_CAPA_HAS_NC, &orig->capabilities);
+		orig->capabilities |= BATADV_ORIG_CAPA_HAS_NC;
 }
 
 /**
@@ -872,7 +871,7 @@ void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
 		goto out;
 
 	/* check if orig node is network coding enabled */
-	if (!test_bit(BATADV_ORIG_CAPA_HAS_NC, &orig_node->capabilities))
+	if (!(orig_node->capabilities & BATADV_ORIG_CAPA_HAS_NC))
 		goto out;
 
 	/* accept ogms from 'good' neighbors and single hop neighbors */

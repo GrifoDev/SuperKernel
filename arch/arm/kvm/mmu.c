@@ -841,14 +841,11 @@ static int stage2_set_pmd_huge(struct kvm *kvm, struct kvm_mmu_memory_cache
 	VM_BUG_ON(pmd_present(*pmd) && pmd_pfn(*pmd) != pmd_pfn(*new_pmd));
 
 	old_pmd = *pmd;
-	if (pmd_present(old_pmd)) {
-		pmd_clear(pmd);
-		kvm_tlb_flush_vmid_ipa(kvm, addr);
-	} else {
-		get_page(virt_to_page(pmd));
-	}
-
 	kvm_set_pmd(pmd, *new_pmd);
+	if (pmd_present(old_pmd))
+		kvm_tlb_flush_vmid_ipa(kvm, addr);
+	else
+		get_page(virt_to_page(pmd));
 	return 0;
 }
 
@@ -885,14 +882,12 @@ static int stage2_set_pte(struct kvm *kvm, struct kvm_mmu_memory_cache *cache,
 
 	/* Create 2nd stage page table mapping - Level 3 */
 	old_pte = *pte;
-	if (pte_present(old_pte)) {
-		kvm_set_pte(pte, __pte(0));
-		kvm_tlb_flush_vmid_ipa(kvm, addr);
-	} else {
-		get_page(virt_to_page(pte));
-	}
-
 	kvm_set_pte(pte, *new_pte);
+	if (pte_present(old_pte))
+		kvm_tlb_flush_vmid_ipa(kvm, addr);
+	else
+		get_page(virt_to_page(pte));
+
 	return 0;
 }
 
@@ -1444,10 +1439,8 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
 		if (vma->vm_flags & VM_PFNMAP) {
 			gpa_t gpa = mem->guest_phys_addr +
 				    (vm_start - mem->userspace_addr);
-			phys_addr_t pa;
-
-			pa = (phys_addr_t)vma->vm_pgoff << PAGE_SHIFT;
-			pa += vm_start - vma->vm_start;
+			phys_addr_t pa = (vma->vm_pgoff << PAGE_SHIFT) +
+					 vm_start - vma->vm_start;
 
 			ret = kvm_phys_addr_ioremap(kvm, gpa, pa,
 						    vm_end - vm_start,

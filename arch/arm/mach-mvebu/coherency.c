@@ -448,9 +448,8 @@ static int __init coherency_late_init(void)
 			armada_375_coherency_init_wa();
 	}
 
-	if (coherency_available())
-		bus_register_notifier(&platform_bus_type,
-				      &mvebu_hwcc_nb);
+	bus_register_notifier(&platform_bus_type,
+			      &mvebu_hwcc_nb);
 
 	return 0;
 }

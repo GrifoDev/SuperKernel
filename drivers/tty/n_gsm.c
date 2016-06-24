@@ -2045,9 +2045,7 @@ static void gsm_cleanup_mux(struct gsm_mux *gsm)
 		}
 	}
 	spin_unlock(&gsm_mux_lock);
-	/* open failed before registering => nothing to do */
-	if (i == MAX_MUX)
-		return;
+	WARN_ON(i == MAX_MUX);
 
 	/* In theory disconnecting DLCI 0 is sufficient but for some
 	   modems this is apparently not the case. */
@@ -3172,7 +3170,7 @@ static int gsmtty_break_ctl(struct tty_struct *tty, int state)
 	return gsmtty_modem_update(dlci, encode);
 }
 
-static void gsmtty_cleanup(struct tty_struct *tty)
+static void gsmtty_remove(struct tty_driver *driver, struct tty_struct *tty)
 {
 	struct gsm_dlci *dlci = tty->driver_data;
 	struct gsm_mux *gsm = dlci->gsm;
@@ -3180,6 +3178,7 @@ static void gsmtty_cleanup(struct tty_struct *tty)
 	dlci_put(dlci);
 	dlci_put(gsm->dlci[0]);
 	mux_put(gsm);
+	driver->ttys[tty->index] = NULL;
 }
 
 /* Virtual ttys for the demux */
@@ -3200,7 +3199,7 @@ static const struct tty_operations gsmtty_ops = {
 	.tiocmget		= gsmtty_tiocmget,
 	.tiocmset		= gsmtty_tiocmset,
 	.break_ctl		= gsmtty_break_ctl,
-	.cleanup		= gsmtty_cleanup,
+	.remove			= gsmtty_remove,
 };
 
 

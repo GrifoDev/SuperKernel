@@ -248,24 +248,24 @@ static void ni_writel(struct comedi_device *dev, uint32_t data, int reg)
 {
 	if (dev->mmio)
 		writel(data, dev->mmio + reg);
-	else
-		outl(data, dev->iobase + reg);
+
+	outl(data, dev->iobase + reg);
 }
 
 static void ni_writew(struct comedi_device *dev, uint16_t data, int reg)
 {
 	if (dev->mmio)
 		writew(data, dev->mmio + reg);
-	else
-		outw(data, dev->iobase + reg);
+
+	outw(data, dev->iobase + reg);
 }
 
 static void ni_writeb(struct comedi_device *dev, uint8_t data, int reg)
 {
 	if (dev->mmio)
 		writeb(data, dev->mmio + reg);
-	else
-		outb(data, dev->iobase + reg);
+
+	outb(data, dev->iobase + reg);
 }
 
 static uint32_t ni_readl(struct comedi_device *dev, int reg)

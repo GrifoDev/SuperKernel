@@ -313,13 +313,7 @@ ip_vs_sched_persist(struct ip_vs_service *svc,
 		 * return *ignored=0 i.e. ICMP and NF_DROP
 		 */
 		sched = rcu_dereference(svc->scheduler);
-		if (sched) {
-			/* read svc->sched_data after svc->scheduler */
-			smp_rmb();
-			dest = sched->schedule(svc, skb, iph);
-		} else {
-			dest = NULL;
-		}
+		dest = sched->schedule(svc, skb, iph);
 		if (!dest) {
 			IP_VS_DBG(1, "p-schedule: no dest found.\n");
 			kfree(param.pe_data);
@@ -467,13 +461,7 @@ ip_vs_schedule(struct ip_vs_service *svc, struct sk_buff *skb,
 	}
 
 	sched = rcu_dereference(svc->scheduler);
-	if (sched) {
-		/* read svc->sched_data after svc->scheduler */
-		smp_rmb();
-		dest = sched->schedule(svc, skb, iph);
-	} else {
-		dest = NULL;
-	}
+	dest = sched->schedule(svc, skb, iph);
 	if (dest == NULL) {
 		IP_VS_DBG(1, "Schedule: no dest found.\n");
 		return NULL;

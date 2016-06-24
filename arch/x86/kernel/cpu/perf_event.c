@@ -31,8 +31,6 @@
 #include <asm/nmi.h>
 #include <asm/smp.h>
 #include <asm/alternative.h>
-#include <asm/tlbflush.h>
-#include <asm/mmu_context.h>
 #include <asm/timer.h>
 #include <asm/desc.h>
 #include <asm/ldt.h>
@@ -1330,7 +1328,7 @@ x86_pmu_notifier(struct notifier_block *self, unsigned long action, void *hcpu)
 
 	case CPU_STARTING:
 		if (x86_pmu.attr_rdpmc)
-			cr4_set_bits(X86_CR4_PCE);
+			set_in_cr4(X86_CR4_PCE);
 		if (x86_pmu.cpu_starting)
 			x86_pmu.cpu_starting(cpu);
 		break;
@@ -1836,9 +1834,9 @@ static void change_rdpmc(void *info)
 	bool enable = !!(unsigned long)info;
 
 	if (enable)
-		cr4_set_bits(X86_CR4_PCE);
+		set_in_cr4(X86_CR4_PCE);
 	else
-		cr4_clear_bits(X86_CR4_PCE);
+		clear_in_cr4(X86_CR4_PCE);
 }
 
 static ssize_t set_attr_rdpmc(struct device *cdev,
@@ -1988,25 +1986,21 @@ static unsigned long get_segment_base(unsigned int segment)
 	int idx = segment >> 3;
 
 	if ((segment & SEGMENT_TI_MASK) == SEGMENT_LDT) {
-		struct ldt_struct *ldt;
-
 		if (idx > LDT_ENTRIES)
 			return 0;
 
-		/* IRQs are off, so this synchronizes with smp_store_release */
-		ldt = lockless_dereference(current->active_mm->context.ldt);
-		if (!ldt || idx > ldt->size)
+		if (idx > current->active_mm->context.size)
 			return 0;
 
-		desc = &ldt->entries[idx];
+		desc = current->active_mm->context.ldt;
 	} else {
 		if (idx > GDT_ENTRIES)
 			return 0;
 
-		desc = raw_cpu_ptr(gdt_page.gdt) + idx;
+		desc = raw_cpu_ptr(gdt_page.gdt);
 	}
 
-	return get_desc_base(desc);
+	return get_desc_base(desc + idx);
 }
 
 #ifdef CONFIG_COMPAT

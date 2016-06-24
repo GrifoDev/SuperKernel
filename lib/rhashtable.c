@@ -61,8 +61,6 @@ static u32 __hashfn(const struct rhashtable *ht, const void *key,
  * Computes the hash value using the hash function provided in the 'hashfn'
  * of struct rhashtable_params. The returned value is guaranteed to be
  * smaller than the number of buckets in the hash table.
- *
- * The caller must ensure that no concurrent table mutations occur.
  */
 u32 rhashtable_hashfn(const struct rhashtable *ht, const void *key, u32 len)
 {
@@ -94,8 +92,6 @@ static u32 obj_hashfn(const struct rhashtable *ht, const void *ptr, u32 hsize)
  * 'obj_hashfn' depending on whether the hash table is set up to work with
  * a fixed length key. The returned value is guaranteed to be smaller than
  * the number of buckets in the hash table.
- *
- * The caller must ensure that no concurrent table mutations occur.
  */
 u32 rhashtable_obj_hashfn(const struct rhashtable *ht, void *ptr)
 {
@@ -478,7 +474,7 @@ EXPORT_SYMBOL_GPL(rhashtable_lookup);
 /**
  * rhashtable_lookup_compare - search hash table with compare function
  * @ht:		hash table
- * @key:	pointer to key
+ * @hash:	hash value of desired entry
  * @compare:	compare function, must return true on match
  * @arg:	argument passed on to compare function
  *
@@ -490,14 +486,14 @@ EXPORT_SYMBOL_GPL(rhashtable_lookup);
  *
  * Returns the first entry on which the compare function returned true.
  */
-void *rhashtable_lookup_compare(const struct rhashtable *ht, void *key,
+void *rhashtable_lookup_compare(const struct rhashtable *ht, u32 hash,
 				bool (*compare)(void *, void *), void *arg)
 {
 	const struct bucket_table *tbl = rht_dereference_rcu(ht->tbl, ht);
 	struct rhash_head *he;
-	u32 hash;
 
-	hash = __hashfn(ht, key, ht->p.key_len, tbl->size);
+	if (unlikely(hash >= tbl->size))
+		return NULL;
 
 	rht_for_each_rcu(he, tbl->buckets[hash], ht) {
 		if (!compare(rht_obj(ht, he), arg))

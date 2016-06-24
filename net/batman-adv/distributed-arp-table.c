@@ -15,7 +15,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <linux/bitops.h>
 #include <linux/if_ether.h>
 #include <linux/if_arp.h>
 #include <linux/if_vlan.h>
@@ -423,7 +422,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
 	int j;
 
 	/* check if orig node candidate is running DAT */
-	if (!test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities))
+	if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
 		goto out;
 
 	/* Check if this node has already been selected... */
@@ -683,9 +682,9 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
 					   uint16_t tvlv_value_len)
 {
 	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
-		clear_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_DAT;
 	else
-		set_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+		orig->capabilities |= BATADV_ORIG_CAPA_HAS_DAT;
 }
 
 /**

@@ -70,7 +70,6 @@ struct rpcrdma_ia {
 	int			ri_async_rc;
 	enum rpcrdma_memreg	ri_memreg_strategy;
 	unsigned int		ri_max_frmr_depth;
-	struct ib_device_attr	ri_devattr;
 };
 
 /*

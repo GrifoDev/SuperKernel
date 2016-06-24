@@ -595,8 +595,7 @@ static int ovl_remove_upper(struct dentry *dentry, bool is_dir)
 	 * sole user of this dentry.  Too tricky...  Just unhash for
 	 * now.
 	 */
-	if (!err)
-		d_drop(dentry);
+	d_drop(dentry);
 	mutex_unlock(&dir->i_mutex);
 
 	return err;
