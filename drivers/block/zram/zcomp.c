@@ -210,6 +210,7 @@ struct zcomp *zcomp_create(const char *compress)
 {
 	struct zcomp *comp;
 	struct zcomp_backend *backend;
+	int error;
 
 	backend = find_backend(compress);
 	if (!backend)
@@ -223,7 +224,7 @@ struct zcomp *zcomp_create(const char *compress)
 	error = zcomp_init(comp);
 	if (error) {
 		kfree(comp);
-		return ERR_PTR(-ENOMEM);
+		return ERR_PTR(error);
 	}
 	return comp;
 }

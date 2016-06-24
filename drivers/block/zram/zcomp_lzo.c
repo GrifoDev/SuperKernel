@@ -10,6 +10,8 @@
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/lzo.h>
+#include <linux/vmalloc.h>
+#include <linux/mm.h>
 
 #include "zcomp_lzo.h"
 
@@ -27,7 +29,7 @@ static void *lzo_create(gfp_t flags)
 
 static void lzo_destroy(void *private)
 {
-	kfree(private);
+	kvfree(private);
 }
 
 static int lzo_compress(const unsigned char *src, unsigned char *dst,

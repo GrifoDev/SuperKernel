@@ -292,15 +292,15 @@ struct ufs_hba_variant_ops {
 	int     (*setup_regulators)(struct ufs_hba *, bool);
 	void    (*host_reset)(struct ufs_hba *);
 	int     (*hce_enable_notify)(struct ufs_hba *, bool);
-	int     (*link_startup_notify)(struct ufs_hba *, bool);
+	int     (*link_startup_notify)(struct ufs_hba *, int);
 	int	(*pwr_change_notify)(struct ufs_hba *,
-					bool, struct ufs_pa_layer_attr *,
+					int, struct ufs_pa_layer_attr *,
 					struct ufs_pa_layer_attr *);
 	void	(*set_nexus_t_xfer_req)(struct ufs_hba *,
 					int, struct scsi_cmnd *);
 	void	(*set_nexus_t_task_mgmt)(struct ufs_hba *, int, u8);
-	void    (*hibern8_notify)(struct ufs_hba *, u8, bool);
-	void	(*clock_control_notify)(struct ufs_hba *, bool, bool);
+	void    (*hibern8_notify)(struct ufs_hba *, u8, int);
+	void	(*clock_control_notify)(struct ufs_hba *, bool, int);
 	void	(*get_debug_info)(struct ufs_hba *);
 	int     (*suspend)(struct ufs_hba *, enum ufs_pm_op);
 	int     (*resume)(struct ufs_hba *, enum ufs_pm_op);

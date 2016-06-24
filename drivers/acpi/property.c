@@ -549,3 +549,4 @@ int acpi_dev_prop_read(struct acpi_device *adev, const char *propname,
 	}
 	return ret;
 }
+
