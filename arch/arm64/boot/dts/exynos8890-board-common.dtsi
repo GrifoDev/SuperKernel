@@ -467,7 +467,7 @@
 				buck6_reg: BUCK6 {
 					regulator-name = "vdd_g3d";
 					regulator-min-microvolt = <500000>;
-					regulator-max-microvolt = <1187500>;
+					regulator-max-microvolt = <1000000>;
 					regulator-always-on;
 					regulator-ramp-delay = <12000>;
 					regulator-initial-mode = <1>;
