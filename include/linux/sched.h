@@ -1166,25 +1166,6 @@ struct sched_avg {
 	u32 usage_avg_sum;
 };
 
-#ifdef CONFIG_SCHED_HMP
-/*
- * We want to avoid boosting any processes forked from init (PID 1)
- * and kthreadd (assumed to be PID 2).
- *
- * System services are generally started by init, whilst kernel threads are
- * started by kthreadd. We do not want to give those tasks a head start, as
- * this costs power for very little benefit. We do however wish to do that for
- * tasks which the user launches.
- *
- * Further, some tasks allocate per-cpu timers directly after launch which can
- * lead to those tasks being always scheduled on a big CPU when there is no
- * computational need to do so. Not promoting services to big CPUs on launch
- * will prevent that unless a service allocates their per-cpu resources after
- * a period of intense computation, which is not a common pattern.
- */
-#define hmp_task_should_forkboost(task) ((task->parent && task->parent->pid > 2))
-#endif
-
 #ifdef CONFIG_SCHEDSTATS
 struct sched_statistics {
 	u64			wait_start;

@@ -6163,19 +6163,6 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 	int want_affine = 0;
 	int sync = wake_flags & WF_SYNC;
 
-#ifdef CONFIG_SCHED_HMP
-	/* always put non-kernel forking tasks on a big domain */
-	if (unlikely(sd_flag & SD_BALANCE_FORK) && hmp_task_should_forkboost(p)) {
-		new_cpu = hmp_select_faster_cpu(p, prev_cpu);
-		if (new_cpu != NR_CPUS) {
-			hmp_next_up_delay(&p->se, new_cpu);
-			return new_cpu;
-		}
-		/* failed to perform HMP fork balance, use normal balance */
-		new_cpu = cpu;
-	}
-#endif
-
 	if (sd_flag & SD_BALANCE_WAKE)
 		want_affine = cpumask_test_cpu(cpu, tsk_cpus_allowed(p));
 
