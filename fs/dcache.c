@@ -632,6 +632,9 @@ repeat:
 	if (unlikely(d_unhashed(dentry)))
 		goto kill_it;
 
+	if (unlikely(dentry->d_flags & DCACHE_DISCONNECTED))
+		goto kill_it;
+
 	if (unlikely(dentry->d_flags & DCACHE_OP_DELETE)) {
 		if (dentry->d_op->d_delete(dentry))
 			goto kill_it;
@@ -1097,13 +1100,13 @@ ascend:
 		/* might go back up the wrong parent if we have had a rename. */
 		if (need_seqretry(&rename_lock, seq))
 			goto rename_retry;
-		next = child->d_child.next;
-		while (unlikely(child->d_flags & DCACHE_DENTRY_KILLED)) {
+		/* go into the first sibling still alive */
+		do {
+			next = child->d_child.next;
 			if (next == &this_parent->d_subdirs)
 				goto ascend;
 			child = list_entry(next, struct dentry, d_child);
-			next = next->next;
-		}
+		} while (unlikely(child->d_flags & DCACHE_DENTRY_KILLED));
 		rcu_read_unlock();
 		goto resume;
 	}
@@ -1481,7 +1484,7 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 	struct dentry *dentry = __d_alloc(parent->d_sb, name);
 	if (!dentry)
 		return NULL;
-
+	dentry->d_flags |= DCACHE_RCUACCESS;
 	spin_lock(&parent->d_lock);
 	/*
 	 * don't need child lock because it is not subject
@@ -1528,7 +1531,8 @@ void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 				DCACHE_OP_COMPARE	|
 				DCACHE_OP_REVALIDATE	|
 				DCACHE_OP_WEAK_REVALIDATE	|
-				DCACHE_OP_DELETE ));
+				DCACHE_OP_DELETE	|
+				DCACHE_OP_SELECT_INODE));
 	dentry->d_op = op;
 	if (!op)
 		return;
@@ -1544,6 +1548,8 @@ void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 		dentry->d_flags |= DCACHE_OP_DELETE;
 	if (op->d_prune)
 		dentry->d_flags |= DCACHE_OP_PRUNE;
+	if (op->d_select_inode)
+		dentry->d_flags |= DCACHE_OP_SELECT_INODE;
 
 }
 EXPORT_SYMBOL(d_set_d_op);
@@ -2310,7 +2316,6 @@ static void __d_rehash(struct dentry * entry, struct hlist_bl_head *b)
 {
 	BUG_ON(!d_unhashed(entry));
 	hlist_bl_lock(b);
-	entry->d_flags |= DCACHE_RCUACCESS;
 	hlist_bl_add_head_rcu(&entry->d_hash, b);
 	hlist_bl_unlock(b);
 }
@@ -2529,6 +2534,7 @@ static void __d_move(struct dentry *dentry, struct dentry *target,
 	/* ... and switch them in the tree */
 	if (IS_ROOT(dentry)) {
 		/* splicing a tree */
+		dentry->d_flags |= DCACHE_RCUACCESS;
 		dentry->d_parent = target->d_parent;
 		target->d_parent = target;
 		list_del_init(&target->d_child);
@@ -2906,17 +2912,6 @@ restart:
 				vfsmnt = &mnt->mnt;
 #endif
 				continue;
-			}
-			/*
-			 * Filesystems needing to implement special "root names"
-			 * should do so with ->d_dname()
-			 */
-			if (IS_ROOT(dentry) &&
-			   (dentry->d_name.len != 1 ||
-			    dentry->d_name.name[0] != '/')) {
-				WARN(1, "Root dentry has weird name <%.*s>\n",
-				     (int) dentry->d_name.len,
-				     dentry->d_name.name);
 			}
 			if (!error)
 				error = is_mounted(vfsmnt) ? 1 : 2;

@@ -1493,7 +1493,7 @@ static void update_exception_bitmap(struct kvm_vcpu *vcpu)
 	u32 eb;
 
 	eb = (1u << PF_VECTOR) | (1u << UD_VECTOR) | (1u << MC_VECTOR) |
-	     (1u << NM_VECTOR) | (1u << DB_VECTOR);
+	     (1u << NM_VECTOR) | (1u << DB_VECTOR) | (1u << AC_VECTOR);
 	if ((vcpu->guest_debug &
 	     (KVM_GUESTDBG_ENABLE | KVM_GUESTDBG_USE_SW_BP)) ==
 	    (KVM_GUESTDBG_ENABLE | KVM_GUESTDBG_USE_SW_BP))
@@ -1600,6 +1600,13 @@ static void add_atomic_switch_msr(struct vcpu_vmx *vmx, unsigned msr,
 			return;
 		}
 		break;
+	case MSR_IA32_PEBS_ENABLE:
+		/* PEBS needs a quiescent period after being disabled (to write
+		 * a record).  Disabling PEBS through VMX MSR swapping doesn't
+		 * provide that period, so a CPU could write host's record into
+		 * guest's memory.
+		 */
+		wrmsrl(MSR_IA32_PEBS_ENABLE, 0);
 	}
 
 	for (i = 0; i < m->nr; ++i)
@@ -2744,7 +2751,7 @@ static int hardware_enable(void)
 	u64 phys_addr = __pa(per_cpu(vmxarea, cpu));
 	u64 old, test_bits;
 
-	if (read_cr4() & X86_CR4_VMXE)
+	if (cr4_read_shadow() & X86_CR4_VMXE)
 		return -EBUSY;
 
 	INIT_LIST_HEAD(&per_cpu(loaded_vmcss_on_cpu, cpu));
@@ -2771,7 +2778,7 @@ static int hardware_enable(void)
 		/* enable and lock */
 		wrmsrl(MSR_IA32_FEATURE_CONTROL, old | test_bits);
 	}
-	write_cr4(read_cr4() | X86_CR4_VMXE); /* FIXME: not cpu hotplug safe */
+	cr4_set_bits(X86_CR4_VMXE);
 
 	if (vmm_exclusive) {
 		kvm_cpu_vmxon(phys_addr);
@@ -2808,7 +2815,7 @@ static void hardware_disable(void)
 		vmclear_local_loaded_vmcss();
 		kvm_cpu_vmxoff();
 	}
-	write_cr4(read_cr4() & ~X86_CR4_VMXE);
+	cr4_clear_bits(X86_CR4_VMXE);
 }
 
 static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
@@ -3553,8 +3560,16 @@ static void vmx_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 
 static int vmx_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
 {
-	unsigned long hw_cr4 = cr4 | (to_vmx(vcpu)->rmode.vm86_active ?
-		    KVM_RMODE_VM_CR4_ALWAYS_ON : KVM_PMODE_VM_CR4_ALWAYS_ON);
+	/*
+	 * Pass through host's Machine Check Enable value to hw_cr4, which
+	 * is in force while we are in guest mode.  Do not let guests control
+	 * this bit, even if host CR4.MCE == 0.
+	 */
+	unsigned long hw_cr4 =
+		(cr4_read_shadow() & X86_CR4_MCE) |
+		(cr4 & ~X86_CR4_MCE) |
+		(to_vmx(vcpu)->rmode.vm86_active ?
+		 KVM_RMODE_VM_CR4_ALWAYS_ON : KVM_PMODE_VM_CR4_ALWAYS_ON);
 
 	if (cr4 & X86_CR4_VMXE) {
 		/*
@@ -4280,7 +4295,7 @@ static void vmx_set_constant_host_state(struct vcpu_vmx *vmx)
 	vmcs_writel(HOST_CR3, read_cr3());  /* 22.2.3  FIXME: shadow tables */
 
 	/* Save the most likely value for this task's CR4 in the VMCS. */
-	cr4 = read_cr4();
+	cr4 = cr4_read_shadow();
 	vmcs_writel(HOST_CR4, cr4);			/* 22.2.3, 22.2.5 */
 	vmx->host_state.vmcs_host_cr4 = cr4;
 
@@ -4925,6 +4940,9 @@ static int handle_exception(struct kvm_vcpu *vcpu)
 		return handle_rmode_exception(vcpu, ex_no, error_code);
 
 	switch (ex_no) {
+	case AC_VECTOR:
+		kvm_queue_exception_e(vcpu, AC_VECTOR, error_code);
+		return 1;
 	case DB_VECTOR:
 		dr6 = vmcs_readl(EXIT_QUALIFICATION);
 		if (!(vcpu->guest_debug &
@@ -6722,6 +6740,7 @@ static int handle_invept(struct kvm_vcpu *vcpu)
 	if (!(types & (1UL << type))) {
 		nested_vmx_failValid(vcpu,
 				VMXERR_INVALID_OPERAND_TO_INVEPT_INVVPID);
+		skip_emulated_instruction(vcpu);
 		return 1;
 	}
 
@@ -7563,7 +7582,7 @@ static void __noclone vmx_vcpu_run(struct kvm_vcpu *vcpu)
 	if (test_bit(VCPU_REGS_RIP, (unsigned long *)&vcpu->arch.regs_dirty))
 		vmcs_writel(GUEST_RIP, vcpu->arch.regs[VCPU_REGS_RIP]);
 
-	cr4 = read_cr4();
+	cr4 = cr4_read_shadow();
 	if (unlikely(cr4 != vmx->host_state.vmcs_host_cr4)) {
 		vmcs_writel(HOST_CR4, cr4);
 		vmx->host_state.vmcs_host_cr4 = cr4;
@@ -9120,6 +9139,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
 	.cache_reg = vmx_cache_reg,
 	.get_rflags = vmx_get_rflags,
 	.set_rflags = vmx_set_rflags,
+	.fpu_activate = vmx_fpu_activate,
 	.fpu_deactivate = vmx_fpu_deactivate,
 
 	.tlb_flush = vmx_flush_tlb,

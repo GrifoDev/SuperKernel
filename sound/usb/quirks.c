@@ -177,6 +177,12 @@ static int create_fixed_stream_quirk(struct snd_usb_audio *chip,
 	}
 	alts = &iface->altsetting[fp->altset_idx];
 	altsd = get_iface_desc(alts);
+	if (altsd->bNumEndpoints < 1) {
+		kfree(fp);
+		kfree(rate_table);
+		return -EINVAL;
+	}
+
 	fp->protocol = altsd->bInterfaceProtocol;
 
 	if (fp->datainterval == 0)
@@ -1111,10 +1117,44 @@ void snd_usb_set_format_quirk(struct snd_usb_substream *subs,
 	}
 }
 
+bool snd_usb_get_sample_rate_quirk(struct snd_usb_audio *chip)
+{
+	/* devices which do not support reading the sample rate. */
+	switch (chip->usb_id) {
+	case USB_ID(0x045E, 0x075D): /* MS Lifecam Cinema  */
+	case USB_ID(0x045E, 0x076D): /* MS Lifecam HD-5000 */
+	case USB_ID(0x045E, 0x076E): /* MS Lifecam HD-5001 */
+	case USB_ID(0x045E, 0x076F): /* MS Lifecam HD-6000 */
+	case USB_ID(0x045E, 0x0772): /* MS Lifecam Studio */
+	case USB_ID(0x045E, 0x0779): /* MS Lifecam HD-3000 */
+	case USB_ID(0x047F, 0x0415): /* Plantronics BT-300 */
+	case USB_ID(0x047F, 0xAA05): /* Plantronics DA45 */
+	case USB_ID(0x04D8, 0xFEEA): /* Benchmark DAC1 Pre */
+	case USB_ID(0x0556, 0x0014): /* Phoenix Audio TMX320VC */
+	case USB_ID(0x074D, 0x3553): /* Outlaw RR2150 (Micronas UAC3553B) */
+	case USB_ID(0x1de7, 0x0013): /* Phoenix Audio MT202exe */
+	case USB_ID(0x1de7, 0x0014): /* Phoenix Audio TMX320 */
+	case USB_ID(0x1de7, 0x0114): /* Phoenix Audio MT202pcs */
+	case USB_ID(0x21B4, 0x0081): /* AudioQuest DragonFly */
+		return true;
+	}
+	return false;
+}
 
 /* Marantz/Denon USB DACs need a vendor cmd to switch
  * between PCM and native DSD mode
  */
+static bool is_marantz_denon_dac(unsigned int id)
+{
+	switch (id) {
+	case USB_ID(0x154e, 0x1003): /* Denon DA-300USB */
+	case USB_ID(0x154e, 0x3005): /* Marantz HD-DAC1 */
+	case USB_ID(0x154e, 0x3006): /* Marantz SA-14S1 */
+		return true;
+	}
+	return false;
+}
+
 int snd_usb_select_mode_quirk(struct snd_usb_substream *subs,
 			      struct audioformat *fmt)
 {
@@ -1178,8 +1218,12 @@ void snd_usb_set_interface_quirk(struct usb_device *dev)
 	 * "Playback Design" products need a 50ms delay after setting the
 	 * USB interface.
 	 */
-	if (le16_to_cpu(dev->descriptor.idVendor) == 0x23ba)
+	switch (le16_to_cpu(dev->descriptor.idVendor)) {
+	case 0x23ba: /* Playback Design */
+	case 0x0644: /* TEAC Corp. */
 		mdelay(50);
+		break;
+	}
 }
 
 void snd_usb_ctl_msg_quirk(struct usb_device *dev, unsigned int pipe,
@@ -1194,11 +1238,21 @@ void snd_usb_ctl_msg_quirk(struct usb_device *dev, unsigned int pipe,
 	    (requesttype & USB_TYPE_MASK) == USB_TYPE_CLASS)
 		mdelay(20);
 
+	/*
+	 * "TEAC Corp." products need a 20ms delay after each
+	 * class compliant request
+	 */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0644) &&
+	    (requesttype & USB_TYPE_MASK) == USB_TYPE_CLASS)
+		mdelay(20);
+
 	/* Marantz/Denon devices with USB DAC functionality need a delay
 	 * after each class compliant request
 	 */
-	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x154e) &&
-	    (requesttype & USB_TYPE_MASK) == USB_TYPE_CLASS) {
+	if (is_marantz_denon_dac(USB_ID(le16_to_cpu(dev->descriptor.idVendor),
+					le16_to_cpu(dev->descriptor.idProduct)))
+	    && (requesttype & USB_TYPE_MASK) == USB_TYPE_CLASS)
+		mdelay(20);
 
 		switch (le16_to_cpu(dev->descriptor.idProduct)) {
 		case 0x3005: /* Marantz HD-DAC1 */
@@ -1245,13 +1299,18 @@ u64 snd_usb_interface_dsd_format_quirks(struct snd_usb_audio *chip,
 
 	/* XMOS based USB DACs */
 	switch (chip->usb_id) {
-	/* iFi Audio micro/nano iDSD */
-	case USB_ID(0x20b1, 0x3008):
+	case USB_ID(0x20b1, 0x3008): /* iFi Audio micro/nano iDSD */
+	case USB_ID(0x20b1, 0x2008): /* Matrix Audio X-Sabre */
+	case USB_ID(0x20b1, 0x300a): /* Matrix Audio Mini-i Pro */
 		if (fp->altsetting == 2)
 			return SNDRV_PCM_FMTBIT_DSD_U32_BE;
 		break;
-	/* DIYINHK DSD DXD 384kHz USB to I2S/DSD */
-	case USB_ID(0x20b1, 0x2009):
+
+	case USB_ID(0x20b1, 0x000a): /* Gustard DAC-X20U */
+	case USB_ID(0x20b1, 0x2009): /* DIYINHK DSD DXD 384kHz USB to I2S/DSD */
+	case USB_ID(0x20b1, 0x2023): /* JLsounds I2SoverUSB */
+	case USB_ID(0x20b1, 0x3023): /* Aune X1S 32BIT/384 DSD DAC */
+	case USB_ID(0x2616, 0x0106): /* PS Audio NuWave DAC */
 		if (fp->altsetting == 3)
 			return SNDRV_PCM_FMTBIT_DSD_U32_BE;
 		break;

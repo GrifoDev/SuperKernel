@@ -1655,6 +1655,7 @@ struct radeon_pm {
 	u8                      fan_max_rpm;
 	/* dpm */
 	bool                    dpm_enabled;
+	bool                    sysfs_initialized;
 	struct radeon_dpm       dpm;
 };
 
