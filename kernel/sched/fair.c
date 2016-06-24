@@ -5411,13 +5411,6 @@ static struct sched_entity *hmp_get_lightest_task(struct sched_entity* se, int m
  * hmp_up_prio: Only up migrate task with high priority (<hmp_up_prio)
  * hmp_next_up_threshold: Delay before next up migration (1024 ~= 1 ms)
  * hmp_next_down_threshold: Delay before next down migration (1024 ~= 1 ms)
- *
- * Small Task Packing:
- * We can choose to fill the littlest CPUs in an HMP system rather than
- * the typical spreading mechanic. This behavior is controllable using
- * two variables.
- * hmp_packing_enabled: runtime control over pack/spread
- * hmp_full_threshold: Consider a CPU with this much unweighted load full
  */
 static int hmp_boostpulse_duration = 1000000; /* microseconds */
 static u64 hmp_boostpulse_endtime;
@@ -5459,32 +5452,6 @@ static inline int hmp_semiboost(void)
 		return 1;
 	return 0;
 }
-
-#ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
-/*
- * Set the default packing threshold to try to keep little
- * CPUs at no more than 80% of their maximum frequency if only
- * packing a small number of small tasks. Bigger tasks will
- * raise frequency as normal.
- * In order to pack a task onto a CPU, the sum of the
- * unweighted runnable_avg load of existing tasks plus the
- * load of the new task must be less than hmp_full_threshold.
- *
- * This works in conjunction with frequency-invariant load
- * and DVFS governors. Since most DVFS governors aim for 80%
- * utilisation, we arrive at (0.8*0.8*(max_load=1024))=655
- * and use a value slightly lower to give a little headroom
- * in the decision.
- * Note that the most efficient frequency is different for
- * each system so /sys/kernel/hmp/packing_limit should be
- * configured at runtime for any given platform to achieve
- * optimal energy usage. Some systems may not benefit from
- * packing, so this feature can also be disabled at runtime
- * with /sys/kernel/hmp/packing_enable
- */
-unsigned int hmp_packing_enabled = 1;
-unsigned int hmp_full_threshold = 650;
-#endif
 
 static unsigned int hmp_up_migration(int cpu, int *target_cpu, struct sched_entity *se);
 static unsigned int hmp_down_migration(int cpu, struct sched_entity *se);
@@ -5572,50 +5539,6 @@ static inline unsigned int hmp_select_slower_cpu(struct task_struct *tsk,
 
 	return lowest_cpu;
 }
-
-#ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
-/*
- * Select the 'best' candidate little CPU to wake up on.
- * Implements a packing strategy which examines CPU in
- * logical CPU order, and selects the first which will
- * be loaded less than hmp_full_threshold according to
- * the sum of the tracked load of the runqueue and the task.
- */
-static inline unsigned int hmp_best_little_cpu(struct task_struct *tsk,
-		int cpu) {
-	int tmp_cpu;
-	unsigned long estimated_load;
-	struct hmp_domain *hmp;
-	struct sched_avg *avg;
-	struct cpumask allowed_hmp_cpus;
-
-	if(!hmp_packing_enabled ||
-			tsk->se.avg.load_avg_ratio > ((NICE_0_LOAD * 90)/100))
-		return hmp_select_slower_cpu(tsk, cpu);
-
-	if (hmp_cpu_is_slowest(cpu))
-		hmp = hmp_cpu_domain(cpu);
-	else
-		hmp = hmp_slower_domain(cpu);
-
-	/* respect affinity */
-	cpumask_and(&allowed_hmp_cpus, &hmp->cpus,
-			tsk_cpus_allowed(tsk));
-
-	for_each_cpu_mask(tmp_cpu, allowed_hmp_cpus) {
-		avg = &cpu_rq(tmp_cpu)->avg;
-		/* estimate new rq load if we add this task */
-		estimated_load = avg->load_avg_ratio +
-				tsk->se.avg.load_avg_ratio;
-		if (estimated_load <= hmp_full_threshold) {
-			cpu = tmp_cpu;
-			break;
-		}
-	}
-	/* if no match was found, the task uses the initial value */
-	return cpu;
-}
-#endif
 
 static inline void hmp_next_up_delay(struct sched_entity *se, int cpu)
 {
@@ -6057,24 +5980,6 @@ static int hmp_freqinvar_from_sysfs(int value)
 	return value;
 }
 #endif
-
-#if defined(CONFIG_SCHED_HMP_LITTLE_PACKING)
-/* toggle control is only 0,1 off/on */
-static int hmp_toggle_from_sysfs(int value)
-{
-	if (value < 0 || value > 1)
-		return -1;
-	return value;
-}
-
-static int hmp_packing_from_sysfs(int value)
-{
-	if (value < 0)
-		return -1;
-	return value;
-}
-#endif
-
 static void hmp_attr_add(
 	const char *name,
 	int *value,
@@ -6188,16 +6093,6 @@ static int hmp_attr_init(void)
 		&hmp_data.freqinvar_load_scale_enabled,
 		NULL,
 		hmp_freqinvar_from_sysfs);
-#endif
-#ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
-	hmp_attr_add("packing_enable",
-		&hmp_packing_enabled,
-		NULL,
-		hmp_toggle_from_sysfs);
-	hmp_attr_add("packing_limit",
-		&hmp_full_threshold,
-		NULL,
-		hmp_packing_from_sysfs);
 #endif
 	hmp_data.attr_group.name = "hmp";
 	hmp_data.attr_group.attrs = hmp_data.attributes;
@@ -6468,11 +6363,7 @@ unlock:
 		return new_cpu;
 	}
 	if (hmp_down_migration(prev_cpu, &p->se)) {
-#ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
-		new_cpu = hmp_best_little_cpu(p, prev_cpu);
-#else
 		new_cpu = hmp_select_slower_cpu(p, prev_cpu);
-#endif
 		/*
 		 * we might have no suitable CPU
 		 * in which case new_cpu == NR_CPUS
@@ -9150,36 +9041,6 @@ static int nohz_test_cpu(int cpu)
 }
 #endif
 
-#ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
-/*
- * Decide if the tasks on the busy CPUs in the littlest domain would benefit
- * from an idle balance
- *
- * When packing is enabled, only enforce this behaviour when we are not in the
- * smallest domain - there we idle balance whenever a CPU is over the
- * up_threshold regardless of tasks in case one needs to be moved.
- */
-static int hmp_packing_ilb_needed(int cpu, int ilb_needed)
-{
-	struct hmp_domain *hmp;
-	/* allow previous decision on non-slowest domain */
-	if (!hmp_cpu_is_slowest(cpu))
-		return ilb_needed;
-
-	/* if disabled, use normal ILB behaviour */
-	if (!hmp_packing_enabled)
-		return ilb_needed;
-
-	hmp = hmp_cpu_domain(cpu);
-	for_each_cpu_and(cpu, &hmp->cpus, nohz.idle_cpus_mask) {
-		/* only idle balance if a CPU is loaded over threshold */
-		if (cpu_rq(cpu)->avg.load_avg_ratio > hmp_full_threshold)
-			return 1;
-	}
-	return 0;
-}
-#endif
-
 DEFINE_PER_CPU(cpumask_var_t, ilb_tmpmask);
 
 static inline int find_new_ilb(int call_cpu)
@@ -9204,11 +9065,6 @@ static inline int find_new_ilb(int call_cpu)
 			break;
 		}
 	}
-
-#ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
-	if (ilb < nr_cpu_ids)
-		ilb_needed = hmp_packing_ilb_needed(ilb, ilb_needed);
-#endif
 
 	if (ilb_needed && ilb < nr_cpu_ids && idle_cpu(ilb))
 		return ilb;
@@ -9665,14 +9521,8 @@ static unsigned int hmp_down_migration(int cpu, struct sched_entity *se)
 	struct task_struct *p = task_of(se);
 	u64 now;
 
-	if (hmp_cpu_is_slowest(cpu)) {
-#ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
-		if(hmp_packing_enabled)
-			return 1;
-		else
-#endif
+	if (hmp_cpu_is_slowest(cpu))
 		return 0;
-	}
 
 #ifdef CONFIG_SCHED_HMP_PRIO_FILTER
 	/* Filter by task priority */
