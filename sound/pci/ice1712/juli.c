@@ -475,8 +475,11 @@ static int juli_add_controls(struct snd_ice1712 *ice)
 		return err;
 
 	/* only capture SPDIF over AK4114 */
-	return snd_ak4114_build(spec->ak4114, NULL,
+	err = snd_ak4114_build(spec->ak4114, NULL,
 			ice->pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream);
+	if (err < 0)
+		return err;
+	return 0;
 }
 
 /*

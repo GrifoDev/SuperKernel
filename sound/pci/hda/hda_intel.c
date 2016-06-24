@@ -196,8 +196,8 @@ MODULE_PARM_DESC(align_buffer_size,
 		"Force buffer and period sizes to be multiple of 128 bytes.");
 
 #ifdef CONFIG_X86
-static int hda_snoop = -1;
-module_param_named(snoop, hda_snoop, bint, 0444);
+static bool hda_snoop = true;
+module_param_named(snoop, hda_snoop, bool, 0444);
 MODULE_PARM_DESC(snoop, "Enable/disable snooping");
 #else
 #define hda_snoop		true
@@ -276,26 +276,22 @@ enum {
 	(((chip)->driver_caps & AZX_DCAPS_SNOOP_MASK) >> 10)
 #define AZX_DCAPS_SNOOP_TYPE(type) ((AZX_SNOOP_TYPE_ ## type) << 10)
 
-/* quirks for old Intel chipsets */
-#define AZX_DCAPS_INTEL_ICH \
-	(AZX_DCAPS_OLD_SSYNC | AZX_DCAPS_NO_ALIGN_BUFSIZE)
-
 /* quirks for Intel PCH */
 #define AZX_DCAPS_INTEL_PCH_NOPM \
-	(AZX_DCAPS_NO_ALIGN_BUFSIZE | AZX_DCAPS_COUNT_LPIB_DELAY |\
+	(AZX_DCAPS_BUFSIZE | AZX_DCAPS_COUNT_LPIB_DELAY |\
 	 AZX_DCAPS_REVERSE_ASSIGN | AZX_DCAPS_SNOOP_TYPE(SCH))
 
 #define AZX_DCAPS_INTEL_PCH \
 	(AZX_DCAPS_INTEL_PCH_NOPM | AZX_DCAPS_PM_RUNTIME)
 
 #define AZX_DCAPS_INTEL_HASWELL \
-	(/*AZX_DCAPS_ALIGN_BUFSIZE |*/ AZX_DCAPS_COUNT_LPIB_DELAY |\
+	(AZX_DCAPS_ALIGN_BUFSIZE | AZX_DCAPS_COUNT_LPIB_DELAY |\
 	 AZX_DCAPS_PM_RUNTIME | AZX_DCAPS_I915_POWERWELL |\
 	 AZX_DCAPS_SNOOP_TYPE(SCH))
 
 /* Broadwell HDMI can't use position buffer reliably, force to use LPIB */
 #define AZX_DCAPS_INTEL_BROADWELL \
-	(/*AZX_DCAPS_ALIGN_BUFSIZE |*/ AZX_DCAPS_POSFIX_LPIB |\
+	(AZX_DCAPS_ALIGN_BUFSIZE | AZX_DCAPS_POSFIX_LPIB |\
 	 AZX_DCAPS_PM_RUNTIME | AZX_DCAPS_I915_POWERWELL |\
 	 AZX_DCAPS_SNOOP_TYPE(SCH))
 
@@ -315,7 +311,7 @@ enum {
 
 /* quirks for Nvidia */
 #define AZX_DCAPS_PRESET_NVIDIA \
-	(AZX_DCAPS_RIRB_DELAY | AZX_DCAPS_NO_MSI | /*AZX_DCAPS_ALIGN_BUFSIZE |*/ \
+	(AZX_DCAPS_RIRB_DELAY | AZX_DCAPS_NO_MSI | AZX_DCAPS_ALIGN_BUFSIZE |\
 	 AZX_DCAPS_NO_64BIT | AZX_DCAPS_CORBRP_SELF_CLEAR |\
 	 AZX_DCAPS_SNOOP_TYPE(NVIDIA))
 
@@ -1147,7 +1143,8 @@ static int azx_free(struct azx *chip)
 	pci_disable_device(chip->pci);
 	kfree(chip->azx_dev);
 #ifdef CONFIG_SND_HDA_PATCH_LOADER
-	release_firmware(chip->fw);
+	if (chip->fw)
+		release_firmware(chip->fw);
 #endif
 	if (chip->driver_caps & AZX_DCAPS_I915_POWERWELL) {
 		hda_display_power(false);
@@ -1375,33 +1372,29 @@ static void check_msi(struct azx *chip)
 /* check the snoop mode availability */
 static void azx_check_snoop_available(struct azx *chip)
 {
-	int snoop = hda_snoop;
+	bool snoop = chip->snoop;
 
-	if (snoop >= 0) {
-		dev_info(chip->card->dev, "Force to %s mode by module option\n",
-			 snoop ? "snoop" : "non-snoop");
-		chip->snoop = snoop;
-		return;
-	}
-
-	snoop = true;
 	if (azx_get_snoop_type(chip) == AZX_SNOOP_TYPE_NONE &&
 	    chip->driver_type == AZX_DRIVER_VIA) {
 		/* force to non-snoop mode for a new VIA controller
 		 * when BIOS is set
 		 */
-		u8 val;
-		pci_read_config_byte(chip->pci, 0x42, &val);
-		if (!(val & 0x80) && chip->pci->revision == 0x30)
-			snoop = false;
+		if (snoop) {
+			u8 val;
+			pci_read_config_byte(chip->pci, 0x42, &val);
+			if (!(val & 0x80) && chip->pci->revision == 0x30)
+				snoop = false;
+		}
 	}
 
 	if (chip->driver_caps & AZX_DCAPS_SNOOP_OFF)
 		snoop = false;
 
-	chip->snoop = snoop;
-	if (!snoop)
-		dev_info(chip->card->dev, "Force to non-snoop mode\n");
+	if (snoop != chip->snoop) {
+		dev_info(chip->card->dev, "Force to %s mode\n",
+			 snoop ? "snoop" : "non-snoop");
+		chip->snoop = snoop;
+	}
 }
 
 static void azx_probe_work(struct work_struct *work)
@@ -1461,6 +1454,7 @@ static int azx_create(struct snd_card *card, struct pci_dev *pci,
 	check_probe_mask(chip, dev);
 
 	chip->single_cmd = single_cmd;
+	chip->snoop = hda_snoop;
 	azx_check_snoop_available(chip);
 
 	if (bdl_pos_adj[dev] < 0) {
@@ -1568,8 +1562,10 @@ static int azx_first_init(struct azx *chip)
 	if (align_buffer_size >= 0)
 		chip->align_buffer_size = !!align_buffer_size;
 	else {
-		if (chip->driver_caps & AZX_DCAPS_NO_ALIGN_BUFSIZE)
+		if (chip->driver_caps & AZX_DCAPS_BUFSIZE)
 			chip->align_buffer_size = 0;
+		else if (chip->driver_caps & AZX_DCAPS_ALIGN_BUFSIZE)
+			chip->align_buffer_size = 1;
 		else
 			chip->align_buffer_size = 1;
 	}
@@ -2056,35 +2052,36 @@ static const struct pci_device_id azx_ids[] = {
 	/* Braswell */
 	{ PCI_DEVICE(0x8086, 0x2284),
 	  .driver_data = AZX_DRIVER_PCH | AZX_DCAPS_INTEL_PCH },
-	/* ICH6 */
+	/* ICH */
 	{ PCI_DEVICE(0x8086, 0x2668),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
-	/* ICH7 */
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ICH6 */
 	{ PCI_DEVICE(0x8086, 0x27d8),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
-	/* ESB2 */
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ICH7 */
 	{ PCI_DEVICE(0x8086, 0x269a),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
-	/* ICH8 */
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ESB2 */
 	{ PCI_DEVICE(0x8086, 0x284b),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
-	/* ICH9 */
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ICH8 */
 	{ PCI_DEVICE(0x8086, 0x293e),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
-	/* ICH9 */
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ICH9 */
 	{ PCI_DEVICE(0x8086, 0x293f),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
-	/* ICH10 */
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ICH9 */
 	{ PCI_DEVICE(0x8086, 0x3a3e),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
-	/* ICH10 */
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ICH10 */
 	{ PCI_DEVICE(0x8086, 0x3a6e),
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_INTEL_ICH },
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_OLD_SSYNC |
+	  AZX_DCAPS_BUFSIZE },  /* ICH10 */
 	/* Generic Intel */
 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_ANY_ID),
 	  .class = PCI_CLASS_MULTIMEDIA_HD_AUDIO << 8,
 	  .class_mask = 0xffffff,
-	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_NO_ALIGN_BUFSIZE },
+	  .driver_data = AZX_DRIVER_ICH | AZX_DCAPS_BUFSIZE },
 	/* ATI SB 450/600/700/800/900 */
 	{ PCI_DEVICE(0x1002, 0x437b),
 	  .driver_data = AZX_DRIVER_ATI | AZX_DCAPS_PRESET_ATI_SB },
@@ -2149,6 +2146,8 @@ static const struct pci_device_id azx_ids[] = {
 	{ PCI_DEVICE(0x1002, 0xaaa8),
 	  .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI_NS },
 	{ PCI_DEVICE(0x1002, 0xaab0),
+	  .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI_NS },
+	{ PCI_DEVICE(0x1002, 0xaac8),
 	  .driver_data = AZX_DRIVER_ATIHDMI_NS | AZX_DCAPS_PRESET_ATI_HDMI_NS },
 	/* VIA VT8251/VT8237A */
 	{ PCI_DEVICE(0x1106, 0x3288),

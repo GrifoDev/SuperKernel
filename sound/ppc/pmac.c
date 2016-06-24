@@ -887,7 +887,8 @@ static int snd_pmac_free(struct snd_pmac *chip)
 		}
 	}
 
-	pci_dev_put(chip->pdev);
+	if (chip->pdev)
+		pci_dev_put(chip->pdev);
 	of_node_put(chip->node);
 	kfree(chip);
 	return 0;

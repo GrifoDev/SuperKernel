@@ -1007,7 +1007,11 @@ void amdtp_stream_pcm_abort(struct amdtp_stream *s)
 	struct snd_pcm_substream *pcm;
 
 	pcm = ACCESS_ONCE(s->pcm);
-	if (pcm)
-		snd_pcm_stop_xrun(pcm);
+	if (pcm) {
+		snd_pcm_stream_lock_irq(pcm);
+		if (snd_pcm_running(pcm))
+			snd_pcm_stop(pcm, SNDRV_PCM_STATE_XRUN);
+		snd_pcm_stream_unlock_irq(pcm);
+	}
 }
 EXPORT_SYMBOL(amdtp_stream_pcm_abort);

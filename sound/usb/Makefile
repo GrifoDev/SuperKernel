@@ -9,7 +9,6 @@ snd-usb-audio-objs := 	card.o \
 			helper.o \
 			mixer.o \
 			mixer_quirks.o \
-			mixer_scarlett.o \
 			pcm.o \
 			proc.o \
 			quirks.o \

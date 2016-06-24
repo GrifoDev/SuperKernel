@@ -40,12 +40,7 @@
 #include "hda_generic.h"
 
 
-/**
- * snd_hda_gen_spec_init - initialize hda_gen_spec struct
- * @spec: hda_gen_spec object to initialize
- *
- * Initialize the given hda_gen_spec object.
- */
+/* initialize hda_gen_spec struct */
 int snd_hda_gen_spec_init(struct hda_gen_spec *spec)
 {
 	snd_array_init(&spec->kctls, sizeof(struct snd_kcontrol_new), 32);
@@ -56,17 +51,6 @@ int snd_hda_gen_spec_init(struct hda_gen_spec *spec)
 }
 EXPORT_SYMBOL_GPL(snd_hda_gen_spec_init);
 
-/**
- * snd_hda_gen_add_kctl - Add a new kctl_new struct from the template
- * @spec: hda_gen_spec object
- * @name: name string to override the template, NULL if unchanged
- * @temp: template for the new kctl
- *
- * Add a new kctl (actually snd_kcontrol_new to be instantiated later)
- * element based on the given snd_kcontrol_new template @temp and the
- * name string @name to the list in @spec.
- * Returns the newly created object or NULL as error.
- */
 struct snd_kcontrol_new *
 snd_hda_gen_add_kctl(struct hda_gen_spec *spec, const char *name,
 		     const struct snd_kcontrol_new *temp)
@@ -275,14 +259,8 @@ static struct nid_path *get_nid_path(struct hda_codec *codec,
 	return NULL;
 }
 
-/**
- * snd_hda_get_nid_path - get the path between the given NIDs
- * @codec: the HDA codec
- * @from_nid: the NID where the path start from
- * @to_nid: the NID where the path ends at
- *
- * Return the found nid_path object or NULL for error.
- * Passing 0 to either @from_nid or @to_nid behaves as a wildcard.
+/* get the path between the given NIDs;
+ * passing 0 to either @pin or @dac behaves as a wildcard
  */
 struct nid_path *snd_hda_get_nid_path(struct hda_codec *codec,
 				      hda_nid_t from_nid, hda_nid_t to_nid)
@@ -291,14 +269,8 @@ struct nid_path *snd_hda_get_nid_path(struct hda_codec *codec,
 }
 EXPORT_SYMBOL_GPL(snd_hda_get_nid_path);
 
-/**
- * snd_hda_get_path_idx - get the index number corresponding to the path
- * instance
- * @codec: the HDA codec
- * @path: nid_path object
- *
- * The returned index starts from 1, i.e. the actual array index with offset 1,
- * and zero is handled as an invalid path
+/* get the index number corresponding to the path instance;
+ * the index starts from 1, for easier checking the invalid value
  */
 int snd_hda_get_path_idx(struct hda_codec *codec, struct nid_path *path)
 {
@@ -315,12 +287,7 @@ int snd_hda_get_path_idx(struct hda_codec *codec, struct nid_path *path)
 }
 EXPORT_SYMBOL_GPL(snd_hda_get_path_idx);
 
-/**
- * snd_hda_get_path_from_idx - get the path instance corresponding to the
- * given index number
- * @codec: the HDA codec
- * @idx: the path index
- */
+/* get the path instance corresponding to the given index number */
 struct nid_path *snd_hda_get_path_from_idx(struct hda_codec *codec, int idx)
 {
 	struct hda_gen_spec *spec = codec->spec;
@@ -448,18 +415,7 @@ static bool __parse_nid_path(struct hda_codec *codec,
 	return true;
 }
 
-/**
- * snd_hda_parse_nid_path - parse the widget path from the given nid to
- * the target nid
- * @codec: the HDA codec
- * @from_nid: the NID where the path start from
- * @to_nid: the NID where the path ends at
- * @anchor_nid: the anchor indication
- * @path: the path object to store the result
- *
- * Returns true if a matching path is found.
- *
- * The parsing behavior depends on parameters:
+/* parse the widget path from the given nid to the target nid;
  * when @from_nid is 0, try to find an empty DAC;
  * when @anchor_nid is set to a positive value, only paths through the widget
  * with the given value are evaluated.
@@ -480,15 +436,9 @@ bool snd_hda_parse_nid_path(struct hda_codec *codec, hda_nid_t from_nid,
 }
 EXPORT_SYMBOL_GPL(snd_hda_parse_nid_path);
 
-/**
- * snd_hda_add_new_path - parse the path between the given NIDs and
- * add to the path list
- * @codec: the HDA codec
- * @from_nid: the NID where the path start from
- * @to_nid: the NID where the path ends at
- * @anchor_nid: the anchor indication, see snd_hda_parse_nid_path()
- *
- * If no valid path is found, returns NULL.
+/*
+ * parse the path between the given NIDs and add to the path list.
+ * if no valid path is found, return NULL
  */
 struct nid_path *
 snd_hda_add_new_path(struct hda_codec *codec, hda_nid_t from_nid,
@@ -821,14 +771,8 @@ static void activate_amp_in(struct hda_codec *codec, struct nid_path *path,
 	}
 }
 
-/**
- * snd_hda_activate_path - activate or deactivate the given path
- * @codec: the HDA codec
- * @path: the path to activate/deactivate
- * @enable: flag to activate or not
- * @add_aamix: enable the input from aamix NID
- *
- * If @add_aamix is set, enable the input from aa-mix NID as well (if any).
+/* activate or deactivate the given path
+ * if @add_aamix is set, enable the input from aa-mix NID as well (if any)
  */
 void snd_hda_activate_path(struct hda_codec *codec, struct nid_path *path,
 			   bool enable, bool add_aamix)
@@ -1141,24 +1085,11 @@ static const char *get_line_out_pfx(struct hda_codec *codec, int ch,
 			break;
 		*index = ch;
 		return "Headphone";
-	case AUTO_PIN_LINE_OUT:
-		/* This deals with the case where we have two DACs and
-		 * one LO, one HP and one Speaker */
-		if (!ch && cfg->speaker_outs && cfg->hp_outs) {
-			bool hp_lo_shared = !path_has_mixer(codec, spec->hp_paths[0], ctl_type);
-			bool spk_lo_shared = !path_has_mixer(codec, spec->speaker_paths[0], ctl_type);
-			if (hp_lo_shared && spk_lo_shared)
-				return spec->vmaster_mute.hook ? "PCM" : "Master";
-			if (hp_lo_shared)
-				return "Headphone+LO";
-			if (spk_lo_shared)
-				return "Speaker+LO";
-		}
 	}
 
 	/* for a single channel output, we don't have to name the channel */
 	if (cfg->line_outs == 1 && !spec->multi_ios)
-		return "Line Out";
+		return "PCM";
 
 	if (ch >= ARRAY_SIZE(channel_name)) {
 		snd_BUG();
@@ -4019,12 +3950,7 @@ static void do_automute(struct hda_codec *codec, int num_pins, hda_nid_t *pins,
 	}
 }
 
-/**
- * snd_hda_gen_update_outputs - Toggle outputs muting
- * @codec: the HDA codec
- *
- * Update the mute status of all outputs based on the current jack states.
- */
+/* Toggle outputs muting */
 void snd_hda_gen_update_outputs(struct hda_codec *codec)
 {
 	struct hda_gen_spec *spec = codec->spec;
@@ -4085,11 +4011,7 @@ static void call_update_outputs(struct hda_codec *codec)
 		snd_ctl_sync_vmaster(spec->vmaster_mute.sw_kctl, false);
 }
 
-/**
- * snd_hda_gen_hp_automute - standard HP-automute helper
- * @codec: the HDA codec
- * @jack: jack object, NULL for the whole
- */
+/* standard HP-automute helper */
 void snd_hda_gen_hp_automute(struct hda_codec *codec,
 			     struct hda_jack_callback *jack)
 {
@@ -4110,11 +4032,7 @@ void snd_hda_gen_hp_automute(struct hda_codec *codec,
 }
 EXPORT_SYMBOL_GPL(snd_hda_gen_hp_automute);
 
-/**
- * snd_hda_gen_line_automute - standard line-out-automute helper
- * @codec: the HDA codec
- * @jack: jack object, NULL for the whole
- */
+/* standard line-out-automute helper */
 void snd_hda_gen_line_automute(struct hda_codec *codec,
 			       struct hda_jack_callback *jack)
 {
@@ -4135,11 +4053,7 @@ void snd_hda_gen_line_automute(struct hda_codec *codec,
 }
 EXPORT_SYMBOL_GPL(snd_hda_gen_line_automute);
 
-/**
- * snd_hda_gen_mic_autoswitch - standard mic auto-switch helper
- * @codec: the HDA codec
- * @jack: jack object, NULL for the whole
- */
+/* standard mic auto-switch helper */
 void snd_hda_gen_mic_autoswitch(struct hda_codec *codec,
 				struct hda_jack_callback *jack)
 {
@@ -4471,13 +4385,7 @@ static int check_auto_mic_availability(struct hda_codec *codec)
 	return 0;
 }
 
-/**
- * snd_hda_gen_path_power_filter - power_filter hook to make inactive widgets
- * into power down
- * @codec: the HDA codec
- * @nid: NID to evalute
- * @power_state: target power state
- */
+/* power_filter hook; make inactive widgets into power down */
 unsigned int snd_hda_gen_path_power_filter(struct hda_codec *codec,
 						  hda_nid_t nid,
 						  unsigned int power_state)
@@ -4511,11 +4419,8 @@ static void mute_all_mixer_nid(struct hda_codec *codec, hda_nid_t mix)
 	}
 }
 
-/**
- * snd_hda_gen_parse_auto_config - Parse the given BIOS configuration and
- * set up the hda_gen_spec
- * @codec: the HDA codec
- * @cfg: Parsed pin configuration
+/*
+ * Parse the given BIOS configuration and set up the hda_gen_spec
  *
  * return 1 if successful, 0 if the proper config is not found,
  * or a negative error code
@@ -4697,16 +4602,10 @@ static const char * const slave_pfxs[] = {
 	"CLFE", "Bass Speaker", "PCM",
 	"Speaker Front", "Speaker Surround", "Speaker CLFE", "Speaker Side",
 	"Headphone Front", "Headphone Surround", "Headphone CLFE",
-	"Headphone Side", "Headphone+LO", "Speaker+LO",
+	"Headphone Side",
 	NULL,
 };
 
-/**
- * snd_hda_gen_build_controls - Build controls from the parsed results
- * @codec: the HDA codec
- *
- * Pass this to build_controls patch_ops.
- */
 int snd_hda_gen_build_controls(struct hda_codec *codec)
 {
 	struct hda_gen_spec *spec = codec->spec;
@@ -5184,12 +5083,7 @@ static void fill_pcm_stream_name(char *str, size_t len, const char *sfx,
 	strlcat(str, sfx, len);
 }
 
-/**
- * snd_hda_gen_build_pcms - build PCM streams based on the parsed results
- * @codec: the HDA codec
- *
- * Pass this to build_pcms patch_ops.
- */
+/* build PCM streams based on the parsed results */
 int snd_hda_gen_build_pcms(struct hda_codec *codec)
 {
 	struct hda_gen_spec *spec = codec->spec;
@@ -5486,11 +5380,9 @@ static void clear_unsol_on_unused_pins(struct hda_codec *codec)
 	}
 }
 
-/**
- * snd_hda_gen_init - initialize the generic spec
- * @codec: the HDA codec
- *
- * This can be put as patch_ops init function.
+/*
+ * initialize the generic spec;
+ * this can be put as patch_ops.init function
  */
 int snd_hda_gen_init(struct hda_codec *codec)
 {
@@ -5526,11 +5418,9 @@ int snd_hda_gen_init(struct hda_codec *codec)
 }
 EXPORT_SYMBOL_GPL(snd_hda_gen_init);
 
-/**
- * snd_hda_gen_free - free the generic spec
- * @codec: the HDA codec
- *
- * This can be put as patch_ops free function.
+/*
+ * free the generic spec;
+ * this can be put as patch_ops.free function
  */
 void snd_hda_gen_free(struct hda_codec *codec)
 {
@@ -5542,12 +5432,9 @@ void snd_hda_gen_free(struct hda_codec *codec)
 EXPORT_SYMBOL_GPL(snd_hda_gen_free);
 
 #ifdef CONFIG_PM
-/**
- * snd_hda_gen_check_power_status - check the loopback power save state
- * @codec: the HDA codec
- * @nid: NID to inspect
- *
- * This can be put as patch_ops check_power_status function.
+/*
+ * check the loopback power save state;
+ * this can be put as patch_ops.check_power_status function
  */
 int snd_hda_gen_check_power_status(struct hda_codec *codec, hda_nid_t nid)
 {
@@ -5573,12 +5460,6 @@ static const struct hda_codec_ops generic_patch_ops = {
 #endif
 };
 
-/**
- * snd_hda_parse_generic_codec - Generic codec parser
- * @codec: the HDA codec
- *
- * This should be called from the HDA codec core.
- */
 int snd_hda_parse_generic_codec(struct hda_codec *codec)
 {
 	struct hda_gen_spec *spec;

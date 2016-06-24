@@ -528,6 +528,8 @@ static int get_daio_rsc(struct daio_mgr *mgr,
 			struct daio **rdaio)
 {
 	int err;
+	struct dai *dai = NULL;
+	struct dao *dao = NULL;
 	unsigned long flags;
 
 	*rdaio = NULL;
@@ -542,30 +544,27 @@ static int get_daio_rsc(struct daio_mgr *mgr,
 		return err;
 	}
 
-	err = -ENOMEM;
 	/* Allocate mem for daio resource */
 	if (desc->type <= DAIO_OUT_MAX) {
-		struct dao *dao = kzalloc(sizeof(*dao), GFP_KERNEL);
-		if (!dao)
-			goto error;
-
-		err = dao_rsc_init(dao, desc, mgr);
-		if (err) {
-			kfree(dao);
+		dao = kzalloc(sizeof(*dao), GFP_KERNEL);
+		if (!dao) {
+			err = -ENOMEM;
 			goto error;
 		}
+		err = dao_rsc_init(dao, desc, mgr);
+		if (err)
+			goto error;
 
 		*rdaio = &dao->daio;
 	} else {
-		struct dai *dai = kzalloc(sizeof(*dai), GFP_KERNEL);
-		if (!dai)
-			goto error;
-
-		err = dai_rsc_init(dai, desc, mgr);
-		if (err) {
-			kfree(dai);
+		dai = kzalloc(sizeof(*dai), GFP_KERNEL);
+		if (!dai) {
+			err = -ENOMEM;
 			goto error;
 		}
+		err = dai_rsc_init(dai, desc, mgr);
+		if (err)
+			goto error;
 
 		*rdaio = &dai->daio;
 	}
@@ -576,6 +575,11 @@ static int get_daio_rsc(struct daio_mgr *mgr,
 	return 0;
 
 error:
+	if (dao)
+		kfree(dao);
+	else if (dai)
+		kfree(dai);
+
 	spin_lock_irqsave(&mgr->mgr_lock, flags);
 	daio_mgr_put_rsc(&mgr->mgr, desc->type);
 	spin_unlock_irqrestore(&mgr->mgr_lock, flags);

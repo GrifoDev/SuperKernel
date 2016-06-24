@@ -1710,8 +1710,7 @@ static void es1968_measure_clock(struct es1968 *chip)
 	int i, apu;
 	unsigned int pa, offset, t;
 	struct esm_memory *memory;
-	ktime_t start_time, stop_time;
-	ktime_t diff;
+	struct timeval start_time, stop_time;
 
 	if (chip->clock == 0)
 		chip->clock = 48000; /* default clock value */
@@ -1762,12 +1761,12 @@ static void es1968_measure_clock(struct es1968 *chip)
 	snd_es1968_bob_inc(chip, ESM_BOB_FREQ);
 	__apu_set_register(chip, apu, 5, pa & 0xffff);
 	snd_es1968_trigger_apu(chip, apu, ESM_APU_16BITLINEAR);
-	start_time = ktime_get();
+	do_gettimeofday(&start_time);
 	spin_unlock_irq(&chip->reg_lock);
 	msleep(50);
 	spin_lock_irq(&chip->reg_lock);
 	offset = __apu_get_register(chip, apu, 5);
-	stop_time = ktime_get();
+	do_gettimeofday(&stop_time);
 	snd_es1968_trigger_apu(chip, apu, 0); /* stop */
 	snd_es1968_bob_dec(chip);
 	chip->in_measurement = 0;
@@ -1778,8 +1777,12 @@ static void es1968_measure_clock(struct es1968 *chip)
 	offset &= 0xfffe;
 	offset += chip->measure_count * (CLOCK_MEASURE_BUFSIZE/2);
 
-	diff = ktime_sub(stop_time, start_time);
-	t = ktime_to_us(diff);
+	t = stop_time.tv_sec - start_time.tv_sec;
+	t *= 1000000;
+	if (stop_time.tv_usec < start_time.tv_usec)
+		t -= start_time.tv_usec - stop_time.tv_usec;
+	else
+		t += stop_time.tv_usec - start_time.tv_usec;
 	if (t == 0) {
 		dev_err(chip->card->dev, "?? calculation error..\n");
 	} else {

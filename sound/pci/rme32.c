@@ -1608,24 +1608,30 @@ snd_rme32_info_inputtype_control(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_info *uinfo)
 {
 	struct rme32 *rme32 = snd_kcontrol_chip(kcontrol);
-	static const char * const texts[4] = {
-		"Optical", "Coaxial", "Internal", "XLR"
-	};
-	int num_items;
+	static char *texts[4] = { "Optical", "Coaxial", "Internal", "XLR" };
 
+	uinfo->type = SNDRV_CTL_ELEM_TYPE_ENUMERATED;
+	uinfo->count = 1;
 	switch (rme32->pci->device) {
 	case PCI_DEVICE_ID_RME_DIGI32:
 	case PCI_DEVICE_ID_RME_DIGI32_8:
-		num_items = 3;
+		uinfo->value.enumerated.items = 3;
 		break;
 	case PCI_DEVICE_ID_RME_DIGI32_PRO:
-		num_items = 4;
+		uinfo->value.enumerated.items = 4;
 		break;
 	default:
 		snd_BUG();
-		return -EINVAL;
+		break;
 	}
-	return snd_ctl_enum_info(uinfo, 1, num_items, texts);
+	if (uinfo->value.enumerated.item >
+	    uinfo->value.enumerated.items - 1) {
+		uinfo->value.enumerated.item =
+		    uinfo->value.enumerated.items - 1;
+	}
+	strcpy(uinfo->value.enumerated.name,
+	       texts[uinfo->value.enumerated.item]);
+	return 0;
 }
 static int
 snd_rme32_get_inputtype_control(struct snd_kcontrol *kcontrol,
@@ -1689,12 +1695,20 @@ static int
 snd_rme32_info_clockmode_control(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_info *uinfo)
 {
-	static const char * const texts[4] = { "AutoSync",
+	static char *texts[4] = { "AutoSync", 
 				  "Internal 32.0kHz", 
 				  "Internal 44.1kHz", 
 				  "Internal 48.0kHz" };
 
-	return snd_ctl_enum_info(uinfo, 1, 4, texts);
+	uinfo->type = SNDRV_CTL_ELEM_TYPE_ENUMERATED;
+	uinfo->count = 1;
+	uinfo->value.enumerated.items = 4;
+	if (uinfo->value.enumerated.item > 3) {
+		uinfo->value.enumerated.item = 3;
+	}
+	strcpy(uinfo->value.enumerated.name,
+	       texts[uinfo->value.enumerated.item]);
+	return 0;
 }
 static int
 snd_rme32_get_clockmode_control(struct snd_kcontrol *kcontrol,

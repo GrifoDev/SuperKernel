@@ -112,13 +112,15 @@ static struct usb_driver usb_audio_driver;
 
 /*
  * disconnect streams
- * called from usb_audio_disconnect()
+ * called from snd_usb_audio_disconnect()
  */
-static void snd_usb_stream_disconnect(struct snd_usb_stream *as)
+static void snd_usb_stream_disconnect(struct list_head *head)
 {
 	int idx;
+	struct snd_usb_stream *as;
 	struct snd_usb_substream *subs;
 
+	as = list_entry(head, struct snd_usb_stream, list);
 	for (idx = 0; idx < 2; idx++) {
 		subs = &as->substream[idx];
 		if (!subs->num_formats)
@@ -305,10 +307,10 @@ static int snd_usb_create_streams(struct snd_usb_audio *chip, int ctrlif)
 
 static int snd_usb_audio_free(struct snd_usb_audio *chip)
 {
-	struct snd_usb_endpoint *ep, *n;
+	struct list_head *p, *n;
 
-	list_for_each_entry_safe(ep, n, &chip->ep_list, list)
-		snd_usb_endpoint_free(ep);
+	list_for_each_safe(p, n, &chip->ep_list)
+		snd_usb_endpoint_free(p);
 
 	mutex_destroy(&chip->mutex);
 	kfree(chip);
@@ -319,6 +321,16 @@ static int snd_usb_audio_dev_free(struct snd_device *device)
 {
 	struct snd_usb_audio *chip = device->device_data;
 	return snd_usb_audio_free(chip);
+}
+
+static void remove_trailing_spaces(char *str)
+{
+	char *p;
+
+	if (!*str)
+		return;
+	for (p = str + strlen(str) - 1; p >= str && isspace(*p); p--)
+		*p = 0;
 }
 
 /*
@@ -404,7 +416,7 @@ static int snd_usb_audio_create(struct usb_interface *intf,
 				USB_ID_PRODUCT(chip->usb_id));
 		}
 	}
-	strim(card->shortname);
+	remove_trailing_spaces(card->shortname);
 
 	/* retrieve the vendor and device strings as longname */
 	if (quirk && quirk->vendor_name && *quirk->vendor_name) {
@@ -418,7 +430,7 @@ static int snd_usb_audio_create(struct usb_interface *intf,
 		/* we don't really care if there isn't any vendor string */
 	}
 	if (len > 0) {
-		strim(card->longname);
+		remove_trailing_spaces(card->longname);
 		if (*card->longname)
 			strlcat(card->longname, " ", sizeof(card->longname));
 	}
@@ -463,14 +475,14 @@ static int snd_usb_audio_create(struct usb_interface *intf,
  * only at the first time.  the successive calls of this function will
  * append the pcm interface to the corresponding card.
  */
-static int usb_audio_probe(struct usb_interface *intf,
-			   const struct usb_device_id *usb_id)
+static struct snd_usb_audio *
+snd_usb_audio_probe(struct usb_device *dev,
+		    struct usb_interface *intf,
+		    const struct usb_device_id *usb_id)
 {
-	struct usb_device *dev = interface_to_usbdev(intf);
-	const struct snd_usb_audio_quirk *quirk =
-		(const struct snd_usb_audio_quirk *)usb_id->driver_info;
-	struct snd_usb_audio *chip;
+	const struct snd_usb_audio_quirk *quirk = (const struct snd_usb_audio_quirk *)usb_id->driver_info;
 	int i, err;
+	struct snd_usb_audio *chip;
 	struct usb_host_interface *alts;
 	int ifnum;
 	u32 id;
@@ -480,11 +492,10 @@ static int usb_audio_probe(struct usb_interface *intf,
 	id = USB_ID(le16_to_cpu(dev->descriptor.idVendor),
 		    le16_to_cpu(dev->descriptor.idProduct));
 	if (quirk && quirk->ifnum >= 0 && ifnum != quirk->ifnum)
-		return -ENXIO;
+		goto __err_val;
 
-	err = snd_usb_apply_boot_quirk(dev, intf, quirk);
-	if (err < 0)
-		return err;
+	if (snd_usb_apply_boot_quirk(dev, intf, quirk) < 0)
+		goto __err_val;
 
 	/*
 	 * found a config.  now register to ALSA
@@ -497,7 +508,6 @@ static int usb_audio_probe(struct usb_interface *intf,
 		if (usb_chip[i] && usb_chip[i]->dev == dev) {
 			if (usb_chip[i]->shutdown) {
 				dev_err(&dev->dev, "USB device is in the shutdown state, cannot create a card instance\n");
-				err = -EIO;
 				goto __error;
 			}
 			chip = usb_chip[i];
@@ -513,16 +523,15 @@ static int usb_audio_probe(struct usb_interface *intf,
 			if (enable[i] && ! usb_chip[i] &&
 			    (vid[i] == -1 || vid[i] == USB_ID_VENDOR(id)) &&
 			    (pid[i] == -1 || pid[i] == USB_ID_PRODUCT(id))) {
-				err = snd_usb_audio_create(intf, dev, i, quirk,
-							   &chip);
-				if (err < 0)
+				if (snd_usb_audio_create(intf, dev, i, quirk,
+							 &chip) < 0) {
 					goto __error;
+				}
 				chip->pm_intf = intf;
 				break;
 			}
 		if (!chip) {
 			dev_err(&dev->dev, "no available usb audio device\n");
-			err = -ENODEV;
 			goto __error;
 		}
 	}
@@ -539,32 +548,28 @@ static int usb_audio_probe(struct usb_interface *intf,
 	err = 1; /* continue */
 	if (quirk && quirk->ifnum != QUIRK_NO_INTERFACE) {
 		/* need some special handlings */
-		err = snd_usb_create_quirk(chip, intf, &usb_audio_driver, quirk);
-		if (err < 0)
+		if ((err = snd_usb_create_quirk(chip, intf, &usb_audio_driver, quirk)) < 0)
 			goto __error;
 	}
 
 	if (err > 0) {
 		/* create normal USB audio interfaces */
-		err = snd_usb_create_streams(chip, ifnum);
-		if (err < 0)
+		if (snd_usb_create_streams(chip, ifnum) < 0 ||
+		    snd_usb_create_mixer(chip, ifnum, ignore_ctl_error) < 0) {
 			goto __error;
-		err = snd_usb_create_mixer(chip, ifnum, ignore_ctl_error);
-		if (err < 0)
-			goto __error;
+		}
 	}
 
 	/* we are allowed to call snd_card_register() many times */
-	err = snd_card_register(chip->card);
-	if (err < 0)
+	if (snd_card_register(chip->card) < 0) {
 		goto __error;
+	}
 
 	usb_chip[chip->index] = chip;
 	chip->num_interfaces++;
 	chip->probing = 0;
-	usb_set_intfdata(intf, chip);
 	mutex_unlock(&register_mutex);
-	return 0;
+	return chip;
 
  __error:
 	if (chip) {
@@ -573,16 +578,17 @@ static int usb_audio_probe(struct usb_interface *intf,
 		chip->probing = 0;
 	}
 	mutex_unlock(&register_mutex);
-	return err;
+ __err_val:
+	return NULL;
 }
 
 /*
  * we need to take care of counter, since disconnection can be called also
  * many times as well as usb_audio_probe().
  */
-static void usb_audio_disconnect(struct usb_interface *intf)
+static void snd_usb_audio_disconnect(struct usb_device *dev,
+				     struct snd_usb_audio *chip)
 {
-	struct snd_usb_audio *chip = usb_get_intfdata(intf);
 	struct snd_card *card;
 	struct list_head *p;
 	bool was_shutdown;
@@ -598,14 +604,12 @@ static void usb_audio_disconnect(struct usb_interface *intf)
 
 	mutex_lock(&register_mutex);
 	if (!was_shutdown) {
-		struct snd_usb_stream *as;
 		struct snd_usb_endpoint *ep;
-		struct usb_mixer_interface *mixer;
 
 		snd_card_disconnect(card);
 		/* release the pcm resources */
-		list_for_each_entry(as, &chip->pcm_list, list) {
-			snd_usb_stream_disconnect(as);
+		list_for_each(p, &chip->pcm_list) {
+			snd_usb_stream_disconnect(p);
 		}
 		/* release the endpoint resources */
 		list_for_each_entry(ep, &chip->ep_list, list) {
@@ -616,8 +620,8 @@ static void usb_audio_disconnect(struct usb_interface *intf)
 			snd_usbmidi_disconnect(p);
 		}
 		/* release mixer resources */
-		list_for_each_entry(mixer, &chip->mixer_list, list) {
-			snd_usb_mixer_disconnect(mixer);
+		list_for_each(p, &chip->mixer_list) {
+			snd_usb_mixer_disconnect(p);
 		}
 	}
 
@@ -629,6 +633,27 @@ static void usb_audio_disconnect(struct usb_interface *intf)
 	} else {
 		mutex_unlock(&register_mutex);
 	}
+}
+
+/*
+ * new 2.5 USB kernel API
+ */
+static int usb_audio_probe(struct usb_interface *intf,
+			   const struct usb_device_id *id)
+{
+	struct snd_usb_audio *chip;
+	chip = snd_usb_audio_probe(interface_to_usbdev(intf), intf, id);
+	if (chip) {
+		usb_set_intfdata(intf, chip);
+		return 0;
+	} else
+		return -EIO;
+}
+
+static void usb_audio_disconnect(struct usb_interface *intf)
+{
+	snd_usb_audio_disconnect(interface_to_usbdev(intf),
+				 usb_get_intfdata(intf));
 }
 
 #ifdef CONFIG_PM

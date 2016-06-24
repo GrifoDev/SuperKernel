@@ -33,12 +33,12 @@ static int init_hw(struct echoaudio *chip, u16 device_id, u16 subdevice_id)
 {
 	int err;
 
+	DE_INIT(("init_hw() - Darla24\n"));
 	if (snd_BUG_ON((subdevice_id & 0xfff0) != DARLA24))
 		return -ENODEV;
 
 	if ((err = init_dsp_comm_page(chip))) {
-		dev_err(chip->card->dev,
-			"init_hw: could not initialize DSP comm page\n");
+		DE_INIT(("init_hw - could not initialize DSP comm page\n"));
 		return err;
 	}
 
@@ -56,6 +56,7 @@ static int init_hw(struct echoaudio *chip, u16 device_id, u16 subdevice_id)
 		return err;
 	chip->bad_board = FALSE;
 
+	DE_INIT(("init_hw done\n"));
 	return err;
 }
 
@@ -127,17 +128,15 @@ static int set_sample_rate(struct echoaudio *chip, u32 rate)
 		clock = GD24_8000;
 		break;
 	default:
-		dev_err(chip->card->dev,
-			"set_sample_rate: Error, invalid sample rate %d\n",
-			rate);
+		DE_ACT(("set_sample_rate: Error, invalid sample rate %d\n",
+			rate));
 		return -EINVAL;
 	}
 
 	if (wait_handshake(chip))
 		return -EIO;
 
-	dev_dbg(chip->card->dev,
-		"set_sample_rate: %d clock %d\n", rate, clock);
+	DE_ACT(("set_sample_rate: %d clock %d\n", rate, clock));
 	chip->sample_rate = rate;
 
 	/* Override the sample rate if this card is set to Echo sync. */
