@@ -342,7 +342,7 @@ struct dev_pm_ops {
 #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
 #endif
 
-#ifdef CONFIG_PM
+#ifdef CONFIG_PM_RUNTIME
 #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
 	.runtime_suspend = suspend_fn, \
 	.runtime_resume = resume_fn, \
@@ -351,7 +351,14 @@ struct dev_pm_ops {
 #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
 #endif
 
-#define SET_PM_RUNTIME_PM_OPS	SET_RUNTIME_PM_OPS
+#ifdef CONFIG_PM
+#define SET_PM_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+	.runtime_suspend = suspend_fn, \
+	.runtime_resume = resume_fn, \
+	.runtime_idle = idle_fn,
+#else
+#define SET_PM_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
+#endif
 
 /*
  * Use this if you want to use the same suspend and resume callbacks for suspend
@@ -531,7 +538,11 @@ enum rpm_request {
 };
 
 struct wakeup_source;
-struct pm_domain_data;
+
+struct pm_domain_data {
+	struct list_head list_node;
+	struct device *dev;
+};
 
 struct pm_subsys_data {
 	spinlock_t lock;
@@ -565,7 +576,7 @@ struct dev_pm_info {
 #else
 	unsigned int		should_wakeup:1;
 #endif
-#ifdef CONFIG_PM
+#ifdef CONFIG_PM_RUNTIME
 	struct timer_list	suspend_timer;
 	unsigned long		timer_expires;
 	struct work_struct	work;

@@ -53,9 +53,6 @@
 #define _COMPONENT          ACPI_UTILITIES
 ACPI_MODULE_NAME("utxfinit")
 
-/* For acpi_exec only */
-void ae_do_object_overrides(void);
-
 /*******************************************************************************
  *
  * FUNCTION:    acpi_initialize_subsystem
@@ -68,7 +65,6 @@ void ae_do_object_overrides(void);
  *              called, so any early initialization belongs here.
  *
  ******************************************************************************/
-
 acpi_status __init acpi_initialize_subsystem(void)
 {
 	acpi_status status;
@@ -281,13 +277,6 @@ acpi_status __init acpi_initialize_objects(u32 flags)
 			return_ACPI_STATUS(status);
 		}
 	}
-#ifdef ACPI_EXEC_APP
-	/*
-	 * This call implements the "initialization file" option for acpi_exec.
-	 * This is the precise point that we want to perform the overrides.
-	 */
-	ae_do_object_overrides();
-#endif
 
 	/*
 	 * Execute any module-level code that was detected during the table load

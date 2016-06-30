@@ -1462,9 +1462,6 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
 			 should be used with caution. This option does not work with
 			 processors that aren't supported by the intel_pstate driver
 			 or on platforms that use pcc-cpufreq instead of acpi-cpufreq.
-		       no_hwp
-		         Do not enable hardware P state control (HWP)
-			 if available.
 
 	intremap=	[X86-64, Intel-IOMMU]
 			on	enable Interrupt Remapping (default)

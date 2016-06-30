@@ -301,6 +301,7 @@ static struct notifier_block exynos_cpuidle_reboot_nb = {
 	.exit_latency           = 1,\
 	.target_residency       = 1,\
 	.power_usage		= UINT_MAX,\
+	.flags                  = CPUIDLE_FLAG_TIME_VALID,\
 	.name                   = "WFI",\
 	.desc                   = "ARM WFI",\
 }

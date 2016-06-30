@@ -403,7 +403,7 @@ struct request_queue {
 	 */
 	struct kobject mq_kobj;
 
-#ifdef CONFIG_PM
+#ifdef CONFIG_PM_RUNTIME
 	struct device		*dev;
 	int			rpm_status;
 	unsigned int		nr_pending;
@@ -1075,7 +1075,7 @@ extern void blk_put_queue(struct request_queue *);
 /*
  * block layer runtime pm functions
  */
-#ifdef CONFIG_PM
+#ifdef CONFIG_PM_RUNTIME
 extern void blk_pm_runtime_init(struct request_queue *q, struct device *dev);
 extern int blk_pre_runtime_suspend(struct request_queue *q);
 extern void blk_post_runtime_suspend(struct request_queue *q, int err);

@@ -218,3 +218,4 @@ static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_va
 #endif
 
 #endif		/* __LINUX_OPP_H__ */
+

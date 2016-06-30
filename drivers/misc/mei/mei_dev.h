@@ -537,9 +537,9 @@ struct mei_device {
 	 * Power Gating support
 	 */
 	enum mei_pg_event pg_event;
-#ifdef CONFIG_PM
+#ifdef CONFIG_PM_RUNTIME
 	struct dev_pm_domain pg_domain;
-#endif /* CONFIG_PM */
+#endif /* CONFIG_PM_RUNTIME */
 
 	unsigned char rd_msg_buf[MEI_RD_MSG_BUF_SIZE];
 	u32 rd_msg_hdr;
