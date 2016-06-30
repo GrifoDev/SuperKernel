@@ -102,7 +102,7 @@ enum cpufreq_cooling_property {
 };
 
 /**
- * get_property - fetch a property of interest for a give cpu.
+ * get_property - fetch a property of interest for a given cpu.
  * @cpu: cpu for which the property is required
  * @input: query parameter
  * @output: query return
@@ -112,6 +112,7 @@ enum cpufreq_cooling_property {
  * 1. get maximum cpu cooling states
  * 2. translate frequency to cooling state
  * 3. translate cooling state to frequency
+ *
  * Note that the code may be not in good shape
  * but it is written in this way in order to:
  * a) reduce duplicate code as most of the code can be shared.
@@ -192,7 +193,7 @@ static int get_property(unsigned int cpu, unsigned long input,
 }
 
 /**
- * cpufreq_cooling_get_level - for a give cpu, return the cooling level.
+ * cpufreq_cooling_get_level - for a given cpu, return the cooling level.
  * @cpu: cpu for which the level is required
  * @freq: the frequency of interest
  *
@@ -460,6 +461,11 @@ __cpufreq_cooling_register(struct device_node *np,
 	char dev_name[THERMAL_NAME_LENGTH];
 	int ret = 0, i;
 	struct cpufreq_policy policy;
+
+	if (!cpufreq_frequency_get_table(cpumask_first(clip_cpus))) {
+		pr_debug("%s: CPUFreq table not found\n", __func__);
+		return ERR_PTR(-EPROBE_DEFER);
+	}
 
 	/* Verify that all the clip cpus have same freq_min, freq_max limit */
 	for_each_cpu(i, clip_cpus) {
