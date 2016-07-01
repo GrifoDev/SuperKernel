@@ -425,10 +425,12 @@
 		/* For CPUFREQ table */
 		/* APO */
 		cl0_idx_num = <19>;
-		high_cl0_max_support_idx = <2>;
-		mid_cl0_max_support_idx = <3>;
+		stock_cl0_max_support_idx = <4>;
 		low_cl0_max_support_idx = <4>;
+		mid_cl0_max_support_idx = <3>;
+		high_cl0_max_support_idx = <2>;
 		cl0_min_support_idx = <16>;
+		stock_cl0_min_support_idx = <15>;
 		cl0_boot_max_qos = <1898000>;
 		cl0_boot_min_qos = <1586000>;
 		cl0_en_ema = <1>;
@@ -437,12 +439,19 @@
 		cl1_idx_num = <28>;
 		cl1_max_support_idx = <2>;
 		cl1_min_support_idx = <26>;
+		stock_cl1_min_support_idx = <22>;
 		cl1_boot_max_qos = <2800000>;
 		cl1_boot_min_qos = <2496000>;
 		cl1_en_ema = <1>;
 		cl1_en_smpl = <1>;
 		cl1_jig_boot_max_qos = <1456000>;
 		cl1_reboot_limit_freq = <728000>;
+
+		stock_cl1_max_support_idx_table = < 7	   /* Number of online core is 0 */
+					      4    /* Number of online core is 1 */
+					      4    /* Number of online core is 2 */
+					      7    /* Number of online core is 3 */
+					      7 >; /* Number of online core is 4 */
 
 		low_cl1_max_support_idx_table = < 4	   /* Number of online core is 0 */
 					      4    /* Number of online core is 1 */
