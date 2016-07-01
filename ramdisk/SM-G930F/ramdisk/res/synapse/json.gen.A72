@@ -45,7 +45,7 @@ cat << CTAG
 	{ SSeekBar:{
 		title:"A72 big Cores MIN frequency",
 		description:"Set the minimum frequency the CPU scales down to.\n",
-		default:312000,
+		default:728000,
 		action:"generic /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq",
 		values:{
 `

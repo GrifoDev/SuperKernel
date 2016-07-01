@@ -1,7 +1,7 @@
 #!/bin/bash
 # kernel build script by Tkkg1994 v0.4 (optimized from apq8084 kernel source)
 
-export MODEL=hero2lte
+export MODEL=herolte
 export ARCH=arm64
 export BUILD_CROSS_COMPILE=/Kernel_Folder/aarch64-linux-gnu-5.3/bin/aarch64-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
