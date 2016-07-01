@@ -13,15 +13,15 @@ DTBDIR=$OUTDIR/dtb
 DTCTOOL=$RDIR/scripts/dtc/dtc
 INCDIR=$RDIR/include
 
+PAGE_SIZE=2048
+DTB_PADDING=0
+
 if [ $MODEL = herolte ]
 then
 	KERNEL_DEFCONFIG=SuperKernel-herolte_defconfig
 else [ $MODEL = hero2lte ]
 	KERNEL_DEFCONFIG=SuperKernel-hero2lte_defconfig
 fi
-
-PAGE_SIZE=2048
-DTB_PADDING=0
 
 FUNC_CLEAN_DTB()
 {
