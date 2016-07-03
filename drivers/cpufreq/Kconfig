@@ -227,7 +227,6 @@ config CPU_FREQ_DEFAULT_GOV_SMARTASS2
 
 config CPU_FREQ_DEFAULT_GOV_IRONACTIVE
 	bool "ironactive"
-	depends on SCHED_FREQ_INPUT
 	select CPU_FREQ_GOV_IRONACTIVE
 	help
 	  Use the CPUFreq governor 'ironactive' as default. This cpugovernor
@@ -581,18 +580,15 @@ config CPU_FREQ_GOV_SMARTASS2
 
 config CPU_FREQ_GOV_IRONACTIVE
 	tristate "'ironactive' cpufreq policy governor"
-	depends on SCHED_FREQ_INPUT
 	help
 	  'ironactive' - This driver adds a dynamic cpufreq policy governor
+	  designed for latency-sensitive workloads.
 
 	  This governor attempts to reduce the latency of clock
 	  increases so that the system is more responsive to
-	  ironactive workloads. Based on 'interactive' governor
-	  with many changes compared to our stock 'interactive'
-	  governor we have from samsung. Mainly CAF changes.
+	  interactive workloads.
 
-	  To compile this driver as a module, choose M here: the
-	  module will be called cpufreq_ironactive.
+	  For details, take a look at linux/Documentation/cpu-freq.
 
 	  If in doubt, say N.
 
