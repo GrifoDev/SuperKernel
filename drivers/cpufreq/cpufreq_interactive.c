@@ -32,7 +32,9 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <linux/pm_qos.h>
+#ifdef CONFIG_STATE_NOTIFIER
 #include <linux/state_notifier.h>
+#endif
 
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
 #include <soc/samsung/cpufreq.h>
@@ -73,10 +75,12 @@ struct task_struct *speedchange_task;
 static cpumask_t speedchange_cpumask;
 static spinlock_t speedchange_cpumask_lock;
 static struct mutex gov_lock;
+#ifdef CONFIG_STATE_NOTIFIER
 static struct notifier_block notif;
 
 /* boolean for determining screen on/off state */
 static bool suspended = false;
+#endif
 
 /* Target load.  Lower values result in higher CPU speeds. */
 #define DEFAULT_TARGET_LOAD 90
@@ -650,6 +654,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	if (WARN_ON_ONCE(!delta_time))
 		goto rearm;
 #ifdef CONFIG_MODE_AUTO_CHANGE
+#ifdef CONFIG_STATE_NOTIFIER
 	if (!suspended) {
 		spin_lock_irqsave(&tunables->mode_lock, flags);
 		if (tunables->enforced_mode)
@@ -666,6 +671,22 @@ static void cpufreq_interactive_timer(unsigned long data)
 		}
 		spin_unlock_irqrestore(&tunables->mode_lock, flags);
 	}
+#else
+	spin_lock_irqsave(&tunables->mode_lock, flags);
+	if (tunables->enforced_mode)
+		new_mode = tunables->enforced_mode;
+	else
+		new_mode = check_mode(data, tunables->mode, now);
+
+	if (new_mode != tunables->mode) {
+		tunables->mode = new_mode;
+		if (new_mode & MULTI_MODE || new_mode & SINGLE_MODE)
+			enter_mode(tunables);
+		else
+			exit_mode(tunables);
+	}
+	spin_unlock_irqrestore(&tunables->mode_lock, flags);
+#endif
 #endif
 	spin_lock_irqsave(&pcpu->target_freq_lock, flags);
 	do_div(cputime_speedadj, delta_time);
@@ -673,7 +694,11 @@ static void cpufreq_interactive_timer(unsigned long data)
 	cpu_load = loadadjfreq / pcpu->policy->cur;
 	tunables->boosted = tunables->boost_val || now < tunables->boostpulse_endtime;
 
+#ifdef CONFIG_STATE_NOTIFIER
 	if ((cpu_load >= tunables->go_hispeed_load&& !suspended) || tunables->boosted) {
+#else
+	if (cpu_load >= tunables->go_hispeed_load || tunables->boosted) {
+#endif
 		if (pcpu->policy->cur < tunables->hispeed_freq) {
 			new_freq = tunables->hispeed_freq;
 		} else {
@@ -3566,6 +3591,7 @@ static struct notifier_block cpufreq_interactive_cluster0_max_qos_notifier = {
 #endif
 #endif
 
+#ifdef CONFIG_STATE_NOTIFIER
 static int state_notifier_callback(struct notifier_block *this,
  				unsigned long event, void *data)
 {
@@ -3582,6 +3608,7 @@ static int state_notifier_callback(struct notifier_block *this,
 
 	return NOTIFY_OK;
 }
+#endif
 
 static int __init cpufreq_interactive_init(void)
 {
@@ -3601,9 +3628,11 @@ static int __init cpufreq_interactive_init(void)
 		init_rwsem(&pcpu->enable_sem);
 	}
 
+#ifdef CONFIG_STATE_NOTIFIER
 	notif.notifier_call = state_notifier_callback;
 	if (state_register_client(&notif))
 		pr_err("Failed to register State notifier callback for interactive governor\n");
+#endif
 
 	spin_lock_init(&speedchange_cpumask_lock);
 	mutex_init(&gov_lock);
