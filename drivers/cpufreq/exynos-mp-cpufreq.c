@@ -50,6 +50,10 @@
 #include <linux/muic/muic_notifier.h>
 #endif
 
+#ifdef CONFIG_CPU_THERMAL_IPA
+#include "cpu_load_metric.h"
+#endif
+
 #include <soc/samsung/cpufreq.h>
 #include <soc/samsung/exynos-powermode.h>
 #include <soc/samsung/asv-exynos.h>
@@ -129,6 +133,7 @@ static bool hmp_boosted = false;
 static bool cluster1_hotplugged = false;
 extern bool is_cpu_thermal;
 #endif
+static bool in_worque = false;
 
 #ifdef CONFIG_SW_SELF_DISCHARGING
 static int self_discharging;
@@ -170,7 +175,11 @@ struct pm_qos_request cpufreq_cpu_hotplug_max_request;
 
 // reset DVFS
 #ifdef CONFIG_PM
+#ifdef CONFIG_CPU_THERMAL_IPA
+#define DVFS_RESET_SEC 5
+#else
 #define DVFS_RESET_SEC 15
+#endif
 static struct delayed_work dvfs_reset_work;
 static struct workqueue_struct *dvfs_reset_wq;
 #endif
@@ -1492,9 +1501,12 @@ static ssize_t store_cpufreq_min_limit(struct kobject *kobj, struct attribute *a
 
 	save_cpufreq_min_limit(cluster1_input);
 	cancel_delayed_work_sync(&dvfs_reset_work);
-	if (cluster1_input > 0)
+	in_worque = false;
+	if (cluster1_input > 0) {
 		queue_delayed_work_on(0, dvfs_reset_wq, &dvfs_reset_work,
 			DVFS_RESET_SEC * HZ);
+		in_worque = true;
+	}
 
 	return count;
 }
@@ -1588,22 +1600,41 @@ static ssize_t store_cpufreq_max_limit(struct kobject *kobj, struct attribute *a
 
 	save_cpufreq_max_limit(cluster1_input);
 	cancel_delayed_work_sync(&dvfs_reset_work);
-	if (cluster1_input > 0)
+	in_worque = false;
+	if (cluster1_input > 0) {
 		queue_delayed_work_on(0, dvfs_reset_wq, &dvfs_reset_work,
 			DVFS_RESET_SEC * HZ);
+		in_worque = true;
+	}
 
 	return count;
 }
 
 static void dvfs_reset_work_fn(struct work_struct *work)
 {
-	pr_info("%s++: DVFS timed out(%d)! Resetting with -1\n", __func__, DVFS_RESET_SEC);
+#ifdef CONFIG_CPU_THERMAL_IPA
+	int load, freq;
 
-	save_cpufreq_min_limit(-1);
-	msleep(20);
-	save_cpufreq_max_limit(-1);
+	cpu_load_metric_get(&load, &freq);
 
-	pr_info("%s--\n", __func__);
+	if (load <= 25) {
+#endif
+		pr_info("%s++: BOOST timed out(%d)! Resetting with -1\n", __func__, DVFS_RESET_SEC);
+
+		save_cpufreq_min_limit(-1);
+		msleep(20);
+		save_cpufreq_max_limit(-1);
+
+		pr_info("%s--\n", __func__);
+
+		in_worque = false;
+#ifdef CONFIG_CPU_THERMAL_IPA
+	} else {
+		if (in_worque)
+			queue_delayed_work_on(0, dvfs_reset_wq, &dvfs_reset_work,
+				DVFS_RESET_SEC * HZ);
+	}
+#endif
 }
 #endif
 
