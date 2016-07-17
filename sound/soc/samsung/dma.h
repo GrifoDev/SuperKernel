@@ -12,9 +12,12 @@
 #ifndef _S3C_AUDIO_H
 #define _S3C_AUDIO_H
 
+#include <sound/dmaengine_pcm.h>
+
 struct s3c_dma_params {
 	struct s3c2410_dma_client *client;	/* stream identifier */
-	int channel;				/* Channel ID */
+	void *slave;				/* Channel ID */
+	int channel;
 	dma_addr_t dma_addr;
 	int dma_size;			/* Size of the DMA transfer */
 #ifdef CONFIG_ARM64
@@ -24,6 +27,7 @@ struct s3c_dma_params {
 #endif
 	struct samsung_dma_ops *ops;
 	struct device *sec_dma_dev;	/* stream identifier */
+	struct snd_dmaengine_dai_dma_data dma_data;
 	char *ch_name;
 	bool esa_dma;
 	bool compr_dma;
