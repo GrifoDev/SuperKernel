@@ -34,6 +34,6 @@ security.mdpp.mass=false
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Thu Jun 23 19:21:46 KST 2016
-ro.bootimage.build.date.utc=1466677306
-ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:6.0.1/MMB29K/G935FXXU1APFG:user/test-keys
+ro.bootimage.build.date=Mon Jul 4 11:43:54 KST 2016
+ro.bootimage.build.date.utc=1467600234
+ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:6.0.1/MMB29K/G935FXXS1APG5:user/test-keys
