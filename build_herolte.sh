@@ -3,7 +3,7 @@
 
 export MODEL=herolte
 export ARCH=arm64
-export BUILD_CROSS_COMPILE=/Kernel_Folder/aarch64-linux-gnu-5.3/bin/aarch64-
+export BUILD_CROSS_COMPILE=/Kernel_Folder/aarch64-sabermod-7.0/bin/aarch64-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
 RDIR=$(pwd)
