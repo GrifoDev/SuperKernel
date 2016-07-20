@@ -1,9 +1,9 @@
 #!/bin/bash
 # kernel build script by Tkkg1994 v0.4 (optimized from apq8084 kernel source)
 
-export MODEL=herolte
+export MODEL=hero2lte
 export ARCH=arm64
-export BUILD_CROSS_COMPILE=/Kernel_Folder/aarch64-linux-gnu-5.3/bin/aarch64-
+export BUILD_CROSS_COMPILE=/home/test/Kali_Kernel/linaro-64/bin/aarch64-linux-android-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
 RDIR=$(pwd)
@@ -16,11 +16,11 @@ INCDIR=$RDIR/include
 PAGE_SIZE=2048
 DTB_PADDING=0
 
-if [ $MODEL = herolte ]
+if [ $MODEL = hero2lte ]
 then
-	KERNEL_DEFCONFIG=SuperKernel-herolte_defconfig
+	KERNEL_DEFCONFIG=hero2ltekali_defconfig
 else [ $MODEL = hero2lte ]
-	KERNEL_DEFCONFIG=SuperKernel-hero2lte_defconfig
+	KERNEL_DEFCONFIG=hero2ltekali_defconfig
 fi
 
 FUNC_CLEAN_DTB()
