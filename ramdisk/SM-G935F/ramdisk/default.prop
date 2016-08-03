@@ -22,14 +22,9 @@ debug.atrace.tags.enableflags=0
 ro.config.tima=0
 ro.config.dmverity=false
 ro.config.rkp=false
-ro.config.kap_default_on=false
 ro.config.kap=false
-ro.config.knox=false
+ro.sec.fle.encryption=false
 ro.securestorage.support=false
-
-ro.hardware.keystore=false
-security.mdpp.mass=false
-
 
 #
 # BOOTIMAGE_BUILD_PROPERTIES
