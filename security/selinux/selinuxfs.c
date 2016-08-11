@@ -187,8 +187,6 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 	selnl_notify_setenforce(new_value);
 	selinux_status_update_setenforce(new_value);
 #else
-	// If build is user build and permissive option is set, selinux is always permissive
-	new_value = 0;
 	if (new_value != selinux_enforcing) {
 		length = task_has_security(current, SECURITY__SETENFORCE);
 		if (length)
