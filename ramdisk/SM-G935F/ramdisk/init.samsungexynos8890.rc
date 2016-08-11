@@ -642,12 +642,6 @@ service fingerprintd /system/bin/fingerprintd
 #     group drmrpc
 #     class core
 
-# RPMB
-	service rpmbd /system/bin/rpmbd
-	user root
-	group drmrpc
-	class main
-
 # umount service
 service umount_service /system/bin/umount -D /preload
     disabled

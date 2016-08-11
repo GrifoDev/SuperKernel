@@ -4,7 +4,7 @@
 telephony.lteOnCdmaDevice=0
 rild.libpath=/system/lib64/libsec-ril.so
 rild.libpath2=/system/lib64/libsec-ril-dsds.so
-persist.security.ams.enforcing=1
+persist.security.ams.enforcing=3
 ro.secure=0
 ro.allow.mock.location=0
 ro.debuggable=1
@@ -29,6 +29,6 @@ ro.securestorage.support=false
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Mon Jul 4 11:43:54 KST 2016
-ro.bootimage.build.date.utc=1467600234
-ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:6.0.1/MMB29K/G935FXXS1APG5:user/test-keys
+ro.bootimage.build.date=Tue Jul 19 10:07:33 KST 2016
+ro.bootimage.build.date.utc=1468890453
+ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:6.0.1/MMB29K/G935FXXU1APGO:user/test-keys
