@@ -304,7 +304,7 @@ static __init int sel_netnode_init(void)
 {
 	int iter;
 	
-#ifdef CONFIG_ALWAYS_ENFORCE
+#ifdef CONFIG_SECURITY_SELINUX_ALWAYS_ENFORCE
 	selinux_enabled = 1;
 #endif
 
