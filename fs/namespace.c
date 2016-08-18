@@ -1946,7 +1946,7 @@ struct vfsmount *collect_mounts(struct path *path)
 		tree = ERR_PTR(-EINVAL);
 	else
 		tree = copy_tree(real_mount(path->mnt), path->dentry,
-				 CL_COPY_ALL | CL_PRIVATE);
+				CL_COPY_ALL | CL_PRIVATE);
 	namespace_unlock();
 	if (IS_ERR(tree))
 		return ERR_CAST(tree);
