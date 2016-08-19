@@ -216,6 +216,7 @@ nfccontroller                               u:object_r:nfc_service:s0
 offhostservice                              u:object_r:nfc_service:s0
 secontroller                                u:object_r:nfc_service:s0
 OTP                                         u:object_r:otp_server_service:s0
+com.samsung.android.pass.IPassService       u:object_r:pass_service:s0
 hermesservice                               u:object_r:platform_app_service:s0
 penableservice                              u:object_r:platform_app_service:s0
 SAGearPolicyManaagerService                 u:object_r:platform_app_service:s0
@@ -225,7 +226,7 @@ phoneext                                    u:object_r:radio_service:s0
 phoneext2                                   u:object_r:radio_service:s0
 samsung.smartfaceservice                    u:object_r:smartfaceservice_service:s0
 # No.38 Change iris service name(iris to samsung.iris) and level(system_service to app_service)
-samsung.iris                                u:object_r:irisservice_service:s0
+samsung.iris                                u:object_r:iris_service:s0
 sensorhubservice                            u:object_r:sensorhubservice_service:s0
 vendor.enea.Buffer_GL                       u:object_r:surfaceflinger_service:s0
 batterymanager                              u:object_r:system_app_service:s0
@@ -322,6 +323,8 @@ sec.clipboard8                              u:object_r:system_service:s0
 sec.clipboard9                              u:object_r:system_service:s0
 sec_analytics                               u:object_r:system_service:s0
 sec_location                                u:object_r:system_service:s0
+# SEA_site#61
+semclipboard                                u:object_r:system_service:s0
 sensor                                      u:object_r:system_service:s0
 sensorhub                                   u:object_r:system_service:s0
 scontext                                    u:object_r:system_service:s0
@@ -340,6 +343,7 @@ CCM                                         u:object_r:tlc_server_service:s0
 DCM                                         u:object_r:tlc_server_service:s0
 ESECOMM                                     u:object_r:tlc_server_service:s0
 TUI                                         u:object_r:tlc_server_service:s0
+VaultKeeper                                 u:object_r:VaultKeeper_service:s0
 WlanDutService                              u:object_r:wlandutservice_service:s0
 writingbuddymanagerservice                  u:object_r:writingbuddymanager_service:s0
 writingbuddymanagerserviceknox              u:object_r:writingbuddymanager_service:s0
@@ -487,9 +491,6 @@ felica                                      u:object_r:nfc_service:s0
 
 #IPM service
 sam.sruk.ipm                              u:object_r:ipm_service:s0
-
-# TG request(seunghyup.baik, CP team) by email / iris service starting from Grace / NO LOG
-iris                                      u:object_r:iris_service:s0
 
 ## Service name "MSCS" change to "DisplaySolution"
 DisplaySolution                             u:object_r:displaysolution_service:s0
