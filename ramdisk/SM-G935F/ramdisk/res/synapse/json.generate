@@ -9,6 +9,7 @@ cat << CTAG
 		`. /res/synapse/json.gen.A72_volt`,
 		`. /res/synapse/json.gen.A53`,
 		`. /res/synapse/json.gen.A53_volt`,
+		`. /res/synapse/json.gen.dvfs`,
 		`. /res/synapse/json.gen.cpu_gov`,
 		`. /res/synapse/json.gen.A72_gov`,
 		`. /res/synapse/json.gen.A53_gov`,

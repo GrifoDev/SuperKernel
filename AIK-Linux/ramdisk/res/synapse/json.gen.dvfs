@@ -1,0 +1,32 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:"DVFS",
+    elements:[
+    	{ SPane:{
+		title:"DVFS Decision Mode",
+		description:"CPU DVFS min/max limitation determined by decision mode."
+	}},
+	{ SOptionList:{
+		default:`cat /sys/devices/system/cpu/cpufreq/mp-cpufreq/cpu_dvfs_mode_control`,
+		action:"generic /sys/devices/system/cpu/cpufreq/mp-cpufreq/cpu_dvfs_mode_control",
+		values:{
+			0:"Battery", 1:"Balance", 2:"Performance"
+		}
+	}},
+	{ SPane:{
+		title:"DVFS Thermal Contorl"
+      	}},
+	{ SDescription:{
+		description:"CPU DVFS min/max limitation determined by temperature."
+	}},
+	{ SSeekBar:{
+		title:"CPU temperature threshold",
+		max:90, min:40, step:1,
+		default:`cat /sys/power/little_thermal_temp`,
+		action:"generic /sys/power/little_thermal_temp"
+	}},
+    ]
+}
+CTAG
