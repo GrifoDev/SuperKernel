@@ -44,19 +44,39 @@ typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
  *	cooling	devices.
  * @cpufreq_val: integer value representing the absolute value of the clipped
  *	frequency.
+ * @max_level: maximum cooling level. One less than total number of valid
+ *	cpufreq frequencies.
  * @allowed_cpus: all the cpus involved for this cpufreq_cooling_device.
+ * @node: list_head to link all cpufreq_cooling_device together.
+ * @last_load: load measured by the latest call to cpufreq_get_actual_power()
+ * @time_in_idle: previous reading of the absolute time that this cpu was idle
+ * @time_in_idle_timestamp: wall time of the last invocation of
+ *	get_cpu_idle_time_us()
+ * @dyn_power_table: array of struct power_table for frequency to power
+ *	conversion, sorted in ascending order.
+ * @dyn_power_table_entries: number of entries in the @dyn_power_table array
+ * @cpu_dev: the first cpu_device from @allowed_cpus that has OPPs registered
+ * @plat_get_static_power: callback to calculate the static power
  *
- * This structure is required for keeping information of each
- * cpufreq_cooling_device registered. In order to prevent corruption of this a
- * mutex lock cooling_cpufreq_lock is used.
+ * This structure is required for keeping information of each registered
+ * cpufreq_cooling_device.
  */
 struct cpufreq_cooling_device {
 	int id;
 	struct thermal_cooling_device *cool_dev;
 	unsigned int cpufreq_state;
 	unsigned int cpufreq_val;
+	unsigned int max_level;
+	unsigned int *freq_table;	/* In descending order */
 	struct cpumask allowed_cpus;
 	struct list_head node;
+	u32 last_load;
+	u64 *time_in_idle;
+	u64 *time_in_idle_timestamp;
+	struct power_table *dyn_power_table;
+	int dyn_power_table_entries;
+	struct device *cpu_dev;
+	get_static_t plat_get_static_power;
 };
 #endif
 
