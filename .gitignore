@@ -63,6 +63,7 @@ Module.symvers
 #
 include/config
 include/generated
+arch/arm64/boot/dtb/
 arch/*/include/generated
 
 # stgit generated dirs
