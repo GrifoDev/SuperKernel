@@ -72,6 +72,7 @@ static void uhid_device_add_worker(struct work_struct *work)
 		uhid->hid = NULL;
 		uhid->running = false;
 	}
+}
 
 static void uhid_queue(struct uhid_device *uhid, struct uhid_event *ev)
 {
