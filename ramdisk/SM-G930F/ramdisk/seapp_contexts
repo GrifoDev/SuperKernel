@@ -70,6 +70,7 @@ user=system seinfo=default domain=untrusted_app type=app_data_file levelFrom=use
 user=_app seinfo=platform name=com.android.defcontainer domain=platform_app type=app_data_file
 user=_app seinfo=vzw_untrusted domain=vzwfiltered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=xcal_untrusted domain=vzwfiltered_untrusted_app type=app_data_file levelFrom=user
+user=_app seinfo=mvs_untrusted domain=vzwfiltered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=Ahranta domain=mrst_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=platform name=com.ahranta.android.arc.core.samsung domain=mrst_plugin_app type=app_data_file levelFrom=user
 user=_app seinfo=communitake domain=mrst_untrusted_app type=app_data_file levelFrom=user
@@ -93,6 +94,12 @@ user=system seinfo=platform name=com.android.power domain=blocked_app type=syste
 user=system seinfo=platform name=com.android.sms domain=blocked_app type=system_app_data_file
 user=_app seinfo=platform name=com.android.power domain=blocked_app type=app_data_file
 user=_app seinfo=platform name=com.android.sms domain=blocked_app type=app_data_file
+user=system seinfo=platform name=com.android.data.backup domain=blocked_app type=system_app_data_file
+user=system seinfo=platform name=com.android.sec.backup.svc domain=blocked_app type=system_app_data_file
+user=_app seinfo=platform name=com.android.data.backup domain=blocked_app type=app_data_file
+user=_app seinfo=platform name=com.android.sec.backup.svc domain=blocked_app type=app_data_file
+user=system seinfo=platform name=com.sec.knox.updater domain=blocked_app type=system_app_data_file
+user=_app seinfo=platform name=com.sec.knox.updater domain=blocked_app type=app_data_file
 user=_app seinfo=tmosimlock name=com.tmobile.simlock domain=filtered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=tmosimlock name=com.metro.simlock domain=filtered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=llk_untrusted name=com.customermobile.preload.main2 domain=llk_untrusted_app type=app_data_file levelFrom=user

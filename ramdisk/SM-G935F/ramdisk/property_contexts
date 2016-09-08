@@ -247,6 +247,7 @@ product.brand                  u:object_r:csc_prop:s0
 persist.soc_camera.             u:object_r:camera_prop:s0
 rw.km_fips_status	u:object_r:km_fips_prop:s0
 radio.                          u:object_r:radio_prop:s0
+secure_os.init                  u:object_r:mobicore_prop:s0
 secmm.player.aiastate	u:object_r:secmm_prop:s0
 service.camera.	                u:object_r:camera_prop:s0
 setupwizard.                    u:object_r:setupwizard_prop:s0

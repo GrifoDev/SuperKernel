@@ -1255,6 +1255,9 @@
 /dev/timerirq	u:object_r:timerirq_device:s0
 /dev/ttyGS[0-9]*	u:object_r:usb_serial_device:s0
 /dev/ttyUSB[0-9]*	u:object_r:usb_device:s0
+# SEA_site_M#92; requested by jh21.hwang
+# the B2B client requests some specific path range such as /dev/ttyUSB0 ~ /dev/ttyUSB30, /dev/ttyACM0 ~ /dev/ttyACM30
+/dev/ttyACM[0-9]*	u:object_r:usb_device:s0
 /dev/t-base-tui                    u:object_r:tui_device:s0
 /dev/tuihw	u:object_r:tz_device:s0
 /dev/tzdev	u:object_r:tz_device:s0
@@ -1443,8 +1446,11 @@
 /sys/class/dsm/maxdsm_cal(/.*)?                --     u:object_r:sysfs_ss_writable:s0
 /sys/class/earsmart/control/always_stream_fs_on       u:object_r:sysfs_ss_writable:s0
 /sys/class/host_notify(/.*)?                   --     u:object_r:sysfs_ss_writable:s0   
-/sys/class/leds/led_[1-4](/.*)?                --     u:object_r:sysfs_led_writable:s0   
-/sys/class/timed_output/vibrator/enable               u:object_r:sysfs_ss_writable:s0   
+/sys/class/leds/led_[1-4](/.*)?                --     u:object_r:sysfs_led_writable:s0
+
+# P160624-04026 / TG change vibrator working when doing dumpstate / proctitle=system/bin/dumpstate -s
+# avc:  denied  { write } for  pid=5987 comm="dumpstate" name="vibrator" dev="sysfs" ino=28485 scontext=u:r:dumpstate:s0 tcontext=u:object_r:sysfs:s0 tclass=dir permissive=0 SEPF_SECMOBILE_6.0.1_0013
+/sys/class/timed_output/vibrator(/.*)?         --     u:object_r:sysfs_ss_writable:s0   
 /sys/class/ultrasonic/ultrasonic/data                 u:object_r:sysfs_ss_writable:s0 
 /sys/class/usb/otg/test                               u:object_r:sysfs_ss_writable:s0
 /sys/devices/14ac0000\.mali/power_policy               u:object_r:sysfs_ss_writable:s0
@@ -1899,6 +1905,9 @@
 # OMC_v3(Open Mobile Customization)
 /omr(/.*)?	u:object_r:omr_file:s0
 
+# SEA_site_M_OS#79: same purpose with carrier partition
+/vzw(/.*)?	u:object_r:carrier_file:s0
+
 #############################
 # PROC INFO / LOCK FILE
 # for preventing migration issue, this files were created by type_transition rules.
@@ -1906,6 +1915,26 @@
 /data/local/olsrd\.lock                              u:object_r:proc_info_file:s0
 /data/ss_conn_daemon\.pid                              u:object_r:proc_info_file:s0
 /data/\.cid\.info                                      u:object_r:proc_info_file:s0
+
+## SEA_site_M OS#23
+/dev/mx_0_m4_gdb                                      u:object_r:mx_debug_device:s0
+/dev/mx_0_r4_gdb                                      u:object_r:mx_debug_device:s0
+/dev/mx_0_mmap                                        u:object_r:mx_debug_device:s0
+/dev/mx_0_debug_sampler                               u:object_r:mx_debug_device:s0
+/dev/mx_client_test_0                                 u:object_r:mx_debug_device:s0
+/dev/s5n2560udi0                                      u:object_r:wifi_control_device:s0
+
+/system/bin/moredump                                  u:object_r:moredump_exec:s0
+/system/bin/mx_logger_dump\.sh                         u:object_r:moredump_exec:s0
+
+/sys/module/scsc_bt/parameters(/.*)?         --       u:object_r:sysfs_wlandut_writable:s0
+/sys/module/scsc_logring/parameters(/.*)?    --       u:object_r:sysfs_wlandut_writable:s0
+/sys/module/scsc_mx/parameters(/.*)?         --       u:object_r:sysfs_wlandut_writable:s0
+/sys/module/scsc_wlan/parameters(/.*)?       --       u:object_r:sysfs_wlandut_writable:s0
+## End of SEA_site_M OS#23
+
+
+
 #line 1 "vendor/samsung/common/sepolicy/carrier/carrier_spr/file_contexts"
 #### Kineto for secsprextension/java/com/oem/smartwifisupport
 /dev/socket/cfiat  u:object_r:cfiat_socket:s0
