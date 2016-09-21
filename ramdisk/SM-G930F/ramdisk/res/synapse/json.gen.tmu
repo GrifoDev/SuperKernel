@@ -1,0 +1,124 @@
+#!/system/bin/sh
+
+export VOLT
+
+cat << CTAG
+{
+    name:THERMAL,
+    elements:[
+	{ SLiveLabel:{
+		title:"Temperature Sensors",
+		refresh:500,
+		action:"echo \$(echo \$(cat /sys/devices/10060000.tmuctrl/curr_temp | tr , \"\\n\") | { read S0 S1 S2 S3; echo \"A57: \${S0}°C@nA53: \${S1}°C@nGPU: \${S2}°C@n ISP: \${S3}°C\"; })"
+	}},
+	{ SPane:{ 
+		title:"GPU Thermal Control",
+		description:"In this section can control GPU temperature throttle mechanism at your OWN RISK!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Disable GPU Thermal Manager",
+		description:"Your own risk to disable...\n",
+		default:$(cat /sys/devices/14ac0000.mali/tmu),
+		action:"generic /sys/devices/14ac0000.mali/tmu",
+		values:{ 0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 1 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 90°C. Default is 650.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling1),
+		action:"generic /sys/devices/14ac0000.mali/throttling1",
+                values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 2 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 95°C. Default is 600.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling2),
+		action:"generic /sys/devices/14ac0000.mali/throttling2",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 3 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 100°C. Default is 546.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling3),
+		action:"generic /sys/devices/14ac0000.mali/throttling3",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU LEVEL 4 throttling frequency",
+		description:"Exynos TMU control decrease GPU freq from max DVFS step to this freq if GPU temp is 105°C. Default is 419.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/throttling4),
+		action:"generic /sys/devices/14ac0000.mali/throttling4",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"GPU tripping frequency",
+		description:"Exynos TMU control trip GPU freq to this freq if GPU temp is 110°C. Default is 260.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/tripping),
+		action:"generic /sys/devices/14ac0000.mali/tripping",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

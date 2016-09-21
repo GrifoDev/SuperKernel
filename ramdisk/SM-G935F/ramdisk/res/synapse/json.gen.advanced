@@ -1,0 +1,137 @@
+#!/system/bin/sh
+
+BB=/system/xbin/busybox;
+
+cat << CTAG
+{
+    name:ADVANCED,
+    elements:[
+		`if [ -f "/sys/power/cpufreq_reset_limit_sec" ]; then
+		DVFS_RESET=\`$BB cat /sys/power/cpufreq_reset_limit_sec\`
+			$BB echo '{ SPane:{
+				title:"DVFS Automatic Reset",
+				description:"Some versions of TouchWiz have a race-condition on ssrm which results in /sys/power/cpufreq_(min,max)_limit getting stuck forever. This is obviously bad for power consumption. Workaround this by automatically resetting after 'reset_limit_sec' seconds. This doesn't affect the kernel-level dvfs as it's only affective to sysfs interfaces.\n"
+			}},
+			{ SSeekBar:{
+				title:"DVFS Reset Interval",
+				description:"Period to reset freq max/min dynamic limitation.\n",
+				unit:" sec", min:5, step:1, max:15,
+				default:'$DVFS_RESET',
+				action:"generic sys/power/cpufreq_reset_limit_sec",
+			}},
+			{ SSpacer:{
+					height:1
+			}},'
+		fi`
+	{ SPane:{
+	title:"Kernel Entropy"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SLiveLabel:{
+		title:"Entropy Available",
+		refresh:1000,
+		action:"live entropy"
+	}},
+	{ SSeekBar:{
+		title:"Read Wakeup Threshold",
+		description:" ",
+		max:2048, min:64, step:64,
+		default:$(cat /proc/sys/kernel/random/read_wakeup_threshold),
+		action:"generic /proc/sys/kernel/random/read_wakeup_threshold"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Write Wakeup Threshold",
+		description:" ",
+		max:2048, min:64, step:64,
+		default:$(cat /proc/sys/kernel/random/write_wakeup_threshold),
+		action:"generic /proc/sys/kernel/random/write_wakeup_threshold"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Gentle Fair Sleepers",
+		description:"Sleeper Fairness is a concept used by CFS which treat sleeping/waiting tasks as if they were in a run queue. This implies tasks which spend most of the time waiting for an user input and such will get a fair share of CPU when they need it. Disabling Gentle Fair Sleepers could improve UI responsiveness."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Gentle Fair Sleepers",
+		description:" ",
+		default:0,
+		action:"generic /sys/kernel/sched/gentle_fair_sleepers",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Exynos Hotplug",
+		description:"If you enable exynos hotplug it will automatically hotplug 2 cores (so min cores online are 6) if you disable hotplugging, all 8 cores will be online."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Exynos Hotplug",
+		description:" ",
+		default:1,
+		action:"generic /sys/power/cpuhotplug/enabled",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Randomisation",
+		description:"Disabling (0) virtual address randomisation may improve GUI responsiveness."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"randomize_va_space",
+		description:" ",
+		max:2,
+		min:0,
+		step:1,
+		default:$(cat /proc/sys/kernel/randomize_va_space),
+		action:"generic /proc/sys/kernel/randomize_va_space"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Freeze Timeout",
+		description:"Controls how long it will cost at most to freeze all user space processes or all freezable kernel threads.",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"pm_freeze_timeout",
+		description:" ",
+		unit:" sec",
+		max:40000,
+		min:1000,
+		step:100,
+		weight:0.001,
+		default:$(cat /sys/power/pm_freeze_timeout),
+		action:"generic /sys/power/pm_freeze_timeout"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

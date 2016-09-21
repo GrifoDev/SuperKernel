@@ -1,0 +1,62 @@
+#!/system/bin/sh
+
+# by UpInTheAir for SkyHigh kernels
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+# stop Crontab
+pkill -f crond;
+pkill -f "/res/crontab_service/service.sh";
+$BB rm -rf /data/crontab/*;
+
+# import user set parameters
+intvl_hour_1=$(cat /res/synapse/Super/cron/intvl_hour_1);
+intvl_hour_2=$(cat /res/synapse/Super/cron/intvl_hour_2);
+
+time_min_3=$(cat /res/synapse/Super/cron/time_min_3);
+time_min_4=$(cat /res/synapse/Super/cron/time_min_4);
+time_min_5=$(cat /res/synapse/Super/cron/time_min_5);
+time_min_6=$(cat /res/synapse/Super/cron/time_min_6);
+time_min_7=$(cat /res/synapse/Super/cron/time_min_7);
+
+time_hour_3=$(cat /res/synapse/Super/cron/time_hour_3);
+time_hour_4=$(cat /res/synapse/Super/cron/time_hour_4);
+time_hour_5=$(cat /res/synapse/Super/cron/time_hour_5);
+time_hour_6=$(cat /res/synapse/Super/cron/time_hour_6);
+time_hour_7=$(cat /res/synapse/Super/cron/time_hour_7);
+
+day_6=$(cat /res/synapse/Super/cron/day_6);
+day_7=$(cat /res/synapse/Super/cron/day_7);
+
+# reset cron-root
+$BB rm -rf /res/crontab_service/cron-root;
+
+# apply paramaters
+echo "# This file is at /var/spool/cron/crontabs/root
+#field          allowed values
+#-----          --------------
+#minute         0-59
+#hour           0-23
+#day of month   1-31
+#month          1-12 (or names, see below)
+#day of week    0-7 (0 or 7 is Sun, or use names)
+
+#JOBS
+* 0-23/$intvl_hour_1 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/drop-cache.sh
+* 0-23/$intvl_hour_2 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/ram_release.sh
+$time_min_3 $time_hour_3 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/clear-file-cache.sh
+$time_min_4 $time_hour_4 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/database_optimizing.sh
+$time_min_5 $time_hour_5 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/fstrim.sh
+$time_min_6 $time_hour_6 * * $day_6 /system/xbin/busybox sh /data/crontab/cron-scripts/reset_battery.sh
+$time_min_7 $time_hour_7 * * $day_7 /system/xbin/busybox sh /data/crontab/cron-scripts/OpenRecoveryScript.sh" >> /res/crontab_service/cron-root
+
+# re-start Crontab
+$BB nohup $BB sh /res/crontab_service/service.sh 2> /dev/null;
+
+echo "All Cron tasks changes set";
+
+$BB mount -t rootfs -o remount,ro rootfs;

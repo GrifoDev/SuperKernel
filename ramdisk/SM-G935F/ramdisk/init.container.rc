@@ -1,0 +1,101 @@
+on early-init
+	
+on init
+
+    # create Container (KNOX 1.0) mountpoints for KNOX Migration
+    mkdir /knox_data 0775 root system
+    mkdir /knox_data/userdata 0775 system system
+    mkdir /knox_data/appdata 0775 system system
+    mkdir /mnt/shell 0750 shell shell
+    mkdir /mnt/shell/knox-emulated 0700 system system
+
+    symlink /mnt/shell/knox-emulated /storage/knox-emulated
+    
+    mkdir /mnt/shell/private_default 0700 system system
+    mkdir /mnt/shell/private_read 0700 system system
+    mkdir /mnt/shell/private_write 0700 system system
+    
+    # From M OS, FS for ext has been seperated
+    mkdir /mnt/knox 0700 root root
+
+    # SDP USER 0, SECURE FS
+    mkdir /mnt/shell/enc_emulated 0700 system system
+    mkdir /mnt/shell/enc_media 0700 system system
+    mkdir /mnt/runtime/default/enc_emulated 0755 system system
+    mkdir /mnt/runtime/read/enc_emulated 0755 system system
+    mkdir /mnt/runtime/write/enc_emulated 0755 system system
+
+    chown system system /dev/dek_evt
+    chmod 600 /dev/dek_evt
+
+    chown system 8001 /dev/dek_req
+    chmod 660 /dev/dek_req
+
+    chown system 8001 /dev/dek_kek
+    chmod 660 /dev/dek_kek
+
+    chown system 8001 /dev/sdp_mm
+    chmod 660 /dev/sdp_mm
+
+    chown system 8001 /dev/sdp_dlp
+    chmod 660 /dev/sdp_dlp
+
+on post-fs-data
+
+    # create knox filesystem structure
+    mkdir /data/knox 0771 system system
+    mkdir /data/knox/data 0771 system system
+    mkdir /data/knox/sdcard 0771 system system
+    mkdir /data/knox/ext_sdcard 0771 system system
+    mkdir /data/knox/app 0771 system system
+    mkdir /data/knox/tmp 0771 system system
+    mkdir /data/knox/tmp_sdcard 0700 system system
+    mkdir /data/knox/tmp_sdcard/default 0700 root root
+    mkdir /data/knox/tmp_sdcard/read 0700 root root
+    mkdir /data/knox/tmp_sdcard/write 0700 root root
+    mkdir /data/knox/tmp_sdcard/default/knox-emulated 0700 root root
+    mkdir /data/knox/tmp_sdcard/read/knox-emulated 0700 root root
+    mkdir /data/knox/tmp_sdcard/write/knox-emulated 0700 root root
+    mkdir /data/knox/tmp_sdcard/default/emulated 0700 root root
+    mkdir /data/knox/tmp_sdcard/read/emulated 0700 root root
+    mkdir /data/knox/tmp_sdcard/write/emulated 0700 root root
+
+    export KNOX_STORAGE /data/knox/ext_sdcard
+
+    # SDP USER 0, SECURE FS
+    mkdir /data/enc_user 0771 system system
+    mkdir /data/knox/secure_fs 0771 system system
+    mkdir /data/knox/secure_fs/enc_user 0771 system system
+    mkdir /data/knox/secure_fs/enc_media 0771 system system
+
+    export ENC_EMULATED_STORAGE_TARGET /storage/enc_emulated
+
+    restorecon /data/knox
+
+on boot
+
+#group system log shell
+service epmlogd /system/bin/epmlogd
+    class main
+    user system
+    group system log shell
+    oneshot
+
+service sdp_cryptod /system/bin/sdp_cryptod
+    class main
+    socket sdp stream 0660 system system
+    user system
+    group system
+
+# virtual sdcard daemon running as system (1000)
+#service knox /system/bin/sdcard /data/knox/sdcard /mnt/shell/knox-emulated 1000 1000
+#    class late_start
+#    oneshot
+
+# virtual sdcard daemon running as system (1000)
+#service secure_fs /system/bin/sdcard -r /data/knox/secure_fs/enc_media /mnt/shell/enc_media 1000 1000
+#    class late_start
+#    oneshot
+
+#    start knox
+

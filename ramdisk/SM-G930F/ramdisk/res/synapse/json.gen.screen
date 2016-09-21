@@ -1,0 +1,47 @@
+#!/system/bin/sh
+
+BB=/system/xbin/busybox;
+
+cat << CTAG
+{
+    name:SCREEN,
+    elements:[
+	{ SLiveLabel:{
+		title:"Display brightness",
+		description:"Live panel brightness value 0-255",
+		refresh:500,
+		action:"live actual_brightness"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"ALPM (Aggressive Link Power Management)",
+		description:"ALPM is a mechanism for reducing SSD/HDD power consumption. If ALPM is enabled, SSD goes into low-power mode when SSD has no I/O activity. On I/O request, SSD power is resumed. More info: <a href='http://www.fit-pc.com/wiki/index.php/Aggressive_Link_Power_Management_(ALPM)'>Wiki</a>"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"LCD ALPM",
+		description:"Auto: use with Edge panel in a dim light environment or where an Always on Display is active. Will only auto enable if screen is OFF (if not in-call) & below the Lux threshold, and then auto disable when screen is ON or above the Lux threshold. Requires CortexBrain ENABLED !\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_alpm_auto)"),
+		action:"cortex cortexbrain_alpm_auto",
+		values:[Disabled, Enabled, Auto]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Lux threshold",
+		description:"Max ambient light value required to enable 'Auto' LCD ALPM. Requires CortexBrain ENABLED !\n",
+		min:0, max:200, unit:" lx", step:1,
+		default:$(cat /res/synapse/Super/cortexbrain_lux),
+		action:"hmp /res/synapse/Super/cortexbrain_lux"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

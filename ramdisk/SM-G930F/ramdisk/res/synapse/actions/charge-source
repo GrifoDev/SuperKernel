@@ -1,0 +1,114 @@
+if [ -d "/sys/devices/battery" ]; then
+	P=/sys/devices/battery
+elif [ -d "/sys/devices/battery.54" ]; then
+	P=/sys/devices/battery.54
+elif [ -d "/sys/devices/battery.53" ]; then
+	P=/sys/devices/battery.53
+elif [ -d "/sys/devices/battery.52" ]; then
+	P=/sys/devices/battery.52
+elif [ -d "/sys/devices/battery.51" ]; then
+	P=/sys/devices/battery.51
+fi;
+
+case $(($(cat $P/power_supply/battery/batt_charging_source))) in
+
+0)	echo "Unknown source"
+	;;
+
+1)	echo "Battery power"
+	;;
+
+2)	echo "UPS power"
+	;;
+
+3)	echo "Mains AC charger"
+	;;
+
+4)	echo "USB Standard Downstream Port"
+	;;
+
+5)	echo "USB Dedicated Charging Port"
+	;;
+
+6)	echo "USB Charging Downstream Port"
+	;;
+
+7)	echo "USB Accessory Charger Adapter"
+	;;
+
+8)	echo "Battery Monitor System"
+	;;
+
+9)	echo "Miscellaneous power source"
+	;;
+
+10)	echo "Wireless charging"
+	;;
+
+11)	echo "HV Wireless charging"
+	;;
+
+12)	echo "PMA Wireless charging"
+	;;
+
+13)	echo "Car Dock charging"
+	;;
+
+14)	echo "UART Off charging"
+	;;
+
+15)	echo "OTG charging"
+	;;
+
+16)	echo "LAN Hub charging"
+	;;
+
+17)	echo "MHL 500 charging"
+	;;
+
+18)	echo "MHL 900 charging"
+	;;
+
+19)	echo "MHL 1500 charging"
+	;;
+
+20)	echo "MHL USB charging"
+	;;
+
+21)	echo "Smart OTG charging"
+	;;
+
+22)	echo "Smart NOTG charging"
+	;;
+
+23)	echo "Power Sharing Cable charging"
+	;;
+
+24)	echo "HV Mains charging"
+	;;
+
+25)	echo "HV Prepare Mains charging"
+	;;
+
+26)	echo "HV Error"
+	;;
+
+27)	echo "MHL USB 100 charging"
+	;;
+
+28)	echo "MHL 2000 charging"
+	;;
+
+29)	echo "HV Unknown charging"
+	;;
+
+30)	echo "MDock TA charging"
+	;;
+
+31)	echo "HMT connected"
+	;;
+
+32)	echo "HMT charge"
+	;;
+
+esac

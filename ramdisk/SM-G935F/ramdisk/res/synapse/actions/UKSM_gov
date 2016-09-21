@@ -1,0 +1,10 @@
+BB=/system/xbin/busybox;
+
+if [ -f "$1" ]
+then
+  if [ ! -z "$2" ]
+  then
+  echo "$2" > "$1"
+  fi
+  $BB echo "$($BB cat "$1" | $BB awk 'NR>1{print $1}' RS=[ FS=])"
+fi

@@ -1090,7 +1090,7 @@ static int mmc_select_hs400(struct mmc_card *card)
 			   card->ext_csd.generic_cmd6_time,
 			   true, true, true);
 	if (err) {
-		pr_warn("%s: switch to high-speed from hs200 failed, err:%d\n",
+		pr_err("%s: switch to high-speed from hs200 failed, err:%d\n",
 			mmc_hostname(host), err);
 		return err;
 	}
@@ -1102,7 +1102,7 @@ static int mmc_select_hs400(struct mmc_card *card)
 			EXT_CSD_DDR_BUS_WIDTH_8,
 			card->ext_csd.generic_cmd6_time);
 		if (err) {
-			pr_warn("%s: switch to bus width for hs400 failed, err:%d\n",
+		pr_err("%s: switch to bus width for hs400 failed, err:%d\n",
 				 mmc_hostname(host), err);
 			return err;
 		}

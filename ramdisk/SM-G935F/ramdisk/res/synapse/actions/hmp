@@ -1,0 +1,53 @@
+# By UpInTheAir for SkyHigh kernels
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+case $1 in
+hotplug)
+  P=/res/synapse/Super/hotplug;
+
+  # Check State
+  TURBO_STATE=$(cat /res/synapse/Super/tuning_interactive_turbo);
+  POWER_AWARE_SCHED_STATE=$(cat /res/synapse/Super/cortexbrain_power_aware_sched);
+  HMP_LITTLE_PACK_STATE=$(cat /res/synapse/Super/cortexbrain_hmp_little_pack);
+  PEWQ_STATE=$(cat /res/synapse/Super/cortexbrain_pewq);
+
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+	echo "0" > $P;
+	echo "0" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
+  elif [ $2 == Enabled ]; then
+	if [ "$TURBO_STATE" == "0" ] && [ "$POWER_AWARE_SCHED_STATE" == "0" ] && [ "$HMP_LITTLE_PACK_STATE" == "0" ] && [ "$PEWQ_STATE" == "0" ]; then
+		echo "1" > $P;
+		echo "1" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
+	else
+		echo "0" > $P;
+		echo "0" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
+	fi;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+esac
+
+if [ -f "$1" ]; then
+	if [[ ! -z "$2" ]]; then
+		chmod 0644 /sys/kernel/hmp/up_threshold;
+		chmod 0644 /sys/kernel/hmp/down_threshold;
+		$BB echo "$2" > "$1"
+	fi;
+
+	$BB echo "$($BB cat "$1")";
+	chmod 0440 /sys/kernel/hmp/up_threshold;
+	chmod 0440 /sys/kernel/hmp/down_threshold;
+fi;
+
+$BB mount -t rootfs -o remount,ro rootfs;

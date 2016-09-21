@@ -1,0 +1,58 @@
+# Modified from original apb_axel & neobuddy89 implementations by UpInTheAir@XDA for SkyHigh kernels
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+if [ "$($BB mount | grep system | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /system;
+fi;
+
+if [ -f "/system/xbin/sqlite3" ]; then SQL3=/system/xbin/sqlite3; else SQL3=/system/bin/sqlite3; fi;
+
+SYNAPSE_SD_DIR=/sdcard/Super/Synapse;
+SYNAPSE_CONFIG_DIR=$SYNAPSE_SD_DIR/saved_configs;
+SYNAPSE_DATA=/data/data/com.af.synapse/databases;
+DISABLED_ACTIONS="AND key NOT LIKE 'cpuvolt%' AND key NOT LIKE 'gamma%' AND key NOT LIKE 'restorebackup%' AND key NOT LIKE 'soundfaux%' AND key NOT LIKE 'speakerfaux%' AND key NOT LIKE 'voltage%'";
+
+case "$1" in
+	ExportConfigSynapse)
+		BCK_PROF=$($BB cat /res/synapse/Super/bck_prof);
+		BCK_PROF=$($BB echo "${BCK_PROF// /_}");
+		
+		if [ "$BCK_PROF" == "None" ]; then
+			$BB echo "Enter a config name first and then apply.";
+		else
+			$BB echo "None" > /res/synapse/Super/bck_prof;
+			cd $SYNAPSE_DATA || exit;
+			$SQL3 -separator '=' actionValueStore "SELECT key, value FROM action_value WHERE context = 'global' AND key NOT IN ($DISABLED_SETTINGS) $DISABLED_ACTIONS ORDER BY key ASC;" > "$SYNAPSE_CONFIG_DIR/$BCK_PROF.txt" 2> /dev/null;
+			$BB echo "$BCK_PROF.txt saved to /sdcard/Super. Press the Restart Synapse button below to see updated list.";
+		fi;
+	;;
+	ImportConfigSynapse)
+		SYNAPSE_CONFIG=$($BB cat "$SYNAPSE_CONFIG_DIR/.selected_config_profile");
+		
+		if [ -f "$SYNAPSE_CONFIG_DIR/$SYNAPSE_CONFIG" ]; then
+			cd $SYNAPSE_DATA || exit;
+			$SQL3 actionValueStore "DROP TABLE IF EXISTS my_action_value";
+			$SQL3 actionValueStore "CREATE TABLE my_action_value (key TEXT, value TEXT)";
+			$SQL3 actionValueStore <<EOF
+.separator =
+.import $SYNAPSE_CONFIG_DIR/$SYNAPSE_CONFIG my_action_value
+EOF
+			ROWS=$($SQL3 actionValueStore "SELECT COUNT(*) FROM action_value T0 INNER JOIN my_action_value T1 ON T0.key = T1.key WHERE T0.value <> T1.value;" 2> /dev/null);
+			$SQL3 actionValueStore "UPDATE action_value SET value = (SELECT T1.value FROM my_action_value T1 WHERE T1.key = action_value.key) WHERE key NOT IN ($DISABLED_SETTINGS) $DISABLED_ACTIONS AND value <> (SELECT T1.value FROM my_action_value T1 WHERE T1.key = action_value.key)";
+			$SQL3 actionValueStore "DROP TABLE my_action_value";
+			$BB echo "None" > $SYNAPSE_CONFIG_DIR/.selected_config_profile;
+			$BB echo "$SYNAPSE_CONFIG imported $ROWS row(s). Press the Restart Synapse button below & press the [X] (Cancel) button on top to load the new settings!";
+		elif [ "$SYNAPSE_CONFIG" == "None" ]; then
+				$BB echo "None selected.";
+		else
+			$BB echo "File not found.";
+		fi;
+	;;
+esac;
+
+$BB mount -t rootfs -o remount,ro rootfs;
+$BB mount -o remount,ro /system;

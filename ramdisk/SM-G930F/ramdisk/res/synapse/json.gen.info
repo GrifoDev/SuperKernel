@@ -1,0 +1,150 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:INFO,
+    elements:[
+	{ SPane:{
+		title:"Kernel Build by",
+		description:"Tkkg1994"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	`if [ "$(grep "G930F" /proc/cmdline)" != "" ] || [ "$(grep "G930FD" /proc/cmdline)" != "" ] || [ "$(grep "G930W8" /proc/cmdline)" != "" ]; then
+		echo '{ SPane:{
+			title:"Kernel Thread",
+			description:"<a href='http://forum.xda-developers.com/galaxy-s7/development/kernel-superkernel-v1-0-t3389247/'>XDA forum</a>"
+		}},
+		{ SSpacer:{
+			height:1
+		}},'
+	elif [ "$(grep "G935F" /proc/cmdline)" != "" ] || [ "$(grep "G935FD" /proc/cmdline)" != "" ] || [ "$(grep "G935W8" /proc/cmdline)" != "" ]; then
+		echo '{ SPane:{
+			title:"Kernel Thread",
+			description:"<a href='http://forum.xda-developers.com/s7-edge/development/kernel-superkernel-v1-0-t3389255/'>XDA forum</a>"
+		}},
+		{ SSpacer:{
+		height:1
+		}},'
+	fi;`
+	{ SPane:{
+		title:"Source",
+		description:"<a href='https://github.com/Tkkg1994/SuperKernel/'>Github Source Code</a>"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Special Thanks to"
+	}},
+	{ SDescription:{
+		description:"UpInTheAir, AndreiLux, Jesec, Halaszk, Neobuddy and Dorimanx!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"ASV Summary",
+		description:"Values: from 0 (Lowest) to 15 (Highest). The higher the ASV, the higher frequencies your device can run and lower voltages"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"show asv"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Kernel Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default version"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Build"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default build"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Android Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default android_version"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Build Date"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default date"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Baseband"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default baseband"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Bootloader"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default bootloader"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Busybox Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default busybox_version"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Superuser Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default su_version"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Serial"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default serial"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

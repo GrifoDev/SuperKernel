@@ -1,0 +1,29 @@
+# By UpInTheAir for SkyHigh SM-N915S kernels
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+case $1 in
+mirror_fix)
+  P=/res/synapse/Super/scr_mirror_fix
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	setprop wlan.wfd.hdcp enable
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	setprop wlan.wfd.hdcp disable
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+esac
+
+$BB mount -t rootfs -o remount,ro rootfs;

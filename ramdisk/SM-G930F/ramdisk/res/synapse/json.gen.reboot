@@ -1,0 +1,71 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:REBOOT,
+    elements:[
+	{ STitleBar:{
+		title:"Reboot Options"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Reboot Device",
+		action:"devtools reboot"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Hot Reboot Device",
+		action:"devtools hot_reboot"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Recovery Mode",
+		action:"devtools reboot recovery"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Download Mode",
+		action:"devtools reboot download"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Power Off",
+		action:"devtools reboot -p"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"General Actions",
+		description:"To clear data, select Clear Synapse Data (fixes most common issues)."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Clear Synapse Data & Reboot",
+		action:"devtools cleardata"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Restart Synapse",
+		action:"devtools restart"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG

@@ -1,0 +1,533 @@
+#!/system/bin/sh
+
+if [ -d "/sys/devices/battery" ]; then
+	P=/sys/devices/battery
+elif [ -d "/sys/devices/battery.54" ]; then
+	P=/sys/devices/battery.54
+elif [ -d "/sys/devices/battery.53" ]; then
+	P=/sys/devices/battery.53
+elif [ -d "/sys/devices/battery.52" ]; then
+	P=/sys/devices/battery.52
+elif [ -d "/sys/devices/battery.51" ]; then
+	P=/sys/devices/battery.51
+fi;
+
+cat << CTAG
+{
+    name:BATTERY,
+    elements:[
+	{ SDescription:{ 
+		description:"Device charging currents are composed of input current coming into the device (Nominal 5V) and charge current fed to the battery (Battery Charge Voltage). Charger detection divides charging cable types into several categories as described below. If charging current exceeds input load, then charging current is dynamically adjusted. For avoiding battery deterioration, charging currents of less than 0.7 Coloumb are advised; ex. 3000mAh (Capacity) * 0.7C = ~2100mA."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Battery Info"
+	}},
+        { SLiveLabel:{
+		action:"charge-source"
+        }},
+	{ SLiveLabel:{
+		refresh:1000,
+		action:"live batttype"
+	}},
+	{ SLiveLabel:{
+		refresh:1000,
+		action:"live battcurrav"
+	}},
+	{ SLiveLabel:{
+		refresh:1000,
+		action:"live battcurrnow"
+	}},
+	{ SLiveLabel:{
+		refresh:9000,
+		action:"live battvoltnow"
+	}},
+	{ SLiveLabel:{
+		refresh:1000,
+		action:"live batttemp"
+	}},
+	{ SLiveLabel:{
+		refresh:1000,
+		action:"live battcapa"
+	}},
+	{ SLiveLabel:{
+		refresh:1000,
+		action:"live battstatus"
+	}},
+	{ SLiveLabel:{
+		refresh:9000,
+		action:"live batthealth"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{ 
+		description:"Input is the live current limit coming through the USB port into the device at 5/9V. Charge is the desired target current to charge the battery. Now is the actual current limit applied to the battery."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Charging Logic",
+		description:"If disabled, the charger chip will ignore unstable currents. Use at risk of your charger or charging ports. Unstable power detection will reduce the input current until a stable voltage from the power source is achieved."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Unstable Power Detection",
+		description:" ",
+		default:1,
+		action:"generic $P/unstable_power_detection",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"HV Power Supplies",
+		description:"High Voltage current limits applied to designated dedicated chargers and corresponding cables."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"HV Prepare Mains Input Current",
+		description:"",
+		min:800, max:2000, unit:" mA", step:25,
+		default:$(cat $P/hv_prep_input),
+		action:"generic $P/hv_prep_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"HV Prepare Mains Charge Current",
+		description:"",
+		min:800, max:2000, unit:" mA", step:25,
+		default:$(cat $P/hv_prep_charge),
+		action:"generic $P/hv_prep_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"HV Input Current",
+		description:"",
+		min:400, max:3000, unit:" mA", step:25,
+		default:$(cat $P/hv_input),
+		action:"generic $P/hv_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"HV Charge Current",
+		description:"High Voltage charge current supplied to battery during charging.\n",
+		min:1000, max:3150, unit:" mA", step:25,
+		default:$(cat $P/hv_charge),
+		action:"generic $P/hv_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"AC/Mains",
+		description:"AC or mains current limits applied to designated dedicated chargers and corresponding cables."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"AC/Mains Input Current",
+		description:"",
+		min:400, max:3150, unit:" mA", step:25,
+		default:$(cat $P/ac_input),
+		action:"generic $P/ac_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"AC/Mains Charge Current",
+		description:"AC or mains charge current supplied to battery during charging.\n",
+		min:400, max:3150, unit:" mA", step:25,
+		default:$(cat $P/ac_charge),
+		action:"generic $P/ac_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"Input and charging currents are limited to certain maximas if the screen is turned on to avoid elevated heat generation. Normal charging limits are applied when the screen is off."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"AC/Mains Input Current (screen-on)",
+		description:"",
+		min:400, max:3150, unit:" mA", step:25,
+		default:$(cat $P/so_limit_input),
+		action:"generic $P/so_limit_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"AC/Mains Charge Current (screen-on)",
+		description:"AC or mains charge current supplied to battery during charging whilst screen is on.\n",
+		min:400, max:3150, unit:" mA", step:25,
+		default:$(cat $P/so_limit_charge),
+		action:"generic $P/so_limit_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"Standard Downstream Port",
+		description:"Standard Downstream Port current limits applied on plain and compliant USB data connectivity ports."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"SDP Input Current",
+		description:"",
+		min:400, max:1000, unit:" mA", step:25,
+		default:$(cat $P/sdp_input),
+		action:"generic $P/sdp_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"SDP Charge Current",
+		description:"NOTE: SDP charge limit serves as a global minimum for ALL charge currents except MHL currents, overriding their respective value if they are inferior!\n",
+		min:400, max:1000, unit:" mA", step:25,
+		default:$(cat $P/sdp_charge),
+		action:"generic $P/sdp_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"Dedicated Charging Port",
+		description:"Dedicated Charging Port current limits applied when detection of a standalone charger happens, or if a USB connector with shorted D+ and D- pins is attached."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"DCP Input Current",
+		description:"",
+		min:400, max:2000, unit:" mA", step:25,
+		default:$(cat $P/dcp_input),
+		action:"generic $P/dcp_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"DCP Charge Current",
+		description:"",
+		min:400, max:2000, unit:" mA", step:25,
+		default:$(cat $P/dcp_charge),
+		action:"generic $P/dcp_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"Charging Downstream Port",
+		description:"Charging Downstream Port current limits applied on BCS 1.1 special charging USB data connectivity ports."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"CDP Input Current",
+		description:"",
+		min:400, max:1500, unit:" mA", step:25,
+		default:$(cat $P/cdp_input),
+		action:"generic $P/cdp_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"CDP Charge Current",
+		description:"",
+		min:400, max:1500, unit:" mA", step:25,
+		default:$(cat $P/cdp_charge),
+		action:"generic $P/cdp_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"Accessory Charging Adapter",
+		description:"Accessory Charging Adapter current limits applied to various dedicated USB accessories."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ACA Input Current",
+		description:"",
+		min:100, max:1000, unit:" mA", step:20,
+		default:$(cat $P/aca_input),
+		action:"generic $P/aca_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"ACA Charge Current",
+		description:"",
+		min:100, max:1000, unit:" mA", step:20,
+		default:$(cat $P/aca_charge),
+		action:"generic $P/aca_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"Car Dock power",
+		description:"Car Dock power sources."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Car Dock Input Current",
+		description:"",
+		min:400, max:3150, unit:" mA", step:25,
+		default:$(cat $P/car_input),
+		action:"generic $P/car_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Car Dock Charge Current",
+		description:"",
+		min:400, max:3150, unit:" mA", step:25,
+		default:$(cat $P/car_charge),
+		action:"generic $P/car_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"MHL power",
+		description:"Mobile High-Definition Link power sources."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"500 mA MHL Class Input Current",
+		description:"",
+		min:300, max:1000, unit:" mA", step:25,
+		default:$(cat $P/mhl_500_input),
+		action:"generic $P/mhl_500_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"500 mA MHL Class Charge Current",
+		description:"",
+		min:300, max:1000, unit:" mA", step:25,
+		default:$(cat $P/mhl_500_charge),
+		action:"generic $P/mhl_500_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"500 mA MHL Class Input Current",
+		description:"",
+		min:300, max:1000, unit:" mA", step:25,
+		default:$(cat $P/mhl_500_input),
+		action:"generic $P/mhl_500_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"500 mA MHL Class Charge Current",
+		description:"",
+		min:300, max:1000, unit:" mA", step:25,
+		default:$(cat $P/mhl_500_charge),
+		action:"generic $P/mhl_500_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"900 mA MHL Class Input Current",
+		description:"",
+		min:300, max:1500, unit:" mA", step:25,
+		default:$(cat $P/mhl_900_input),
+		action:"generic $P/mhl_900_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"900 mA MHL Class Charge Current",
+		description:"",
+		min:300, max:1500, unit:" mA", step:25,
+		default:$(cat $P/mhl_900_charge),
+		action:"generic $P/mhl_900_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"1500 mA MHL Class Input Current",
+		description:"",
+		min:300, max:2000, unit:" mA", step:25,
+		default:$(cat $P/mhl_1500_input),
+		action:"generic $P/mhl_1500_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"1500 mA MHL Class Charge Current",
+		description:"",
+		min:300, max:2000, unit:" mA", step:25,
+		default:$(cat $P/mhl_1500_charge),
+		action:"generic $P/mhl_1500_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"100 mA MHL USB Class Input Current",
+		description:"",
+		min:80, max:500, unit:" mA", step:20,
+		default:$(cat $P/mhl_usb100_input),
+		action:"generic $P/mhl_usb100_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"100 mA MHL USB Class Charge Current",
+		description:"",
+		min:80, max:500, unit:" mA", step:20,
+		default:$(cat $P/mhl_usb100_charge),
+		action:"generic $P/mhl_usb100_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"USB powered MHL Adapter Input Current",
+		description:"",
+		min:300, max:2000, unit:" mA", step:25,
+		default:$(cat $P/mhl_usb_input),
+		action:"generic $P/mhl_usb_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"USB powered MHL Adapter Charge Current",
+		description:"",
+		min:300, max:2000, unit:" mA", step:25,
+		default:$(cat $P/mhl_usb_charge),
+		action:"generic $P/mhl_usb_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{ 
+		title:"Wireless power",
+		description:"Wireless power sources."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Wireless Input Current",
+		description:"",
+		min:800, max:1500, unit:" mA", step:20,
+		default:$(cat $P/wc_input),
+		action:"generic $P/wc_input"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Wireless Charge Current",
+		description:"",
+		min:800, max:1500, unit:" mA", step:20,
+		default:$(cat $P/wc_charge),
+		action:"generic $P/wc_charge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Store Mode",
+		description:"Enable to set MAX & MIN battery capacity limits whilst on charge."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Enable Store Mode",
+		description:" ",
+		default:0,
+		action:"generic $P/power_supply/battery/store_mode",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Battery Scaling Calibration",
+		description:"If you are having incorrect battery SCALING issues, this will reset your device battery % to scale correctly to the approximate available mV. Give it a few hours after you reset the gauge. It may still show you funny values for that period, then the battery percentage should be fine after a full charge cycle."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:" 1- Push button < Reset Fuel-Gauge Chip Now >"
+	}},
+	{ SDescription:{
+		description:" 2- Reboot device"
+	}},
+	{ SDescription:{
+		description:" 3- Deplete battery to 5-10 % (NOT ZERO)"
+	}},
+	{ SDescription:{
+		description:" 4- Charge UNINTERUPTED until FULL (don't touch)"
+	}},
+	{ SDescription:{
+		description:" 5- Unplug then use normally. Device should re-calibrate itself"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Reset Fuel-Gauge Chip Now",
+		action:"fuel-gauge fuel-gauge"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+    ]
+}
+CTAG
