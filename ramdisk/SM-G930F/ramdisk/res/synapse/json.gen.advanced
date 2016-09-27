@@ -6,23 +6,6 @@ cat << CTAG
 {
     name:ADVANCED,
     elements:[
-		`if [ -f "/sys/power/cpufreq_reset_limit_sec" ]; then
-		DVFS_RESET=\`$BB cat /sys/power/cpufreq_reset_limit_sec\`
-			$BB echo '{ SPane:{
-				title:"DVFS Automatic Reset",
-				description:"Some versions of TouchWiz have a race-condition on ssrm which results in /sys/power/cpufreq_(min,max)_limit getting stuck forever. This is obviously bad for power consumption. Workaround this by automatically resetting after 'reset_limit_sec' seconds. This doesn't affect the kernel-level dvfs as it's only affective to sysfs interfaces.\n"
-			}},
-			{ SSeekBar:{
-				title:"DVFS Reset Interval",
-				description:"Period to reset freq max/min dynamic limitation.\n",
-				unit:" sec", min:5, step:1, max:15,
-				default:'$DVFS_RESET',
-				action:"generic sys/power/cpufreq_reset_limit_sec",
-			}},
-			{ SSpacer:{
-					height:1
-			}},'
-		fi`
 	{ SPane:{
 	title:"Kernel Entropy"
 	}},
