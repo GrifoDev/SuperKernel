@@ -1,7 +1,7 @@
 #!/bin/bash
 # kernel build script by Tkkg1994 v0.4 (optimized from apq8084 kernel source)
 
-export MODEL=herolte
+export MODEL=hero2lte
 export ARCH=arm64
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-sabermod-7.0/bin/aarch64-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
@@ -155,5 +155,5 @@ rm -rf ./build.log
     END_TIME=`date +%s`
 	
     let "ELAPSED_TIME=$END_TIME-$START_TIME"
-    echo "Total compile time is $ELAPSED_TIME seconds"
+    echo "Total compile time was $ELAPSED_TIME seconds"
 ) 2>&1	 | tee -a ./build.log
