@@ -9,6 +9,8 @@
 # Johnbeetee
 # halaszk@xda
 # UpInTheAir@xda
+# Neobuddy@xda
+# Alucard24@xda
 
 # TAKE NOTE THAT LINES PRECEDED BY A "#" IS COMMENTED OUT.
 # This script must be activated after init start =< 25sec or parameters from /sys/* will not be loaded.

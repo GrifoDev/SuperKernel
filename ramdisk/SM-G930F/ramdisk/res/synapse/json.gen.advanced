@@ -19,7 +19,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Read Wakeup Threshold",
-		description:" ",
+		description:"Default is 256.\n",
 		max:2048, min:64, step:64,
 		default:$(cat /proc/sys/kernel/random/read_wakeup_threshold),
 		action:"generic /proc/sys/kernel/random/read_wakeup_threshold"
@@ -29,7 +29,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Write Wakeup Threshold",
-		description:" ",
+		description:"Default is 320.\n",
 		max:2048, min:64, step:64,
 		default:$(cat /proc/sys/kernel/random/write_wakeup_threshold),
 		action:"generic /proc/sys/kernel/random/write_wakeup_threshold"

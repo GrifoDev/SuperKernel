@@ -670,16 +670,6 @@ service watchdogd /sbin/watchdogd 10 20
     class core
     seclabel u:r:watchdogd:s0
 
-service lazy_mount /init.lazytime_mount.sh
-    user root ##
-    oneshot ##
-    disabled ##
-
-service bootsh /init.invisible_cpuset.sh
-    user root #
-    oneshot #
-    disabled #
-
 # on userdebug and eng builds, enable kgdb on the serial console
 on property:ro.debuggable=1
     write /sys/module/kgdboc/parameters/kgdboc ttyFIQ1

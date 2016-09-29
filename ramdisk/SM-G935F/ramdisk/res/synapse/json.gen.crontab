@@ -11,12 +11,6 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-	{ SDescription:{ 
-		description:"NOTE: Enabling the Lazytime Mount tweak may affect running of Crontab tasks and fail to run as scheduled."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
 	{ SOptionList:{
 		title:"Crontab (Master Switch)",
 		description:"If you set this to Disabled, then all tasks below will have no effect!\n",
@@ -274,46 +268,6 @@ cat << CTAG
 		unit:" min", min:0, step:1, max:59,
 		default:0,
 		action:"crontab /res/synapse/Super/cron/time_min_6"
-	}},
-	{ SSpacer:{
-		height:2
-	}},
-	{ SPane:{
-		title:"TWRP Auto Backup",
-		description:"Cron to auto reboot and create a TWRP backup backup (system + data + boot partitions with compression & skip MD5 generation) every week at SUN 5:30AM, only if you have sufficient internal storage free space and CPU is resting (IDLE)! If there is insufficient free space, the task will abort."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SLiveLabel:{
-		title:"Internal storage free space",
-		description:"Display (approx) free space for TWRP Auto Backups",
-		refresh:10000,
-		action:"live Live_storage"
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Enable TWRP Auto Backup",
-		description:" ",
-		default:0,
-		action:"crontab /res/synapse/Super/cron/twrp_backup",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Delete TWRP Auto Backup",
-		description:"If there is insufficient free space for a new CRON Backup, then enable here to auto DELETE the OLDEST CRON Backup. If there is still insufficient free space, the task will abort and ALL CRON Backups remain untouched !\n",
-		default:0,
-		action:"crontab /res/synapse/Super/cron/twrp_backup_del",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
 	}},
 	{ SSpacer:{
 		height:1

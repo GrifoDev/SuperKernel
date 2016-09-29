@@ -52,7 +52,6 @@ $time_min_3 $time_hour_3 * * * /system/xbin/busybox sh /data/crontab/cron-script
 $time_min_4 $time_hour_4 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/database_optimizing.sh
 $time_min_5 $time_hour_5 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/fstrim.sh
 $time_min_6 $time_hour_6 * * $day_6 /system/xbin/busybox sh /data/crontab/cron-scripts/reset_battery.sh
-$time_min_7 $time_hour_7 * * $day_7 /system/xbin/busybox sh /data/crontab/cron-scripts/OpenRecoveryScript.sh" >> /res/crontab_service/cron-root
 
 # re-start Crontab
 $BB nohup $BB sh /res/crontab_service/service.sh 2> /dev/null;

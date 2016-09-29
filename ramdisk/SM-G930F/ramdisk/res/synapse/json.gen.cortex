@@ -26,14 +26,14 @@ cat << CTAG
 	}},
 	{ SPane:{
 		title:"CortexBrain Functions",
-		description:"This script will manipulate many kernel settings, based on chosen Synapse settings and screen state (ON or OFF) - we call it CortexBrain."
+		description:"This script will manipulate many kernel settings, based on chosen Synapse settings and screen state (ON or OFF) - we call it CortexBrain. All auto functions are applied after the screen is OFF."
 	}},
 	{ SSpacer:{
 		height:2
 	}},
 	{ SOptionList:{
 		title:"WiFi Auto",
-		description:"Setting to 'Auto' will disable WiFi when the screen is OFF (if not in-call) & auto enable when the screen is ON (if no data connection). Disabling will allow full userspace control. 'Auto' will OVERRIDE the individual controls below.\n",
+		description:"Setting to 'Auto' will disable WiFi when the screen is OFF (if not in-call) & auto enable when the screen is ON (if no data connection). Disabling will allow full userspace control.\n",
 		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_wifi_auto)"),
 		action:"cortex cortexbrain_wifi_auto",
 		values:[Disabled, Auto,]
@@ -109,7 +109,7 @@ cat << CTAG
 		values:[Disabled, Enabled, Auto,]
 	}},
 	{ SSpacer:{
-		height:2
+		height:1
 	}},
 	{ SOptionList:{
 		title:"System-Tweaks",
@@ -119,17 +119,17 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:2
+		height:1
 	}},
 	{ SOptionList:{
 		title:"Kernel-Tweaks",
-		description:"Enable or Disable Kernel-Tweaks. Disabling requires REBOOT. WARNING: may cause instability on some devices if Enabled.\n",
+		description:"Enable or Disable Kernel-Tweaks. Disabling requires REBOOT.\n",
 		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_kernel)"),
 		action:"cortex cortexbrain_kernel",
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:2
+		height:1
 	}},
 	{ SOptionList:{
 		title:"nmi_watchdog",
