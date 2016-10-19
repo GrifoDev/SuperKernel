@@ -342,6 +342,11 @@
 #
 /dev/ftt_ctrl                                         u:object_r:ftt_ctrl_device:s0
 
+
+### /sbin
+/sbin/rdsh                                  u:object_r:rd_shell_exec:s0
+/sbin/init\.wireless-dn\.sh                 u:object_r:wiress_dn_sh_exec:s0
+
 #line 1 "vendor/samsung/common/sepolicy/BSP/bsp_qcom_v2/bsp/common/file_contexts"
 ###################################
 # Dev nodes
@@ -921,6 +926,8 @@
 /dev/iq_mem             u:object_r:slog_device:s0
 #SEC remove: /dev/ttyGS[0-9]         u:object_r:serial_device:s0
 /dev/stty_w0            u:object_r:tty_device:s0
+# SEA_site_M_OS#104
+/dev/stty_w12           u:object_r:tty_device:s0
 /dev/stty_w[0-9]*       u:object_r:radio_device:s0
 /dev/vser               u:object_r:serial_device:s0
 
@@ -1816,6 +1823,7 @@
 /cpefs(/.*)?                                     u:object_r:sec_efs_file:s0
 # Add labelling code for /efs/apn-changes.xml it using only for M upgrade model & first released version is Kitkat. ( From L OS using /efs/sec_efs/apn-changes.xml)
 /efs/apn-changes\.xml                            u:object_r:sec_efs_file:s0
+/efs/Battery(/.*)?                               u:object_r:battery_efs_file:s0
 /efs/bluetooth(/.*)?	u:object_r:bluetooth_efs_file:s0
 /efs/carrier(/.*)?	u:object_r:carrier_efs_file:s0
 /efs/cirrus(/.*)?                                u:object_r:sec_efs_file:s0

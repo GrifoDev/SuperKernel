@@ -18,7 +18,7 @@ service ril-daemon1 /system/bin/rild -c 2
     socket rild2 stream 660 root radio
     socket rild-debug2 stream 660 radio system
     user root
-    group radio cache inet misc audio sdcard_r sdcard_rw log
+    group radio cache inet misc audio sdcard_r sdcard_rw log vpn
     disabled
     onrestart restart cpboot-daemon
 
