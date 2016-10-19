@@ -100,6 +100,10 @@ user=_app seinfo=platform name=com.android.data.backup domain=blocked_app type=a
 user=_app seinfo=platform name=com.android.sec.backup.svc domain=blocked_app type=app_data_file
 user=system seinfo=platform name=com.sec.knox.updater domain=blocked_app type=system_app_data_file
 user=_app seinfo=platform name=com.sec.knox.updater domain=blocked_app type=app_data_file
+user=system seinfo=platform name=com.google.android.apps.store domain=blocked_app type=system_app_data_file
+user=_app seinfo=platform name=com.google.android.apps.store domain=blocked_app type=app_data_file
+user=system seinfo=platform name=com.sec.android.device.ltetest domain=blocked_app type=system_app_data_file
+user=_app seinfo=platform name=com.sec.android.device.ltetest domain=blocked_app type=app_data_file
 user=_app seinfo=tmosimlock name=com.tmobile.simlock domain=filtered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=tmosimlock name=com.metro.simlock domain=filtered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=llk_untrusted name=com.customermobile.preload.main2 domain=llk_untrusted_app type=app_data_file levelFrom=user
