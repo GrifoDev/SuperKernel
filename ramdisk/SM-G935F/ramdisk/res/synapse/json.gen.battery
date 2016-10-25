@@ -470,28 +470,9 @@ cat << CTAG
 	{ SSeekBar:{
 		title:"Wireless Charge Current",
 		description:"",
-		min:800, max:1500, unit:" mA", step:20,
+		min:800, max:2500, unit:" mA", step:20,
 		default:$(cat $P/wc_charge),
 		action:"generic $P/wc_charge"
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SPane:{
-		title:"Store Mode",
-		description:"Enable to set MAX & MIN battery capacity limits whilst on charge."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Enable Store Mode",
-		description:" ",
-		default:0,
-		action:"generic $P/power_supply/battery/store_mode",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
 	}},
 	{ SSpacer:{
 		height:1

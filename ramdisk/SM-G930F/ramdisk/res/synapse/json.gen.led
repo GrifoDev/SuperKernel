@@ -98,7 +98,7 @@ cat << CTAG
 		weight:0.001,
 		min:0,
 		max:1900,
-		step:100,
+		step:10,
 		default:$(cat /sys/class/sec/led/led_notification_ramp_down),
 		action:"generic /sys/class/sec/led/led_notification_ramp_down"
 	}},

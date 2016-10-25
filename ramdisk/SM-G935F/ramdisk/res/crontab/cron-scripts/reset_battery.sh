@@ -3,7 +3,9 @@
 # Fuel guage reset script
 # by UpInTheAir for SkyHigh kernels & Synapse
 
-if [ -d "/sys/devices/battery.54" ]; then
+if [ -d "/sys/devices/battery" ]; then
+	P=/sys/devices/battery
+elif [ -d "/sys/devices/battery.54" ]; then
 	P=/sys/devices/battery.54
 elif [ -d "/sys/devices/battery.53" ]; then
 	P=/sys/devices/battery.53

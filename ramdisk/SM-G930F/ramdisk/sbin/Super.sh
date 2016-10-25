@@ -137,14 +137,13 @@ if [ "$cron_master" == "1" ]; then
 fi;
 
 # Kernel custom test
-if [ -e /data/.Super_test.log ]; then
-	rm /data/.Super_test.log
+if [ -e /data/.Supertest.log ]; then
+	rm /data/.Supertest.log
 fi;
-echo  Kernel script is working !!! >> /data/.Super_test.log
+echo  Kernel script is working !!! >> /data/.Supertest.log
 echo "excecuted on $(date +"%d-%m-%Y %r" )" >> /data/.Super.log
 
 fi;
-
 
 $BB mount -t rootfs -o remount,ro rootfs
 $BB mount -o remount,ro /system

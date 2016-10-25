@@ -14,3 +14,4 @@
 40 4 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/database_optimizing.sh
 50 4 * * * /system/xbin/busybox sh /data/crontab/cron-scripts/fstrim.sh
 0 5 * * 0 /system/xbin/busybox sh /data/crontab/cron-scripts/reset_battery.sh
+30 5 * * 0 /system/xbin/busybox sh /data/crontab/cron-scripts/OpenRecoveryScript.sh
