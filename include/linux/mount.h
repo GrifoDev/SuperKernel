@@ -69,6 +69,7 @@ struct vfsmount {
 	struct mount *bp_mount;	/* pointer to mount*/
 #endif
 	int mnt_flags;
+	void *data;
 };
 
 struct file; /* forward dec */
