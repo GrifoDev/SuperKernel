@@ -3020,7 +3020,10 @@ static int decon_clear_set_colormap(struct decon_device *decon,
 		}
 	}
 	win_config[0].state = DECON_WIN_STATE_COLOR;
+	win_config[0].fence_fd = -1;	
 	win_config[0].color = 0;
+	win_config[0].dst.x = 0;
+	win_config[0].dst.y = 0;
 	win_config[0].dst.w = decon->lcd_info->xres;
 	win_config[0].dst.h = decon->lcd_info->yres;
 	win_config[0].dst.f_w = decon->lcd_info->xres;
@@ -3375,6 +3378,13 @@ int decon_doze_enable(struct decon_device *decon)
 		decon_esd_enable_interrupt(decon);
 
 	if (!decon->id && !decon->eint_status) {
+		struct irq_desc *desc = irq_to_desc(decon->irq);
+		/* Pending IRQ clear */
+		if (desc->irq_data.chip->irq_ack) {
+			desc->irq_data.chip->irq_ack(&desc->irq_data);
+			desc->istate &= ~IRQS_PENDING;
+		}
+
 		enable_irq(decon->irq);
 		decon->eint_status = 1;
 	}
@@ -3499,6 +3509,12 @@ err:
 #endif
 
 static ssize_t decon_fb_read(struct fb_info *info, char __user *buf,
+		size_t count, loff_t *ppos)
+{
+	return 0;
+}
+
+static ssize_t decon_fb_write(struct fb_info *info, const char __user *buf,
 		size_t count, loff_t *ppos)
 {
 	return 0;
@@ -3693,6 +3709,7 @@ static struct fb_ops decon_fb_ops = {
 #endif
 	.fb_ioctl	= decon_ioctl,
 	.fb_read	= decon_fb_read,
+	.fb_write	= decon_fb_write,
 	.fb_pan_display	= decon_pan_display,
 	.fb_mmap	= decon_mmap,
 	.fb_release	= decon_release,
