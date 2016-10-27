@@ -19,7 +19,7 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/hotplug_governor.h>
 
-#define DEFAULT_DUAL_CHANGE_MS (10)		/* 10 ms */
+#define DEFAULT_DUAL_CHANGE_MS (15)		/* 15 ms */
 #define DEFAULT_BOOT_ENABLE_MS (0)		/* boot delay is not applied */
 #define RETRY_BOOT_ENABLE_MS (100)		/* 100 ms */
 
