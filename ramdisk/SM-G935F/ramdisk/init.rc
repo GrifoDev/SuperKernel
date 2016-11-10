@@ -243,6 +243,8 @@ on init
 # reset_reason
     chown system system /proc/reset_reason
     chmod 0600 /proc/reset_reason
+    chown system system /proc/reset_reason_extra_info
+    chmod 0600 /proc/reset_reason_extra_info
 
 # Healthd can trigger a full boot from charger mode by signaling this
 # property when the power button is held.
