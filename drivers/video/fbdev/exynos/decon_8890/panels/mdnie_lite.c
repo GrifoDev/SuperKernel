@@ -48,40 +48,10 @@ static struct class *mdnie_class;
 /* Do not call mdnie write directly */
 static int mdnie_write(struct mdnie_info *mdnie, struct mdnie_table *table, unsigned int num)
 {
-#ifdef CONFIG_EXYNOS_DECON_CONTROL
-	int i, j, ret = 0;
-	struct mdnie_trans_info *trans_info = mdnie->tune->trans_info;
-
-	if (mdnie->enable) {
-		for (j = 0; j < table->seq[i].len; j++) {
-			for(i = 0; i < table->seq[j].len; i++) {
-				if (j == trans_info->index)
-					table->seq[j].cmd[i] = mdnie_reg_hook(i, table->seq[j].cmd[i]);
-				else
-					table->seq[j].cmd[i] = table->seq[j].cmd[i];
-			}
-			table->seq[j].len = table->seq[j].len;
-			table->seq[j].sleep = table->seq[j].sleep;
-		}
-		
-#if 0
-		for (j = 0; j < table->seq[i].len; j++) {
-			for(i = 0; i < table->seq[j].len; i++) {
-				printk("mdnie: value on CMD%d: 0x%2X ( %3d ) val: 0x%2X ( %3d )\t -> val: 0x%2X ( %3d )\n",
-					j, i, i, 
-					table->seq[j].cmd[i], table->seq[j].cmd[i],
-					table->seq[j].cmd[i], table->seq[j].cmd[i]);
-			}
-		}
-#endif
-		ret = mdnie->ops.write(mdnie->data, table->seq, num);
-	}
-#else
 	int ret = 0;
 
 	if (mdnie->enable)
 		ret = mdnie->ops.write(mdnie->data, table->seq, num);
-#endif
 
 	return ret;
 }
@@ -173,10 +143,8 @@ static void mdnie_update_sequence(struct mdnie_info *mdnie, struct mdnie_table *
 	mdnie_write_table(mdnie, table);
 	return;
 }
-#ifndef CONFIG_EXYNOS_DECON_CONTROL
-static
-#endif
-void mdnie_update(struct mdnie_info *mdnie)
+
+static void mdnie_update(struct mdnie_info *mdnie)
 {
 	struct mdnie_table *table = NULL;
 	struct mdnie_scr_info *scr_info = mdnie->tune->scr_info;
@@ -921,9 +889,6 @@ int mdnie_register(struct device *p, void *data, mdnie_w w, mdnie_r r, u16 *coor
 	mdnie_register_fb(mdnie);
 
 	mdnie->enable = 1;
-#ifdef CONFIG_EXYNOS_DECON_CONTROL
-	init_mdnie_control(mdnie);
-#endif
 	mdnie_update(mdnie);
 
 	dev_info(mdnie->dev, "registered successfully\n");
