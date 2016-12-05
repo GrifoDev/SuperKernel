@@ -167,6 +167,13 @@ struct mdnie_info {
 	unsigned int white_r;
 	unsigned int white_g;
 	unsigned int white_b;
+	int white_default_r;
+	int white_default_g;
+	int white_default_b;
+	int white_balance_r;
+	int white_balance_g;
+	int white_balance_b;
+	unsigned int white_rgb_enabled;
 	unsigned int disable_trans_dimming;
 
 	struct mdnie_table table_buffer;
