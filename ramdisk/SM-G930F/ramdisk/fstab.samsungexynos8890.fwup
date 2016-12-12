@@ -3,8 +3,8 @@
 # specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
 
 #<src>                                                  <mnt_point> <type>  <mnt_flags and options>                                                                                                     <fs_mgr_flags>
-/dev/block/platform/155a0000.ufs/by-name/SYSTEM         /system     ext4    rw,noatime,errors=panic,noload                                                                                              wait
-/dev/block/platform/155a0000.ufs/by-name/SYSTEM         /system     f2fs    rw,noatime,noload                                                                                                           wait
+/dev/block/platform/155a0000.ufs/by-name/SYSTEM         /system     ext4    ro,noatime,errors=panic,noload                                                                                              wait
+/dev/block/platform/155a0000.ufs/by-name/SYSTEM         /system     f2fs    ro,noatime,noload                                                                                                           wait
 /dev/block/platform/155a0000.ufs/by-name/CACHE          /cache      ext4    noatime,nosuid,nodev,noauto_da_alloc,discard,journal_async_commit,data=ordered,errors=panic                                 wait,check
 /dev/block/platform/155a0000.ufs/by-name/CACHE          /cache      f2fs    noatime,nosuid,nodev                                                                                                        wait,check
 /dev/block/platform/155a0000.ufs/by-name/EFS            /efs        ext4    noatime,nosuid,nodev,noauto_da_alloc,discard,journal_async_commit,data=ordered,errors=panic                                 wait,check
