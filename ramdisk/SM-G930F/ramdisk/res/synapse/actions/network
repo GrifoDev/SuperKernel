@@ -248,7 +248,7 @@ gps_zone)
 wifi_passwords_save)
   WIFI=/sdcard/Super/wifi;
   [ ! -d "$WIFI" ] && mkdir -p "$WIFI";
-  chmod 755 $WIFI
+  $BB chmod -R 755 $WIFI;
   P=$WIFI/wifi.txt
   cat /data/misc/wifi/wpa_supplicant.conf > $P
   sleep 1
@@ -288,6 +288,3 @@ IPv6)
   fi
   ;;
 esac
-
-$BB mount -t rootfs -o remount,ro rootfs;
-$BB mount -o remount,ro /system;

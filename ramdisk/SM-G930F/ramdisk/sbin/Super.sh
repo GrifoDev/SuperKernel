@@ -10,12 +10,6 @@ if [ "$($BB mount | grep system | grep -c ro)" -eq "1" ]; then
 	$BB mount -o remount,rw /system;
 fi;
 
-# Set stock freqs as default freqs on boot
-echo 1586000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-echo 2496000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
-echo 442000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-echo 728000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
-
 # Fix gps problem on startup
 if [ ! -e /system/etc/gps.conf.bak ]; then
 	$BB cp /system/etc/gps.conf /system/etc/gps.conf.bak;
@@ -38,6 +32,23 @@ if [ -d /dev/cpuset ]; then
 	if [ -d /dev/cpuset/invisible ]; then
 		echo "0-3" > /dev/cpuset/invisible/cpus;
 	fi;
+fi;
+
+# vnswap (parse defaults from prop)
+SWAP=/dev/block/vnswap0;
+SWAPSIZE=2684354560; # Android 6.0.1 == 2560 MB
+if [ "$(grep "vnswap_enabled" /system/SkyHigh.prop)" != "" ]; then
+	if [ "$(grep "vnswap0" /proc/swaps)" == "" ]; then
+		echo "$SWAPSIZE" > /sys/block/vnswap0/disksize;
+		$BB mkswap $SWAP > /dev/null 2>&1
+		$BB swapon $SWAP > /dev/null 2>&1
+		$BB sync;
+		echo "190" > /proc/sys/vm/swappiness;
+	fi;
+else
+	echo "0" > /sys/block/vnswap0/disksize;
+	$BB sync;
+	echo "0" > /proc/sys/vm/swappiness;
 fi;
 
 # Backup EFS

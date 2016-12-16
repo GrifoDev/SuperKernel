@@ -16,6 +16,8 @@ knox_security)
     echo 1 > $P
     am force-stop com.policydm 2> /dev/null;
     am force-stop com.samsung.android.securitylogagent 2> /dev/null;
+    am force-stop com.samsung.android.bbc.bbcagent 2> /dev/null;
+    am force-stop com.samsung.android.dlp.service 2> /dev/null;
     am force-stop com.samsung.klmsagent 2> /dev/null;
     am force-stop com.samsung.knox.appsupdateagent 2> /dev/null;
     am force-stop com.samsung.knox.knoxtrustagent 2> /dev/null;
@@ -39,6 +41,8 @@ knox_security)
     sleep 1;
     pm disable com.policydm 2> /dev/null;
     pm disable com.samsung.android.securitylogagent 2> /dev/null;
+    pm disable com.samsung.android.bbc.bbcagent 2> /dev/null;
+    pm disable com.samsung.android.dlp.service 2> /dev/null;
     pm disable com.samsung.klmsagent 2> /dev/null;
     pm disable com.samsung.knox.appsupdateagent 2> /dev/null;
     pm disable com.samsung.knox.knoxtrustagent 2> /dev/null;
@@ -63,6 +67,8 @@ knox_security)
     echo 2 > $P
     am start -a com.policydm 2> /dev/null;
     am start -a com.samsung.android.securitylogagent 2> /dev/null;
+    am start -a com.samsung.android.bbc.bbcagent 2> /dev/null;
+    am start -a com.samsung.android.dlp.service 2> /dev/null;
     am start -a com.samsung.klmsagent 2> /dev/null;
     am start -a com.samsung.knox.appsupdateagent 2> /dev/null;
     am start -a com.samsung.knox.knoxtrustagent 2> /dev/null;
@@ -86,6 +92,8 @@ knox_security)
     sleep 1;
     pm enable com.policydm 2> /dev/null;
     pm enable com.samsung.android.securitylogagent 2> /dev/null;
+    pm enable com.samsung.android.bbc.bbcagent 2> /dev/null;
+    pm enable com.samsung.android.dlp.service 2> /dev/null;
     pm enable com.samsung.klmsagent 2> /dev/null;
     pm enable com.samsung.knox.appsupdateagent 2> /dev/null;
     pm enable com.samsung.knox.knoxtrustagent 2> /dev/null;
@@ -121,5 +129,3 @@ knox_security)
   fi
   ;;
 esac
-
-$BB mount -t rootfs -o remount,ro rootfs;

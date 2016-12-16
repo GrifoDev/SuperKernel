@@ -165,7 +165,7 @@ cat << CTAG
 	}},
 	{ SPane:{
 		title:"Lazytime Mount",
-		description:"Reduce periodic journal writes on data & cache file systems (better battery life, flash lifespan and performance)."
+		description:"Reduce periodic journal writes on data & cache on EXT4 file systems (better battery life, flash lifespan and performance)."
 	}},
 	{ SSpacer:{
 		height:1
@@ -178,7 +178,7 @@ cat << CTAG
 	}},
 	{ SOptionList:{
 		title:"Enable Lazytime Mount",
-		description:"Enable to mount file systems with lazytime. Changing this value requires REBOOT.\n",
+		description:"Enable to mount EXT4 file systems with lazytime. Changing this value requires REBOOT.\n",
 		default:$(cat /data/.Super/lazytime_mount),
 		action:"generic /data/.Super/lazytime_mount",
 		values:{
@@ -216,7 +216,7 @@ cat << CTAG
 	}},
 	{ SOptionList:{
 		title:"Enable Virtual NAND Swap",
-		description:"VNSwap attempts to increase performance by avoiding paging on physical storage, instead using a compressed virtual device in RAM. Paging takes place in RAM until it is necessary to use the swap space on physical storage. Depending on the amount of swap currently in use, this process can take ~1 minute with Synapse being UNRESPONSIVE during this time. PLEASE WAIT for the process to finish.\n\n Disabling or Enabling will auto set swappiness to 0 or 190 respectively. Default is Enabled.\n",
+		description:"VNSwap attempts to improve performance & multitasking by avoiding paging on physical storage, instead using a compressed virtual device in RAM. Paging takes place in RAM until it is necessary to use the swap space on physical storage. Depending on the amount of swap currently in use, disabling can take ~1 minute with Synapse being UNRESPONSIVE during this time. PLEASE WAIT for the process to finish.\n\n Disabling or Enabling will auto set swappiness to 0 or 190 respectively. Default is Enabled.\n",
 		default:Enabled,
 		action:"swaps vnswap0",
 		values:[Disabled, Enabled,],
@@ -227,6 +227,18 @@ cat << CTAG
 				to:"generic /proc/sys/vm/swappiness"
 			}
 		]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"E-Swap",
+		description:"Compresses swap pages in a dynamically allocated cache in RAM. Potentially improves I/O speed of swap devices at the cost of CPU to de/compress pages.\n",
+		default:Y,
+		action:"generic /sys/module/eswap/parameters/enabled",
+		values:{
+			N:"Disabled", Y:"Enabled"
+		}
 	}},
 	{ SSpacer:{
 		height:1

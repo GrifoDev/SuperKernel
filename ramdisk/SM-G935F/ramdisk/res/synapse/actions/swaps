@@ -13,16 +13,20 @@ vnswap0)
   P=/res/synapse/Super/vnswap0
   if [ ! -z "$2" ]; then
   if [ "$2" == Disabled ]; then
-	$BB swapoff $SWAP > /dev/null 2>&1
-	$BB sync;
-	$BB echo "0" > /proc/sys/vm/swappiness;
-	echo 0 > $P
+    echo 0 > $P
+	if [ "$(grep "vnswap0" /proc/swaps)" != "" ]; then
+		$BB swapoff $SWAP > /dev/null 2>&1
+		$BB sync;
+		$BB echo "0" > /proc/sys/vm/swappiness;
+	fi;
   elif [ "$2" == Enabled ]; then
-	$BB mkswap $SWAP > /dev/null 2>&1
-	$BB swapon $SWAP > /dev/null 2>&1
-	$BB sync;
-	$BB echo "190" > /proc/sys/vm/swappiness;
-	echo 1 > $P
+    echo 1 > $P
+	if [ "$(grep "vnswap0" /proc/swaps)" == "" ]; then
+		$BB mkswap $SWAP > /dev/null 2>&1
+		$BB swapon $SWAP > /dev/null 2>&1
+		$BB sync;
+		$BB echo "190" > /proc/sys/vm/swappiness;
+	fi;
   fi; fi
   copy=$(cat $P)
   if [ "$copy" == 0 ]; then
@@ -32,5 +36,3 @@ vnswap0)
   fi
   ;;
 esac
-
-$BB mount -t rootfs -o remount,ro rootfs;

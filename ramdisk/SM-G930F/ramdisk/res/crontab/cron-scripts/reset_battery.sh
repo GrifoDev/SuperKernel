@@ -35,5 +35,3 @@ elif [ "$FG_RESET" == 0 ]; then
 	date +%R-%F > /data/crontab/cron-reset_battery;
 	echo " Battery Reset is disabled" >> /data/crontab/cron-reset_battery;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

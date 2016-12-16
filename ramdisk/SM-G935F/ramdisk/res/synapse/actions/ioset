@@ -50,5 +50,3 @@ case "$1" in
 		fi;
 	;;
 esac;
-
-$BB mount -t rootfs -o remount,ro rootfs;

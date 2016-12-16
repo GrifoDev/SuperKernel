@@ -93,7 +93,7 @@ cat << CTAG
 	}},
 	{ SOptionList:{
 		title:"Turbo Mode",
-		description:"Forces the use of the big cores over LITTLE ones for increased UI responsiveness at the expense of power efficiency.\n\nWARNING: REBOOT is required if you DISABLE at ANY TIME !!\n",
+		description:"Forces the use of the big cores over LITTLE ones for increased UI responsiveness at the expense of power efficiency. Enable only if Multicore tweaks are disabled !\n\nWARNING: REBOOT is required if you DISABLE at ANY TIME !!\n",
 		default:$(echo "$(/res/synapse/actions/tuning interactive_turbo)"),
 		action:"tuning interactive_turbo",
 		values:[Disabled, Enabled,],

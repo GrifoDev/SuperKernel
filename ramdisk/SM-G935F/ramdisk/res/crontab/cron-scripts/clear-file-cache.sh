@@ -42,5 +42,3 @@ elif [ "$CACHE" == 0 ]; then
 	date +%R-%F > /data/crontab/cron-clear-file-cache;
 	echo " Clean file-cache is disabled" >> /data/crontab/cron-clear-file-cache;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

@@ -240,7 +240,7 @@ UKSMStats)
 	fi
   ;;
 selinux_status)
-  $BB echo "$(/system/bin/getenforce)"
+  $BB echo "$(getenforce)";
   ;;
 usb_status)
   USB_STATUS=$(cat /sys/class/android_usb/android0/functions);
@@ -293,12 +293,11 @@ gps)
 	fi
   ;;
 check_cortex)
-  CORTEX_CHECK=$(pgrep -f "/system/xbin/busybox sh /sbin/cortexbrain-tune.sh" | wc -l);
-	if [ "$CORTEX_CHECK" != 0 ]; then
-		echo "SERVICE ONLINE";
-	else
-		echo "SERVICE OFFLINE";
-	fi;
+  if [[ "$(pgrep -f "/system/xbin/busybox sh /sbin/cortexbrain-tune.sh" | wc -l)" != "0" ]]; then
+	echo "SERVICE ONLINE";
+  else
+	echo "SERVICE OFFLINE";
+  fi;
   ;;
 Live_modules)
   for i in $(lsmod | awk '{print $1}'); do

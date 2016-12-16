@@ -93,5 +93,3 @@ else
 
 	$BB echo "$(read "$1")";
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

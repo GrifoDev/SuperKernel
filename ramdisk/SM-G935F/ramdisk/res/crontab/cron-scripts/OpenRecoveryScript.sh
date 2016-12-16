@@ -120,10 +120,22 @@ if [ "$TWRP" == 1 ]; then
 			$BB sync;
 		fi;
 
-		# fstrim after creating free space
-		/system/xbin/fstrim -v /system
-		/system/xbin/fstrim -v /data
-		/system/xbin/fstrim -v /cache
+		# fstrim EXT4 partitions after creating free space
+		if grep -q 'system ext4' /proc/mounts ; then
+			/system/xbin/fstrim -v /system
+		else
+			exit 0;
+		fi;
+		if grep -q 'data ext4' /proc/mounts ; then
+			/system/xbin/fstrim -v /data
+		else
+			exit 0;
+		fi;
+		if grep -q 'cache ext4' /proc/mounts ; then
+			/system/xbin/fstrim -v /cache
+		else
+			exit 0;
+		fi;
 
 		date +%R-%F > /data/crontab/cron-fstrim;
 		echo " File System trimmed" >> /data/crontab/cron-fstrim;
@@ -149,5 +161,3 @@ elif [ "$TWRP" == 0 ]; then
 	date +%R-%F > /data/crontab/cron-twrp_backup;
 	echo " TWRP-auto-backup is disabled" >> /data/crontab/cron-twrp_backup;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

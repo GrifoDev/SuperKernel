@@ -1,8 +1,5 @@
 BB=/system/xbin/busybox;
 
-# SQLite log location
-LOGS=/sdcard/Super/Logs/SQLite.txt;
-
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 	$BB mount -o remount,rw /;
 fi;
@@ -12,19 +9,25 @@ fi;
 
 case $1 in
   reboot)
-	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	if [[ "$(cat /sys/kernel/dyn_fsync/Dyn_fsync_active)" != "0" ]]; then
+		echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	fi;
 	$BB sync;
 	$BB sleep 1;
 	reboot "$2";
   ;;
   hot_reboot)
-	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	if [[ "$(cat /sys/kernel/dyn_fsync/Dyn_fsync_active)" != "0" ]]; then
+		echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	fi;
 	$BB sync;
 	$BB sleep 1;
 	pkill zygote
   ;;
   cleardata)
-	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	if [[ "$(cat /sys/kernel/dyn_fsync/Dyn_fsync_active)" != "0" ]]; then
+		echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	fi;
 	am force-stop com.af.synapse 2> /dev/null;
 	$BB rm -R /data/data/com.af.synapse/*;
 	$BB rm -f /data/dalvik-cache/arm64/data@app@com.af.synapse*;
@@ -49,15 +52,26 @@ case $1 in
   selinux)	
 	if [[ ! -z $2 ]]; then
 		if [ "$2" == Enforcing ]; then
-			setenforce 1;
+			if [ "$(getenforce)" != Enforcing ]; then
+				setenforce 1;
+			else
+				exit 0;
+			fi;
 		elif [ "$2" == Permissive ]; then
-			setenforce 0;
+			if [ "$(getenforce)" != Permissive ]; then
+				setenforce 0;
+			else
+				exit 0;
+			fi;
 		fi;
 	fi;
 
 	$BB echo "$(getenforce)";
   ;;
   optimizedb)
+	# SQLite log location
+	LOGS=/sdcard/Super/Logs/SQLite.txt;
+
 	if [ -e $LOGS ]; then
 		rm $LOGS;
 	fi;
@@ -66,7 +80,7 @@ case $1 in
 	LOG=/sdcard/Super/Logs;
 
 	[ ! -d "$LOG" ] && mkdir -p "$LOG";
-	chmod 755 $LOG
+	$BB chmod -R 755 $LOG;
 
 	echo "SQLite database VACUUM and REINDEX started at $( date +"%m-%d-%Y %H:%M:%S" )" | tee -a $LOGS;
 
@@ -106,37 +120,55 @@ case $1 in
 		echo "Database $i:  VACUUM=$resVac  REINDEX=$resIndex" | tee -a $LOGS;
 	done;
 		echo "SQLite database VACUUM and REINDEX finished at $( date +"%m-%d-%Y %H:%M:%S" )" | tee -a $LOGS;
-		
+
 	$BB echo "Databases have been optimized";
   ;;
   fstrim)
-	echo -e "Trim /data"
-	/system/xbin/fstrim -v /data
-	echo -e ""
-	echo -e "Trim /cache"
-	/system/xbin/fstrim -v /cache
-	echo -e ""
-	echo -e "Trim /system"
-	/system/xbin/fstrim -v /system
-	echo -e ""
+	if grep -q 'system ext4' /proc/mounts ; then
+		echo -e "Trim "
+		/system/xbin/fstrim -v /system
+		echo -e ""
+	else
+		echo " --System is F2FS-- ";
+	fi;
+	if grep -q 'data ext4' /proc/mounts ; then
+		echo -e "Trim "
+		/system/xbin/fstrim -v /data
+		echo -e ""
+	else
+		echo " --Data is F2FS-- ";
+	fi;
+	if grep -q 'cache ext4' /proc/mounts ; then
+		echo -e "Trim "
+		/system/xbin/fstrim -v /cache
+		echo -e ""
+	else
+		echo " --Cache is F2FS-- ";
+	fi;
 	$BB sync
   ;;
   wipe_cache_reboot)
-	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	if [[ "$(cat /sys/kernel/dyn_fsync/Dyn_fsync_active)" != "0" ]]; then
+		echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	fi;
 	$BB rm -rf /cache/*
 	$BB sync;
 	$BB sleep 1;
 	/system/bin/reboot;
   ;;
   wipe_dalvik_reboot)
-	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	if [[ "$(cat /sys/kernel/dyn_fsync/Dyn_fsync_active)" != "0" ]]; then
+		echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	fi;
 	$BB rm -rf /data/dalvik-cache/*
 	$BB sync;
 	$BB sleep 1;
 	/system/bin/reboot;
   ;;
   wipe_cache-dalvik_reboot)
-	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	if [[ "$(cat /sys/kernel/dyn_fsync/Dyn_fsync_active)" != "0" ]]; then
+		echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	fi;
 	$BB rm -rf /cache/*
 	$BB rm -rf /data/dalvik-cache/*
 	$BB sync;
@@ -252,6 +284,3 @@ SystemUpdateService)
 	fi;
   ;;
 esac;
-
-$BB mount -t rootfs -o remount,ro rootfs;
-$BB mount -o remount,ro /system;

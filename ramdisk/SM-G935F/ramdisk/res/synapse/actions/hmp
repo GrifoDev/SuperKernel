@@ -49,5 +49,3 @@ if [ -f "$1" ]; then
 	chmod 0440 /sys/kernel/hmp/up_threshold;
 	chmod 0440 /sys/kernel/hmp/down_threshold;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

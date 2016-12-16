@@ -1,5 +1,35 @@
 #!/system/bin/sh
 
+# Detect variant for sammobile.com firmware
+if [ "$(grep "G930F" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930F"
+elif [ "$(grep "G930FD" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930FD"
+elif [ "$(grep "G930K" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930K"
+elif [ "$(grep "G930L" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930L"
+elif [ "$(grep "G930S" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930S"
+elif [ "$(grep "G930W8" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930W8"
+elif [ "$(grep "G935F" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935F"
+elif [ "$(grep "G935FD" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935FD"
+elif [ "$(grep "G935K" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935K"
+elif [ "$(grep "G935L" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935L"
+elif [ "$(grep "G935S" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935S"
+elif [ "$(grep "G935W8" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935W8"
+else
+	# Unsupported variant
+	VARIANT=""
+fi;
+
 cat << CTAG
 {
     name:INFO,
@@ -50,7 +80,7 @@ cat << CTAG
 	}},
 	{ SLiveLabel:{
 		refresh:10000,
-		action:"show asv"
+		action:"default asv"
 	}},
 	{ SSpacer:{
 		height:1
@@ -71,6 +101,14 @@ cat << CTAG
 	{ SLiveLabel:{
 		refresh:10000,
 		action:"default build"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Check Firmware Update",
+		action:"am start -a android.intent.action.VIEW -d http://www.sammobile.com/firmwares/database/$VARIANT > /dev/null;
+		echo Opening browser...;"
 	}},
 	{ SSpacer:{
 		height:1
@@ -111,6 +149,16 @@ cat << CTAG
 	{ SLiveLabel:{
 		refresh:10000,
 		action:"default bootloader"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Ramdisk"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default ramdisk"
 	}},
 	{ SSpacer:{
 		height:1

@@ -134,7 +134,7 @@ cat << CTAG
 	}},
 	{ SPane:{
 		title:"File System Trim",
-		description:"Android 4.4.2+ has a feature that auto trims partitions during suspend and only when certain condtions are met. FSTrim is more of a maintenance binary, where Android file systems are prone to lag over time and prevalent as your internal storage is used up. Manually trimming may help retain consistant IO throughput with user control. If you wish to manually trim System, Data and Cache partitions, then press the button below."
+		description:"Android 4.4.2+ have a feature that auto trims EXT4 partitions during suspend and only when certain condtions are met. FSTrim is more of a maintenance binary, where Android file systems are prone to lag over time and prevalent as your internal storage is used up. Manually trimming may help retain consistant IO throughput with user control. If you wish to manually trim System, Data and Cache EXT4 partitions, then press the button below."
 	}},
 	{ SSpacer:{
 		height:1
@@ -152,33 +152,35 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-	{ SPane:{
-		title:"Wipe Options",
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SButton:{
-		label:"Wipe Cache Reboot",
-		action:"devtools wipe_cache_reboot"
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SButton:{
-		label:"Wipe Dalvik-Cache Reboot",
-		action:"devtools wipe_dalvik_reboot"
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SButton:{
-		label:"Wipe Cache & Dalvik-Cache Reboot",
-		action:"devtools wipe_cache-dalvik_reboot"
-	}},
-	{ SDescription:{
-		description:""
-	}},
+	`if grep -q 'cache ext4' /proc/mounts && grep -q 'data ext4' /proc/mounts ; then
+		echo '{ SPane:{
+			title:"Wipe Options",
+		}},
+		{ SSpacer:{
+			height:1
+		}},
+		{ SButton:{
+			label:"Wipe Cache Reboot",
+			action:"devtools wipe_cache_reboot"
+		}},
+		{ SSpacer:{
+			height:1
+		}},
+		{ SButton:{
+			label:"Wipe Dalvik-Cache Reboot",
+			action:"devtools wipe_dalvik_reboot"
+		}},
+		{ SSpacer:{
+			height:1
+		}},
+		{ SButton:{
+			label:"Wipe Cache & Dalvik-Cache Reboot",
+			action:"devtools wipe_cache-dalvik_reboot"
+		}},
+		{ SSpacer:{
+			height:1
+		}},'
+	fi;`
 	{ SPane:{
 		title:"Wipe Junk Folders"
 	}},

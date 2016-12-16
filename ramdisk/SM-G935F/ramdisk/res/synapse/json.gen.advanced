@@ -1,13 +1,11 @@
 #!/system/bin/sh
 
-BB=/system/xbin/busybox;
-
 cat << CTAG
 {
     name:ADVANCED,
     elements:[
 	{ SPane:{
-	title:"Kernel Entropy"
+		title:"Kernel Entropy"
 	}},
 	{ SSpacer:{
 		height:1

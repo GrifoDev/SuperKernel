@@ -28,6 +28,38 @@ cifs)
   fi
   ;;
 
+nfs)
+  P=/res/synapse/Super/nfs
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	rmmod /system/lib/modules/rpcsec_gss_krb5.ko
+	rmmod /system/lib/modules/auth_rpcgss.ko
+	rmmod /system/lib/modules/oid_registry.ko
+	rmmod /system/lib/modules/nfsv3.ko
+	rmmod /system/lib/modules/nfsv2.ko
+	rmmod /system/lib/modules/nfs.ko
+	rmmod /system/lib/modules/lockd.ko
+	rmmod /system/lib/modules/sunrpc.ko
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	insmod /system/lib/modules/sunrpc.ko
+	insmod /system/lib/modules/lockd.ko
+	insmod /system/lib/modules/nfs.ko
+	insmod /system/lib/modules/nfsv2.ko
+	insmod /system/lib/modules/nfsv3.ko
+	insmod /system/lib/modules/oid_registry.ko
+	insmod /system/lib/modules/auth_rpcgss.ko
+	insmod /system/lib/modules/rpcsec_gss_krb5.ko
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
 ntfs)
   P=/res/synapse/Super/ntfs
   if [ ! -z "$2" ]; then
@@ -99,6 +131,3 @@ xpad)
   fi
   ;;
 esac
-
-$BB mount -t rootfs -o remount,ro rootfs;
-$BB mount -o remount,ro /system;

@@ -77,5 +77,3 @@ esac
 		$BB echo "$($BB cat "$1")";
 	fi;
   fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

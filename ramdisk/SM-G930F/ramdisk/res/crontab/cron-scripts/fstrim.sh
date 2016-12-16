@@ -21,20 +21,30 @@ if [ "$FSTRIM" == 1 ]; then
 		sleep 30;
 	done;
 
-	/system/xbin/fstrim -v /system
-	/system/xbin/fstrim -v /data
-	/system/xbin/fstrim -v /cache
+	# EXT4 partitions only
+	if grep -q 'system ext4' /proc/mounts ; then
+		/system/xbin/fstrim -v /system
+	else
+		exit 0;
+	fi;
+	if grep -q 'data ext4' /proc/mounts ; then
+		/system/xbin/fstrim -v /data
+	else
+		exit 0;
+	fi;
+	if grep -q 'cache ext4' /proc/mounts ; then
+		/system/xbin/fstrim -v /cache
+	else
+		exit 0;
+	fi;
 
 	$BB sync
 
 	date +%R-%F > /data/crontab/cron-fstrim;
-	echo " File System trimmed" >> /data/crontab/cron-fstrim;
+	echo " EXT4 File System trimmed" >> /data/crontab/cron-fstrim;
 
 elif [ "$FSTRIM" == 0 ]; then
 
 	date +%R-%F > /data/crontab/cron-fstrim;
-	echo " File System Trim is disabled" >> /data/crontab/cron-fstrim;
+	echo " EXT4 File System Trim is disabled" >> /data/crontab/cron-fstrim;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;
-$BB mount -o remount,ro /system;

@@ -54,5 +54,3 @@ elif [ "$DROP_CACHE" == 0 ]; then
 	date +%R-%F > /data/crontab/cron-clear-ram-cache;
 	echo " Clean RAM Cache is disabled" >> /data/crontab/cron-clear-ram-cache;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

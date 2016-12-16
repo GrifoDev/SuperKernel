@@ -95,6 +95,3 @@ if [ -f "$1" ]; then
 
 	$BB echo "$($BB cat "$1")";
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;
-$BB mount -o remount,ro /system;

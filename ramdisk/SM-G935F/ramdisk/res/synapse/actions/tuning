@@ -199,5 +199,3 @@ interactive_L)
   fi
   ;;
 esac
-
-$BB mount -t rootfs -o remount,ro rootfs;

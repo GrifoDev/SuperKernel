@@ -106,5 +106,3 @@ case "$1" in
 		am start -a android.intent.action.MAIN -n com.af.synapse/.MainActivity 2> /dev/null;
 	;;
 esac;
-
-$BB mount -t rootfs -o remount,ro rootfs;

@@ -23,5 +23,3 @@ if [ -f "$1" ]; then
 else
 	$BB echo "0";
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

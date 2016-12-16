@@ -9,5 +9,3 @@ if [[ ! -z $2 ]]; then
 fi
 
 $BB echo "$(cat "$1")"
-
-$BB mount -t rootfs -o remount,ro rootfs;

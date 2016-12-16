@@ -33,6 +33,3 @@ sms_temp_app_whitelist_duration=$(($(cat /res/synapse/Super/doze_sms_temp_app_wh
 settings put global device_idle_constants inactive_to=$inactive_to,sensing_to=$sensing_to,locating_to=$locating_to,location_accuracy=$location_accuracy.0,motion_inactive_to=$motion_inactive_to,idle_after_inactive_to=$idle_after_inactive_to,idle_pending_to=$idle_pending_to,max_idle_pending_to=$max_idle_pending_to,idle_pending_factor=$idle_pending_factor.0,idle_to=$idle_to,max_idle_to=$max_idle_to,idle_factor=$idle_factor.0,min_time_to_alarm=$min_time_to_alarm,max_temp_app_whitelist_duration=$max_temp_app_whitelist_duration,mms_temp_app_whitelist_duration=$mms_temp_app_whitelist_duration,sms_temp_app_whitelist_duration=$sms_temp_app_whitelist_duration;
 
 $BB echo "Parameters applied !"
-
-$BB mount -t rootfs -o remount,ro rootfs;
-$BB mount -o remount,ro /system;

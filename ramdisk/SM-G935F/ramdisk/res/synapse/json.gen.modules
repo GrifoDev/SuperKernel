@@ -32,6 +32,16 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
+	{ SOptionList:{
+		title:"NFS",
+		description:"This will allow you to access files residing on other computers using Sun's Network File System protocol.\n",
+		default:$(echo "$(/res/synapse/actions/modules nfs)"),
+		action:"modules nfs",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
 	{ SPane:{
 		title:"DOS/FAT/NT FS"
 	}},

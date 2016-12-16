@@ -33,5 +33,3 @@ elif [ "$GOOGLE" == 0 ]; then
 	date +%R-%F > /data/crontab/cron-ram-release;
 	echo " Google RAM Release is disabled" >> /data/crontab/cron-ram-release;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;

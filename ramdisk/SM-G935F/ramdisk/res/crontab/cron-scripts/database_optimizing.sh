@@ -38,5 +38,3 @@ elif [ "$SQLITE" == 0 ]; then
 	date +%R-%F > /data/crontab/cron-db-optimizing;
 	echo " DB Optimization is disabled" >> /data/crontab/cron-db-optimizing;
 fi;
-
-$BB mount -t rootfs -o remount,ro rootfs;
