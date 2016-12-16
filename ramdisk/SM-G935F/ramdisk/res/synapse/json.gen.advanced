@@ -55,25 +55,6 @@ cat << CTAG
 		height:1
 	}},
 	{ SPane:{
-		title:"Exynos Hotplug",
-		description:"If you enable exynos hotplug it will automatically hotplug 2 cores (so min cores online are 6) if you disable hotplugging, all 8 cores will be online."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Enable Exynos Hotplug",
-		description:" ",
-		default:1,
-		action:"generic /sys/power/cpuhotplug/enabled",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SPane:{
 		title:"Randomisation",
 		description:"Disabling (0) virtual address randomisation may improve GUI responsiveness."
 	}},

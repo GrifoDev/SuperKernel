@@ -83,6 +83,9 @@ GRTAGS
 GSYMS
 GTAGS
 
+*.img
+*.zip
+*.log
 *.orig
 *~
 *.dts

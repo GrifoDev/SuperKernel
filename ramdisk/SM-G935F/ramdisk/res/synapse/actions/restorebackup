@@ -7,7 +7,7 @@ if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 fi;
 
 if [ -d /data/data/com.af.synapse ]; then
-  SYNAPSE_SD_DIR=/sdcard/Super/Synapse;
+  SYNAPSE_SD_DIR=/data/media/0/Super/Synapse;
   SYNAPSE_BOOT_DIR=$SYNAPSE_SD_DIR/kernel_backups;
   SYNAPSE_CONFIG_DIR=$SYNAPSE_SD_DIR/saved_configs;
 
@@ -60,7 +60,7 @@ case "$1" in
 		else
 			$BB dd if="$2" of="$SYNAPSE_BOOT_DIR/$BCK_PROF.img" 2> /dev/null;
 			$BB echo "None" > /res/synapse/Super/bck_prof;
-			$BB echo "$BCK_PROF.img saved to /sdcard/Super. Press the [Restart Synapse] button below to see updated list.";
+			$BB echo "$BCK_PROF.img saved to /data/media/0/Super. Press the [Restart Synapse] button below to see updated list.";
 		fi;
 	;;
 

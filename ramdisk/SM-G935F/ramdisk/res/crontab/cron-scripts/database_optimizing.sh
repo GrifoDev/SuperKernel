@@ -24,7 +24,7 @@ if [ "$SQLITE" == 1 ]; then
 		/system/xbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
 	done;
 
-	for i in $(find /sdcard -iname "*.db"); do
+	for i in $(find /data/media/0 -iname "*.db"); do
 		/system/xbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
 		/system/xbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
 	done;

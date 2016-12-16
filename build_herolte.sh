@@ -145,16 +145,37 @@ FUNC_BUILD_RAMDISK()
 	esac
 }
 
+FUNC_BUILD_ZIP()
+{
+	cd $RDIR/build
+	case $MODEL in
+	herolte)
+		mv -f $RDIR/ramdisk/SM-G930F/image-new.img $RDIR/build/boot.img
+		zip SuperKernel_SM-G930F_$VERSION.zip -r boot.img mcRegistry META-INF files
+		;;
+	hero2lte)
+		mv -f $RDIR/ramdisk/SM-G935F/image-new.img $RDIR/build/boot.img
+		zip SuperKernel_SM-G935F_$VERSION.zip -r boot.img mcRegistry META-INF files
+		;;
+	*)
+		echo "Unknown device: $MODEL"
+		exit 1
+		;;
+	esac
+}
+
 # MAIN FUNCTION
 rm -rf ./build.log
 (
-    START_TIME=`date +%s`
+	START_TIME=`date +%s`
 
 	FUNC_BUILD_KERNEL
 	FUNC_BUILD_RAMDISK
+	FUNC_BUILD_ZIP
 
-    END_TIME=`date +%s`
+	END_TIME=`date +%s`
 	
-    let "ELAPSED_TIME=$END_TIME-$START_TIME"
-    echo "Total compile time was $ELAPSED_TIME seconds"
+	let "ELAPSED_TIME=$END_TIME-$START_TIME"
+	echo "Total compile time was $ELAPSED_TIME seconds"
+
 ) 2>&1	 | tee -a ./build.log

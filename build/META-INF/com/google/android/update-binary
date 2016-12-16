@@ -1,0 +1,66 @@
+#!/sbin/sh
+
+OUTFD=$2
+ZIP=$3
+
+ui_print() {
+  echo -n -e "ui_print $1\n" > /proc/self/fd/$OUTFD
+  echo -n -e "ui_print\n" > /proc/self/fd/$OUTFD
+}
+
+cd /tmp
+rm -rf tkkg1994
+mkdir tkkg1994
+cd tkkg1994
+unzip -o "$ZIP"
+
+ui_print " ";
+ui_print " - mounting system partition"
+mount /system
+
+ui_print " - mounting data partition"
+mount /data
+
+ui_print " - Installing SuperKernel"
+
+ui_print " - flashing boot.img"
+cat boot.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
+
+ui_print " - removing wrong build.prop entries"
+
+sed -i /timaversion/d /system/build.prop
+sed -i /security.mdpp.mass/d /system/build.prop
+sed -i /ro.hardware.keystore/d /system/build.prop
+
+ui_print " - setting right fingerprint files"
+
+rm -rf /system/app/TuiService /system/app/mcRegistry
+mkdir /system/etc/init.d
+
+cd
+cd /tmp/tkkg1994
+mv -f mcRegistry /system/app
+mv -f files/wakelock.sh /system/etc/init.d
+mv -f files/busybox /system/xbin
+mv -f files/sqlite3 /system/xbin
+mv -f files/zip /system/xbin
+
+ui_print " - setting permissions"
+
+chmod 0755 /system/app/mcRegistry
+chmod 0644 /system/app/mcRegistry/*.tlbin
+chmod 0755 /system/etc/init.d/wakelock.sh
+chmod 0755 /system/xbin/busybox
+chmod 0755 /system/xbin/sqlite3
+chmod 0755 /system/xbin/zip
+
+ui_print " - unmounting partition /data"
+umount /data > /dev/null 2>&1
+
+ui_print " - unmounting partition /system"
+umount /system > /dev/null 2>&1
+
+ui_print " "
+ui_print "finished"
+rm -rf /tmp/tkkg1994
+sync

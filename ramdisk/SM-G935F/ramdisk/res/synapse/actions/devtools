@@ -70,14 +70,14 @@ case $1 in
   ;;
   optimizedb)
 	# SQLite log location
-	LOGS=/sdcard/Super/Logs/SQLite.txt;
+	LOGS=/data/media/0/Super/Logs/SQLite.txt;
 
 	if [ -e $LOGS ]; then
 		rm $LOGS;
 	fi;
 
 	# Create Log folder on sdcard
-	LOG=/sdcard/Super/Logs;
+	LOG=/data/media/0/Super/Logs;
 
 	[ ! -d "$LOG" ] && mkdir -p "$LOG";
 	$BB chmod -R 755 $LOG;

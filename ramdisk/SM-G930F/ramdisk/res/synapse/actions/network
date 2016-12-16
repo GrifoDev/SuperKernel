@@ -246,7 +246,7 @@ gps_zone)
   fi
   ;;
 wifi_passwords_save)
-  WIFI=/sdcard/Super/wifi;
+  WIFI=/data/media/0/Super/wifi;
   [ ! -d "$WIFI" ] && mkdir -p "$WIFI";
   $BB chmod -R 755 $WIFI;
   P=$WIFI/wifi.txt
@@ -255,11 +255,11 @@ wifi_passwords_save)
   echo WiFi Passwords saved
   ;;
 wifi_passwords_restore)
-  if [ -f /sdcard/Super/wifi/wifi.txt ]; then
+  if [ -f /data/media/0/Super/wifi/wifi.txt ]; then
 	P=/data/misc/wifi/wpa_supplicant.conf
 	svc wifi disable 2> /dev/null;
 	rm -f /data/misc/dhcp/dhcpcd*;
-	cat /sdcard/Super/wifi/wifi.txt > $P
+	cat /data/media/0/Super/wifi/wifi.txt > $P
 	$BB chmod 660 $P;
 	svc wifi enable 2> /dev/null;
 	sleep 1

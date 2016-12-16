@@ -1,0 +1,20 @@
+# By Tkkg1994
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+if [[ ! -z $2 ]]; then
+	if [ -e /sys/kernel/thunderplug/$1 ]; then
+		echo $2 > /sys/kernel/thunderplug/$1 2> /dev/null;
+	fi
+fi
+
+if [ -e /sys/kernel/thunderplug/$1 ] &&
+	[ $(expr `cat /sys/kernel/thunderplug/hotplug_enabled`) -eq "1" ]; then
+	echo `cat /sys/kernel/thunderplug/$1`
+else
+	echo `cat /sys/kernel/thunderplug/$1`
+fi

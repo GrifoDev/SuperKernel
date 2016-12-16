@@ -4,13 +4,13 @@
 BB=/system/xbin/busybox;
 
 TIMESTAMP=$(date +%Y-%m-%d.%H.%M.%S);
-LOGS=/sdcard/Super/logs;
+LOGS=/data/media/0/Super/logs;
 SYNAPSE_DATA=/data/data/com.af.synapse/databases;
-DEBUG_FILE="/sdcard/Super_debug-$TIMESTAMP.txt";
-DEBUG_FILE_ZIP="/sdcard/Super_debug";
+DEBUG_FILE="/data/media/0/Super_debug-$TIMESTAMP.txt";
+DEBUG_FILE_ZIP="/data/media/0/Super_debug";
 
 [ ! -d "$LOGS" ] && $BB mkdir -p "$LOGS";
-$BB chmod 755 $LOGS;
+$BB chmod -R 755 $LOGS;
 
 if [ -f "/system/xbin/sqlite3" ]; then SQL3=/system/xbin/sqlite3; else SQL3=/system/bin/sqlite3; fi;
 
@@ -268,7 +268,7 @@ case $1 in
 				if [ -e /proc/last_kmsg ]; then
 					/system/xbin/zip ${DEBUG_FILE_ZIP}.zip $DEBUG_FILE > /dev/null;
 					sleep 5;
-					$BB mv /sdcard/Super_debug.zip $LOGS/Super_debug.zip;
+					$BB mv /data/media/0/Super_debug.zip $LOGS/Super_debug.zip;
 				fi;
 				$BB rm -r $DEBUG_FILE;
 			fi;

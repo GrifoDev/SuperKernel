@@ -1,0 +1,70 @@
+# By Tkkg1994
+
+BB=/system/xbin/busybox;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+if [[ ! -z $2 ]]; then
+	$BB echo $2 > $1;
+	if [  $2 == "ThunderPlug" ]; then
+			if [ -e /sys/power/cpuhotplug/enabled ]; then
+				echo "0" > /sys/power/cpuhotplug/enabled;
+			fi
+			$BB sleep 1;
+			if [ -e /sys/module/state_notifier/parameters/enabled ]; then
+				echo "Y" > /sys/module/state_notifier/parameters/enabled;
+			fi
+			if [ -e /sys/kernel/thunderplug/hotplug_enabled ]; then
+				echo "1" > /sys/kernel/thunderplug/hotplug_enabled;
+			fi
+	elif [  $2 == "Stock" ]; then
+			if [ -e /sys/kernel/thunderplug/hotplug_enabled ]; then
+				echo "0" > /sys/kernel/thunderplug/hotplug_enabled;
+			fi
+			if [ -e /sys/module/state_notifier/parameters/enabled ]; then
+				echo "N" > /sys/module/state_notifier/parameters/enabled;
+			fi
+			$BB sleep 1;
+			if [ -e /sys/power/cpuhotplug/enabled ]; then
+				echo "1" > /sys/power/cpuhotplug/enabled;
+			fi
+	elif [  $2 == "Disabled" ]; then
+			if [ -e /sys/kernel/thunderplug/hotplug_enabled ]; then
+				echo "0" > /sys/kernel/thunderplug/hotplug_enabled;
+			fi
+			if [ -e /sys/module/state_notifier/parameters/enabled ]; then
+				echo "N" > /sys/module/state_notifier/parameters/enabled;
+			fi
+			if [ -e /sys/power/cpuhotplug/enabled ]; then
+				echo "0" > /sys/power/cpuhotplug/enabled;
+			fi
+	else
+			echo "Not matched the hotplug drivers"
+	fi
+fi
+
+if [ -e /sys/kernel/thunderplug/hotplug_enabled ] && [ $(expr `cat /sys/kernel/thunderplug/hotplug_enabled`) -eq "1" ]; then
+	echo "ThunderPlug"
+elif [ -e /sys/power/cpuhotplug/enabled ] && [ $(expr `cat /sys/power/cpuhotplug/enabled`) -eq "1" ]; then
+	echo "Stock"
+elif [ -e /sys/power/cpuhotplug/enabled ] && [ $(expr `cat /sys/power/cpuhotplug/enabled`) -eq "0" ] && [ -e /sys/kernel/thunderplug/hotplug_enabled ] && [ $(expr `cat /sys/kernel/thunderplug/hotplug_enabled`) -eq "0" ]; then
+	echo "Disabled"
+else
+	if [ -e /sys/power/cpuhotplug/enabled ]; then
+		echo "0" > /sys/power/cpuhotplug/enabled;
+	fi
+	if [ -e /sys/kernel/thunderplug/hotplug_enabled ]; then
+		echo "0" > /sys/kernel/thunderplug/hotplug_enabled;
+	fi
+	if [ -e /sys/module/state_notifier/parameters/enabled ]; then
+		echo "N" > /sys/module/state_notifier/parameters/enabled;
+	fi
+	$BB sleep 1;
+	if [ -e /sys/power/cpuhotplug/enabled ]; then
+		echo "1" > /sys/power/cpuhotplug/enabled;
+	fi
+	echo "Stock"
+fi
+
