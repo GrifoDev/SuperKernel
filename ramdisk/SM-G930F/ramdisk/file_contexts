@@ -350,7 +350,10 @@
 
 
 /system/bin/wsmd            u:object_r:wsmd_exec:s0
-/dev/socket/wsm_socket	    u:object_r:wsm_socket:s0
+/dev/socket/wsm_socket(/.*)?	    u:object_r:wsm_socket:s0
+
+# board/Request/view/21158912/?page=1
+/system/bin/eprosed            u:object_r:eprosed_exec:s0
 
 #line 1 "vendor/samsung/common/sepolicy/BSP/bsp_qcom_v2/bsp/common/file_contexts"
 ###################################

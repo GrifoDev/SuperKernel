@@ -399,6 +399,7 @@ on fs
     chown system radio /sys/class/lcd/panel/mcd_mode
     chown system media_rw /sys/class/backlight/panel/weakness_hbm_comp
     chown system system /sys/class/lcd/panel/ldu_correction
+    chown system system /sys/class/lcd/panel/SVC_OCTA
 
 # Permissions for MDNIE
     chown system media_rw /sys/class/mdnie/mdnie/mode
