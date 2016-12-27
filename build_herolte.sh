@@ -3,7 +3,7 @@
 
 export MODEL=herolte
 export ARCH=arm64
-export VERSION=V1.6
+export VERSION=V1.6.5
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-sabermod-7.0/bin/aarch64-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
