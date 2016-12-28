@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 3.18.45 Kernel Configuration
+# Linux/arm64 3.18.46 Kernel Configuration
 #
 CONFIG_ARM64=y
 CONFIG_64BIT=y
@@ -39,7 +39,7 @@ CONFIG_ZEN_INTERACTIVE=y
 CONFIG_INIT_ENV_ARG_LIMIT=32
 CONFIG_CROSS_COMPILE=""
 # CONFIG_COMPILE_TEST is not set
-CONFIG_LOCALVERSION="-SuperKernel_SM-G935F_V1.9.6"
+CONFIG_LOCALVERSION="-SuperKernel_SM-G935F_V1.9.7"
 # CONFIG_LOCALVERSION_AUTO is not set
 CONFIG_DEFAULT_HOSTNAME="(none)"
 CONFIG_SWAP=y

@@ -3,7 +3,7 @@
 
 export MODEL=herolte
 export ARCH=arm64
-export VERSION=V1.9.6
+export VERSION=V1.9.7
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-sabermod-7.0/bin/aarch64-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
@@ -148,6 +148,7 @@ FUNC_BUILD_RAMDISK()
 FUNC_BUILD_ZIP()
 {
 	cd $RDIR/build
+	rm boot.img
 	case $MODEL in
 	herolte)
 		mv -f $RDIR/ramdisk/SM-G930F/image-new.img $RDIR/build/boot.img
