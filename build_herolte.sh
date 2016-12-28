@@ -148,6 +148,7 @@ FUNC_BUILD_RAMDISK()
 FUNC_BUILD_ZIP()
 {
 	cd $RDIR/build
+	rm boot.img
 	case $MODEL in
 	herolte)
 		mv -f $RDIR/ramdisk/SM-G930F/image-new.img $RDIR/build/boot.img
