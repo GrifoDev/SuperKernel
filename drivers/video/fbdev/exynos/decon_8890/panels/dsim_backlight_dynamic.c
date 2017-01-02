@@ -21,6 +21,10 @@
 #include "aid_dimming.h"
 #endif
 
+#ifdef CONFIG_PANEL_SMART_DIMMING
+static const unsigned char S6E3HF4_VINT_SET[] = {0xF4, 0xBB, 0x1C};
+#endif
+
 
 #ifdef CONFIG_PANEL_AID_DIMMING
 
@@ -217,12 +221,12 @@ static char dsim_panel_get_elvssoffset(struct dsim_device *dsim)
 
 static void dsim_panel_aid_ctrl(struct dsim_device *dsim)
 {
-	u8 *aid = NULL;
-	u8 recv[3];
 	unsigned char SEQ_AID[AID_LEN_MAX + 1] = { 0, };
 	struct panel_private *panel = &dsim->priv;
-
+	u8 *aid = NULL;
 #ifdef AID_INTERPOLATION
+	u8 recv[3];
+
 	if(is_panel_aid_interpolation(dsim)) {
 		get_aid_interpolation(dsim, recv);
 		aid = recv;
@@ -241,6 +245,11 @@ static void dsim_panel_aid_ctrl(struct dsim_device *dsim)
 
 	memcpy(SEQ_AID, panel->aid_set, panel->aid_len);
 	memcpy(&SEQ_AID[panel->aid_reg_offset], aid + 1, 2);
+
+#ifdef CONFIG_PANEL_SMART_DIMMING
+	dsim_info("%s: 0xB1, 0x%02X, 0x%02X - index: %d\n",
+		__func__, SEQ_AID[1], SEQ_AID[2], dsim->priv.br_index);
+#endif
 
 	if (dsim_write_hl_data(dsim, SEQ_AID, panel->aid_len) < 0)
 		dsim_err("%s : failed to write aid \n", __func__);
@@ -321,6 +330,7 @@ static void dsim_panel_irc_ctrl(struct dsim_device *dsim)
 }
 
 
+#ifndef CONFIG_PANEL_SMART_DIMMING
 static int dsim_panel_set_vint(struct dsim_device *dsim, int force)
 {
 	int ret = 0;
@@ -362,6 +372,7 @@ set_vint:
 	}
 	return ret;
 }
+#endif
 
 static int low_level_set_brightness(struct dsim_device *dsim ,int force)
 {
@@ -385,7 +396,12 @@ static int low_level_set_brightness(struct dsim_device *dsim ,int force)
 
 	dsim_panel_set_elvss(dsim);
 
+#ifdef CONFIG_PANEL_SMART_DIMMING
+	if (dsim_write_hl_data(dsim, S6E3HF4_VINT_SET, ARRAY_SIZE(S6E3HF4_VINT_SET)) < 0)
+		dsim_err("%s : failed to write S6E3HF4_VINT_SET\n", __func__);
+#else
 	dsim_panel_set_vint(dsim, force);
+#endif
 
 	dsim_panel_irc_ctrl(dsim);
 

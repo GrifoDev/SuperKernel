@@ -4,7 +4,9 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
 
+#ifndef CONFIG_PANEL_SMART_DIMMING
 #define AID_INTERPOLATION 1
+#endif
 
 struct lcd_seq_info
 {
