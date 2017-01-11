@@ -1,10 +1,10 @@
 #!/bin/bash
-# kernel build script by Tkkg1994 v0.4 (optimized from apq8084 kernel source)
+# kernel build script by Tkkg1994 v0.5 (optimized from apq8084 kernel source)
 
 export MODEL=herolte
 export ARCH=arm64
 export VERSION=V1.9.7
-export BUILD_CROSS_COMPILE=../Toolchain/aarch64-sabermod-7.0/bin/aarch64-
+export BUILD_CROSS_COMPILE=../Toolchain/aarch64-linux-gnu-6.3.1/bin/aarch64-linux-gnu-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
 RDIR=$(pwd)
@@ -20,8 +20,12 @@ DTB_PADDING=0
 if [ $MODEL = herolte ]
 then
 	KERNEL_DEFCONFIG=SuperKernel-herolte_defconfig
-else [ $MODEL = hero2lte ]
+else if [ $MODEL = hero2lte ]
 	KERNEL_DEFCONFIG=SuperKernel-hero2lte_defconfig
+else
+	echo "Unknown device: $MODEL"
+	exit 1
+fi
 fi
 
 FUNC_CLEAN_DTB()
