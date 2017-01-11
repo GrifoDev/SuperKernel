@@ -49,6 +49,12 @@ struct max77854_haptic_pdata {
 	char *regulator_name;
 	unsigned int pwm_id;
 	unsigned int model;
+
+	/* for multi-frequency */
+	int multi_frequency;
+	int freq_num;
+	u32 *multi_freq_duty;
+	u32 *multi_freq_period;
 };
 #endif
 
