@@ -17,10 +17,9 @@ INCDIR=$RDIR/include
 PAGE_SIZE=2048
 DTB_PADDING=0
 
-if [ $MODEL = herolte ]
-then
+if [ $MODEL = herolte ]; then
 	KERNEL_DEFCONFIG=SuperKernel-herolte_defconfig
-else if [ $MODEL = hero2lte ]
+else if [ $MODEL = hero2lte ]; then
 	KERNEL_DEFCONFIG=SuperKernel-hero2lte_defconfig
 else
 	echo "Unknown device: $MODEL"
