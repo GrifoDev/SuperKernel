@@ -21,7 +21,7 @@ mount /system
 ui_print " - mounting data partition"
 mount /data
 
-ui_print " - Installing SuperStock"
+ui_print " - Installing SuperStock-Kernel"
 
 ui_print " - flashing boot.img"
 cat boot.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
@@ -35,11 +35,19 @@ sed -i /ro.hardware.keystore/d /system/build.prop
 ui_print " - setting right fingerprint files"
 
 rm -rf /system/app/TuiService /system/app/mcRegistry
+rm -f /system/vendor/lib/libsecure_storage.so
+rm -f /system/vendor/lib/libsecure_storage_jni.so
+rm -f /system/vendor/lib64/libsecure_storage.so
+rm -f /system/vendor/lib64/libsecure_storage_jni.so
 mkdir /system/etc/init.d
 
 cd
 cd /tmp/tkkg1994
 mv -f mcRegistry /system/app
+mv -f vendor/lib/libsecure_storage.so /system/vendor/lib/libsecure_storage.so
+mv -f vendor/lib/libsecure_storage_jni.so /system/vendor/lib/libsecure_storage_jni.so
+mv -f vendor/lib64/libsecure_storage.so /system/vendor/lib64/libsecure_storage.so
+mv -f vendor/lib64/libsecure_storage_jni.so /system/vendor/lib64/libsecure_storage_jni.so
 mv -f files/wakelock.sh /system/etc/init.d
 mv -f files/busybox /system/xbin
 mv -f files/sqlite3 /system/xbin
@@ -47,6 +55,10 @@ mv -f files/zip /system/xbin
 
 ui_print " - setting permissions"
 
+chmod 0644 /system/vendor/lib/libsecure_storage.so
+chmod 0644 /system/vendor/lib/libsecure_storage_jni.so
+chmod 0644 /system/vendor/lib64/libsecure_storage.so
+chmod 0644 /system/vendor/lib64/libsecure_storage_jni.so
 chmod 0755 /system/app/mcRegistry
 chmod 0644 /system/app/mcRegistry/*.tlbin
 chmod 0755 /system/etc/init.d/wakelock.sh

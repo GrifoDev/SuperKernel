@@ -152,11 +152,11 @@ FUNC_BUILD_ZIP()
 	case $MODEL in
 	herolte)
 		mv -f $RDIR/ramdisk/SM-G930F/image-new.img $RDIR/build/boot.img
-		zip SuperStock_SM-G930F_$VERSION.zip -r boot.img mcRegistry META-INF files
+		zip SuperStock_SM-G930F_$VERSION.zip -r boot.img mcRegistry META-INF files vendor
 		;;
 	hero2lte)
 		mv -f $RDIR/ramdisk/SM-G935F/image-new.img $RDIR/build/boot.img
-		zip SuperStock_SM-G935F_$VERSION.zip -r boot.img mcRegistry META-INF files
+		zip SuperStock_SM-G935F_$VERSION.zip -r boot.img mcRegistry META-INF files vendor
 		;;
 	*)
 		echo "Unknown device: $MODEL"
