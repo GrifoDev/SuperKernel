@@ -22,17 +22,17 @@
 
 #include <linux/moduleparam.h>
 
-static int wl_prox = 1;
+static int wl_prox = 0.3;
 module_param(wl_prox, int, 0644);
-static int wl_humi = 2;
+static int wl_humi = 0.3;
 module_param(wl_humi, int, 0644);
-static int wl_motion = 2;
+static int wl_motion = 0.3;
 module_param(wl_motion, int, 0644);
-static int wl_pickup = 2;
+static int wl_pickup = 0.3;
 module_param(wl_pickup, int, 0644);
-static int wl_tilt = 2;
+static int wl_tilt = 0.3;
 module_param(wl_tilt, int, 0644);
-static int wl_grip = 3;
+static int wl_grip = 0.3;
 module_param(wl_grip, int, 0644);
 
 /*************************************************************************/
@@ -361,13 +361,40 @@ void report_pressure_data(struct ssp_data *data, struct sensor_value *predata)
 
 void report_light_data(struct ssp_data *data, struct sensor_value *lightdata)
 {
+	if((data->sensor_dump_flag_light==true))
+	{
+		if(data->light_log_cnt!=0)
+		{
+			/*If current light sensor data is same with previous sensor data*/
+			if(	(data->buf[LIGHT_SENSOR].r != lightdata->r) ||
+				(data->buf[LIGHT_SENSOR].g != lightdata->g) ||
+				(data->buf[LIGHT_SENSOR].b != lightdata->b) ||
+				(data->buf[LIGHT_SENSOR].w != lightdata->w) ||
+				(data->buf[LIGHT_SENSOR].a_time != lightdata->a_time) ||
+				(data->buf[LIGHT_SENSOR].a_gain != lightdata->a_gain))
+			{
+				data->sensor_dump_flag_light = false;
+			}
+		}
+	}
+	
+#ifdef CONFIG_SENSORS_SSP_LIGHT_REPORT_LUX
+	data->buf[LIGHT_SENSOR].lux = lightdata->lux;
+	data->buf[LIGHT_SENSOR].cct = lightdata->cct;
+#endif
 	data->buf[LIGHT_SENSOR].r = lightdata->r;
 	data->buf[LIGHT_SENSOR].g = lightdata->g;
 	data->buf[LIGHT_SENSOR].b = lightdata->b;
 	data->buf[LIGHT_SENSOR].w = lightdata->w;
 	data->buf[LIGHT_SENSOR].a_time = lightdata->a_time;
-	data->buf[LIGHT_SENSOR].a_gain = (0x03) & (lightdata->a_gain);
+	data->buf[LIGHT_SENSOR].a_gain = (0x07) & (lightdata->a_gain);
 
+#ifdef CONFIG_SENSORS_SSP_LIGHT_REPORT_LUX
+	input_report_rel(data->light_input_dev, REL_RX,
+		data->buf[LIGHT_SENSOR].lux +1);
+	input_report_rel(data->light_input_dev, REL_X,
+		data->buf[LIGHT_SENSOR].cct +1);
+#endif
 	input_report_rel(data->light_input_dev, REL_HWHEEL,
 		data->buf[LIGHT_SENSOR].r + 1);
 	input_report_rel(data->light_input_dev, REL_DIAL,
@@ -384,9 +411,16 @@ void report_light_data(struct ssp_data *data, struct sensor_value *lightdata)
 
 	if(data->light_log_cnt < 3)
 	{
-		ssp_dbg("[SSP] #>L r=%d g=%d b=%d c=%d atime=%d again=%d",
+#ifdef CONFIG_SENSORS_SSP_LIGHT_REPORT_LUX
+		ssp_dbg("[SSP] #>L lux=%u cct=%d r=%d g=%d b=%d c=%d atime=%d again=%d",
+			data->buf[LIGHT_SENSOR].lux,data->buf[LIGHT_SENSOR].cct,
 			data->buf[LIGHT_SENSOR].r,data->buf[LIGHT_SENSOR].g,data->buf[LIGHT_SENSOR].b,
 			data->buf[LIGHT_SENSOR].w,data->buf[LIGHT_SENSOR].a_time,data->buf[LIGHT_SENSOR].a_gain);
+#else
+		ssp_dbg("[SSP] #>L r=%d g=%d b=%d c=%d atime=%d again=%d",
+			data->buf[LIGHT_SENSOR].r,data->buf[LIGHT_SENSOR].g,data->buf[LIGHT_SENSOR].b,
+			data->buf[LIGHT_SENSOR].w,data->buf[LIGHT_SENSOR].a_time,data->buf[LIGHT_SENSOR].a_gain);	
+#endif
 		data->light_log_cnt++;
 	}
 
@@ -402,7 +436,7 @@ void report_light_ir_data(struct ssp_data *data, struct sensor_value *lightirdat
 	data->buf[LIGHT_IR_SENSOR].ir_b = lightirdata->ir_b;
 	data->buf[LIGHT_IR_SENSOR].ir_w = lightirdata->ir_w;
 	data->buf[LIGHT_IR_SENSOR].ir_a_time = lightirdata->ir_a_time;
-	data->buf[LIGHT_IR_SENSOR].ir_a_gain = (0x03) & (lightirdata->ir_a_gain);
+	data->buf[LIGHT_IR_SENSOR].ir_a_gain = (0x07) & (lightirdata->ir_a_gain);
 
 	input_report_rel(data->light_ir_input_dev, REL_RX,
 		data->buf[LIGHT_IR_SENSOR].irdata + 1);
@@ -440,6 +474,7 @@ void report_prox_data(struct ssp_data *data, struct sensor_value *proxdata)
 	ts_high = (u32)((proxdata->timestamp)>>32);
 	ts_low = (u32)((proxdata->timestamp)&0x00000000ffffffff);
 	
+	data->sensor_dump_flag_proximity = false;
 	ssp_dbg("[SSP] Proximity Sensor Detect : %u, raw : %u ts : %llu %d %d\n",
 		proxdata->prox[0], proxdata->prox[1], proxdata->timestamp, ts_high, ts_low);
 
@@ -483,6 +518,27 @@ void report_prox_raw_data(struct ssp_data *data,
 	}
 
 	data->buf[PROXIMITY_RAW].prox[0] = proxrawdata->prox[0];
+}
+
+void report_prox_alert_data(struct ssp_data *data, struct sensor_value *prox_alert_data)
+{
+	u32 ts_high, ts_low;
+	ts_high = (u32)((prox_alert_data->timestamp)>>32);
+	ts_low = (u32)((prox_alert_data->timestamp)&0x00000000ffffffff);
+	
+	ssp_dbg("[SSP] Proximity alert Sensor Detect : %d, raw : %u ts : %llu %d %d\n",
+		prox_alert_data->prox_alert[0], prox_alert_data->prox_alert[1], prox_alert_data->timestamp, ts_high, ts_low);
+
+	data->buf[PROXIMITY_ALERT_SENSOR].prox_alert[0] = prox_alert_data->prox_alert[0];
+	data->buf[PROXIMITY_ALERT_SENSOR].prox_alert[1] = prox_alert_data->prox_alert[1];
+
+	input_report_rel(data->prox_alert_input_dev, REL_DIAL,
+		(prox_alert_data->prox_alert[0]+1));
+	input_report_rel(data->prox_alert_input_dev, REL_WHEEL,
+		ts_high);
+	input_report_rel(data->prox_alert_input_dev, REL_MISC,
+		ts_low);
+	input_sync(data->prox_alert_input_dev);
 }
 
 #ifdef CONFIG_SENSORS_SSP_SX9306
@@ -629,8 +685,14 @@ int initialize_event_symlink(struct ssp_data *data)
 	if (iRet < 0)
 		goto iRet_meta_sysfs_create_link;
 
+	iRet = sensors_create_symlink(data->prox_alert_input_dev);
+	if (iRet < 0)
+		goto iRet_prox_alert_sysfs_create_link;
+
 	return SUCCESS;
 
+iRet_prox_alert_sysfs_create_link:
+	sensors_remove_symlink(data->meta_input_dev);
 iRet_meta_sysfs_create_link:
 #ifdef CONFIG_SENSORS_SSP_INTERRUPT_GYRO_SENSOR
 	sensors_remove_symlink(data->interrupt_gyro_input_dev);
@@ -679,6 +741,7 @@ void remove_event_symlink(struct ssp_data *data)
 	sensors_remove_symlink(data->interrupt_gyro_input_dev);
 #endif
 	sensors_remove_symlink(data->meta_input_dev);
+	sensors_remove_symlink(data->prox_alert_input_dev);
 }
 
 static const struct iio_info accel_info = {
@@ -1076,6 +1139,10 @@ int initialize_input_dev(struct ssp_data *data)
 		goto err_initialize_light_input_dev;
 
 	data->light_input_dev->name = "light_sensor";
+#ifdef CONFIG_SENSORS_SSP_LIGHT_REPORT_LUX
+	input_set_capability(data->light_input_dev, EV_REL, REL_RX);
+	input_set_capability(data->light_input_dev, EV_REL, REL_X);
+#endif	
 	input_set_capability(data->light_input_dev, EV_REL, REL_HWHEEL);
 	input_set_capability(data->light_input_dev, EV_REL, REL_DIAL);
 	input_set_capability(data->light_input_dev, EV_REL, REL_WHEEL);
@@ -1126,6 +1193,21 @@ int initialize_input_dev(struct ssp_data *data)
 		goto err_initialize_proximity_input_dev;
 	}
 	input_set_drvdata(data->prox_input_dev, data);
+
+	data->prox_alert_input_dev = input_allocate_device();
+	if (data->prox_alert_input_dev == NULL)
+		goto err_initialize_proximity_alert_input_dev;
+
+	data->prox_alert_input_dev->name = "proximity_alert_sensor";
+	input_set_capability(data->prox_alert_input_dev, EV_REL, REL_DIAL);
+	input_set_capability(data->prox_alert_input_dev, EV_REL, REL_WHEEL);
+	input_set_capability(data->prox_alert_input_dev, EV_REL, REL_MISC);
+	iRet = input_register_device(data->prox_alert_input_dev);
+	if (iRet < 0) {
+		input_free_device(data->prox_alert_input_dev);
+		goto err_initialize_proximity_alert_input_dev;
+	}
+	input_set_drvdata(data->prox_alert_input_dev, data);
 
 #ifdef CONFIG_SENSORS_SSP_SX9306
 	data->grip_input_dev = input_allocate_device();
@@ -1366,6 +1448,9 @@ err_initialize_temp_humi_input_dev:
 err_initialize_grip_input_dev:
 	pr_err("[SSP]: %s - could not allocate grip input device\n", __func__);
 #endif
+	input_unregister_device(data->prox_alert_input_dev);
+err_initialize_proximity_alert_input_dev:
+	pr_err("[SSP]: %s - could not allocate proximity alert input device\n", __func__);
 	input_unregister_device(data->prox_input_dev);
 err_initialize_proximity_input_dev:
 	pr_err("[SSP]: %s - could not allocate proximity input device\n", __func__);
@@ -1496,6 +1581,7 @@ void remove_input_dev(struct ssp_data *data)
 	input_unregister_device(data->light_ir_input_dev);
 #endif
 	input_unregister_device(data->prox_input_dev);
+	input_unregister_device(data->prox_alert_input_dev);
 	input_unregister_device(data->temp_humi_input_dev);
 	input_unregister_device(data->sig_motion_input_dev);
 	input_unregister_device(data->step_cnt_input_dev);

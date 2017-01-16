@@ -11,6 +11,11 @@ on init
 
     symlink /mnt/shell/knox-emulated /storage/knox-emulated
     
+    mkdir /mnt/shell/privatemode 0700 system system
+    mkdir /mnt/shell/privatemode/default 0700 system system
+    mkdir /mnt/shell/privatemode/read 0700 system system
+    mkdir /mnt/shell/privatemode/write 0700 system system
+    
     mkdir /mnt/shell/private_default 0700 system system
     mkdir /mnt/shell/private_read 0700 system system
     mkdir /mnt/shell/private_write 0700 system system
@@ -59,6 +64,12 @@ on post-fs-data
     mkdir /data/knox/tmp_sdcard/default/emulated 0700 root root
     mkdir /data/knox/tmp_sdcard/read/emulated 0700 root root
     mkdir /data/knox/tmp_sdcard/write/emulated 0700 root root
+    # From Android M, separated CE/DE storages have to be supported
+    mkdir /data/knox/data_de 0771 system system
+    mkdir /data/knox/system_ce 0770 system system
+    mkdir /data/knox/system_de 0770 system system
+    mkdir /data/knox/misc_ce 01771 system misc
+    mkdir /data/knox/misc_de 01771 system misc
 
     export KNOX_STORAGE /data/knox/ext_sdcard
 

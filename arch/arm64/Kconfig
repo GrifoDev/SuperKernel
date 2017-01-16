@@ -120,6 +120,10 @@ config ARCH_MMAP_RND_COMPAT_BITS_MAX
 config NO_IOPORT_MAP
 	def_bool y if !PCI
 
+config ILLEGAL_POINTER_VALUE
+	hex
+	default 0xdead000000000000
+
 config STACKTRACE_SUPPORT
 	def_bool y
 
@@ -994,7 +998,7 @@ menu "Control Flow Protection"
 
 config RKP_CFP
 	bool "Hyperdrive ROP protection"
-	# depends on TIMA_RKP
+	depends on TIMA_RKP
 	# Disable RKP for now, keep getting TIMA_RKP_VMM_PANIC when doing sleep.S code for saving/restoring x17.
 	default n
 	help
@@ -1003,12 +1007,10 @@ config RKP_CFP
 
 config RKP_CFP_ROPP
 	bool "Hyperdrive: encrypt return-addresses"
+	depends on TIMA_RKP
 	select RKP_CFP
+	select RKP_CFP_FIX_SMC_BUG
 	default n
-	help
-        XOR return-addresses with the reserved key register on call/return from functions 
-        to encrypt/decrypt return-addresses before they are pushed onto the stack.
-        Also, save the key during context-switches and suspend/resume cycles.
 
 choice
 	prompt "ROPP key"
@@ -1035,18 +1037,9 @@ endchoice
 
 config RKP_CFP_JOPP
 	bool "Just to function entry only, Restrict BLR jump target to a valid function entry point and no br in C code"
+	depends on TIMA_RKP
 	select RKP_CFP
 	default n
-	help
-        We need nop spacers above ever potential target of a blr jump instruction.
-        The compiler already adds spacers for C functions.
-        We need to define a VECTOR_ENTRY macro for exception vector definitions.  We don't 
-        want to add nops to exception vectors, since they need PRECISE alignment. Need to
-        put FALLTHROUGH for ASM fall through
-        
-        No BR in C code requires to disable BPF, as it has a lot of jump, which can be used 
-        as dispatch gadget for JOPP
-
 
 config RKP_CFP_JOPP_MAGIC
 	hex "Magic number put just above function labels to restrict BLR to function entry points"
@@ -1058,19 +1051,6 @@ config RKP_CFP_FIX_SMC_BUG
 	bool "Hyperdrive: [INSECURE] hack broken smc calls to save/restore RRK after it clobbers it"
 	depends on RKP_CFP_ROPP
 	default n
-	help
-        As of bootloader version "G920VVRE1BOE4" of the TrustZone for exynos7420, the smc 
-        instruction sets register x17 to zero.  Too bad for us, we store our key there!  In 
-        the meantime, save x17 (and other reserved registers) before making the call.
-
-        To reproduce this bug, disable this option and set a JTAG breakpoint at 
-        exynos_smc_readsfr which gets called during early boot (start_kernel).  Watch x17 
-        get zeroed after the smc call returns.
-
-        ADDITIONAL BUG BECAUSE OF THIS:
-        If we take an interrupt at the instruction IMMEDIATELY after "smc #0", we won't be 
-        able to restore x17 to the key before entering el1_irq. To work around this, we 
-        reload the key in kernel_entry.
 endmenu
 
 #

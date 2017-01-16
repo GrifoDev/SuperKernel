@@ -326,6 +326,13 @@ config SUSPEND_TIME
 	  keeps statistics on the time spent in suspend in
 	  /sys/kernel/debug/suspend_time
 
+config FOTA_LIMIT
+	bool "Fota limit information node"
+	default n
+	help
+	  Add sysfs to notify limit information to recovery module
+	  /sys/power/fota_limit
+
 config QUICK_WAKEUP
 	bool "Quick wakeup"
 	depends on SUSPEND

@@ -66,6 +66,15 @@ config EXYNOS_OTP
 	help
 		This option enables OTP (one-time programmable) tune bits functions
 
+config EXYNOS_MCINFO
+	bool "Exynos memory controller information"
+	default y
+
+config MCINFO_SYSFS
+	bool "Exynos memory controller information sysfs"
+	depends on EXYNOS_MCINFO
+	default	y if SYSFS
+
 config STATE_NOTIFIER
         bool "State Notifier"
 

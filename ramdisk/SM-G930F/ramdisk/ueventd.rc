@@ -1,6 +1,13 @@
 subsystem adf
 	devname uevent_devname
 
+# ueventd can only set permissions on device nodes and their associated
+# sysfs attributes, not on arbitrary paths.
+#
+# format for /dev rules: devname mode uid gid
+# format for /sys rules: nodename attr mode uid gid
+# shortcut: "mtd@NN" expands to "/dev/mtd/mtdNN"
+
 /dev/null                 0666   root       root
 /dev/zero                 0666   root       root
 /dev/full                 0666   root       root
@@ -90,14 +97,10 @@ subsystem adf
 /dev/ts0710mux*           0640   radio      radio
 /dev/ppp                  0660   radio      vpn
 
-# for PL2303 driver
-/dev/ttyUSB*              0660   system     usb
-
 # sysfs properties
 /sys/devices/platform/trusty.*      trusty_version        0440  root   log
 /sys/devices/virtual/input/input*   enable      0660  root   input
 /sys/devices/virtual/input/input*   poll_delay  0660  root   input
-/sys/devices/virtual/input/input*   name        0440  root   input
 /sys/devices/virtual/usb_composite/*   enable      0664  root   system
 /sys/devices/system/cpu/cpu*   cpufreq/scaling_max_freq   0664  system system
 /sys/devices/system/cpu/cpu*   cpufreq/scaling_min_freq   0664  system system
@@ -116,10 +119,6 @@ subsystem adf
 /dev/ssp_sensorhub        0660   system     system
 /dev/ssp_data_injection   0660   system     system
 
-# Reactivation Lock
-/dev/block/mmcblk0rpmb	0660	system	system
-
 # Fingerprint Sensor
 /dev/vfsspi        0660   system     system
 /dev/esfp0        0660   system     system
-

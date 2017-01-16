@@ -35,6 +35,10 @@
 #include <linux/prefetch.h>
 #include <linux/memcontrol.h>
 
+#ifdef CONFIG_SEC_DEBUG
+#include <linux/sec_debug.h>
+#endif
+
 #ifdef CONFIG_RKP_KDP
 #include <linux/security.h>
 
@@ -206,6 +210,17 @@ static struct notifier_block slab_notifier;
 /*
  * Tracking user of a slab.
  */
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+
+struct track {
+	unsigned long addr;	/* Called from address */
+	int cpu;		/* Was running on cpu */
+	int pid;		/* Pid context */
+	unsigned long when;	/* When did the operation occur */
+};
+
+enum track_item { TRACK_ALLOC, TRACK_FREE };
+#else
 #define TRACK_ADDRS_COUNT 16
 struct track {
 	unsigned long addr;	/* Called from address */
@@ -218,6 +233,7 @@ struct track {
 };
 
 enum track_item { TRACK_ALLOC, TRACK_FREE };
+#endif
 
 #ifdef CONFIG_SYSFS
 static int sysfs_slab_add(struct kmem_cache *);
@@ -454,6 +470,63 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct page *page,
 	return 0;
 }
 
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+
+static struct track *get_track(struct kmem_cache *s, void *object,
+	enum track_item alloc)
+{
+	struct track *p;
+
+	if (s->offset)
+		p = object + s->offset + sizeof(void *);
+	else
+		p = object + s->inuse;
+
+	return p + alloc;
+}
+
+static void set_track(struct kmem_cache *s, void *object,
+			enum track_item alloc, unsigned long addr)
+{
+	struct track *p;
+
+	if (!object)
+		return;
+
+	p = get_track(s, object, alloc);
+
+	if (addr) {
+		p->addr = addr;
+		p->cpu = smp_processor_id();
+		p->pid = current->pid;
+		p->when = jiffies;
+	} else
+		memset(p, 0, sizeof(struct track));
+}
+
+static void init_tracking(struct kmem_cache *s, void *object)
+{
+	if (!(s->flags & SLAB_STORE_USER))
+		return;
+	set_track(s, object, TRACK_FREE, 0UL);
+	set_track(s, object, TRACK_ALLOC, 0UL);
+}
+
+static inline void check_freelist_addr(unsigned long addr, struct kmem_cache *s)
+{
+	unsigned long  temp;
+
+	if (addr && (((addr >> 40) & 0xffffff) != 0xffffff)) {
+		pr_err("check_freelist_addr error : addr = 0x%lx\n", addr);
+
+		sec_debug_store_extra_buf(INFO_SLUB_DBG, "%s", s->name);
+		temp = *(unsigned long *)addr;
+		pr_err("check_freelist_addr error : temp = 0x%lx\n", temp);
+		BUG();
+	}
+}
+#endif
+
 #ifdef CONFIG_SLUB_DEBUG
 /*
  * Determine a map of object in use on a page.
@@ -614,8 +687,9 @@ static void print_track(const char *s, struct track *t)
 	if (!t->addr)
 		return;
 
-	pr_err("INFO: %s in %pS age=%lu cpu=%u pid=%d\n",
-	       s, (void *)t->addr, jiffies - t->when, t->cpu, t->pid);
+	pr_auto(ASL7, "INFO: %s in %pS age=%lu cpu=%u pid=%d\n",
+		   s, (void *)t->addr, jiffies - t->when, t->cpu, t->pid);
+
 #ifdef CONFIG_STACKTRACE
 	{
 		int i;
@@ -652,9 +726,10 @@ static void slab_bug(struct kmem_cache *s, char *fmt, ...)
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
-	pr_err("=============================================================================\n");
-	pr_err("BUG %s (%s): %pV\n", s->name, print_tainted(), &vaf);
-	pr_err("-----------------------------------------------------------------------------\n\n");
+
+	pr_auto(ASL7, "=============================================================================\n");
+	pr_auto(ASL7, "BUG %s (%s): %pV\n", s->name, print_tainted(), &vaf);
+	pr_auto(ASL7, "-----------------------------------------------------------------------------\n");
 
 	add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
 	va_end(args);
@@ -681,8 +756,8 @@ static void print_trailer(struct kmem_cache *s, struct page *page, u8 *p)
 
 	print_page_info(page);
 
-	pr_err("INFO: Object 0x%p @offset=%tu fp=0x%p\n\n",
-	       p, p - addr, get_freepointer(s, p));
+	pr_auto(ASL7, "INFO: Object 0x%p @offset=%tu fp=0x%p\n",
+		   p, p - addr, get_freepointer(s, p));
 
 	if (s->flags & SLAB_RED_ZONE)
 		print_section("Redzone ", p - s->red_left_pad, s->red_left_pad);
@@ -713,8 +788,10 @@ static void print_trailer(struct kmem_cache *s, struct page *page, u8 *p)
 void object_err(struct kmem_cache *s, struct page *page,
 			u8 *object, char *reason)
 {
+	pr_auto_once(7);
 	slab_bug(s, "%s", reason);
 	print_trailer(s, page, object);
+	pr_auto_disable(7);
 
 	if (slub_debug)
 		panic("SLUB ERROR: object_err");
@@ -726,12 +803,14 @@ static void slab_err(struct kmem_cache *s, struct page *page,
 	va_list args;
 	char buf[100];
 
+	pr_auto_once(7);
 	va_start(args, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 	slab_bug(s, "%s", buf);
 	print_page_info(page);
 	dump_stack();
+	pr_auto_disable(7);
 
 	if (slub_debug)
 		panic("SLUB ERROR: slab_err");
@@ -799,10 +878,14 @@ static int check_bytes_and_report(struct kmem_cache *s, struct page *page,
 	while (end > fault && end[-1] == value)
 		end--;
 
+	pr_auto_once(7);
 	slab_bug(s, "%s overwritten", what);
-	pr_err("INFO: 0x%p-0x%p. First byte 0x%x instead of 0x%x\n",
-					fault, end - 1, fault[0], value);
+
+	pr_auto(ASL7, "INFO: 0x%p-0x%p. First byte 0x%x instead of 0x%x\n",
+				fault, end - 1, fault[0], value);
+
 	print_trailer(s, page, object);
+	pr_auto_disable(7);
 
 	if (slub_debug)
 		panic("SLUB ERROR: check_bytes_and_report. Can it be restored?");
@@ -1575,6 +1658,11 @@ static void setup_object(struct kmem_cache *s, struct page *page,
 				void *object)
 {
 	setup_object_debug(s, page, object);
+
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+	if (s->flags & SLAB_STORE_USER)
+		init_tracking(s, object);
+#endif
 	if (unlikely(s->ctor)) {
 		kasan_unpoison_object_data(s, object);
 		s->ctor(object);
@@ -2605,6 +2693,9 @@ load_freelist:
 	 */
 	VM_BUG_ON(!c->page->frozen);
 	c->freelist = get_freepointer(s, freelist);
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+	check_freelist_addr((unsigned long)(c->freelist), s);
+#endif
 	c->tid = next_tid(c->tid);
 	local_irq_restore(flags);
 	return freelist;
@@ -2690,6 +2781,9 @@ redo:
 	preempt_enable();
 
 	object = c->freelist;
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+	check_freelist_addr((unsigned long)object, s);
+#endif
 	page = c->page;
 	if (unlikely(!object || !node_match(page, node))) {
 		object = __slab_alloc(s, gfpflags, node, addr, c);
@@ -2719,6 +2813,9 @@ redo:
 			note_cmpxchg_failure("slab_alloc", s, tid);
 			goto redo;
 		}
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+		check_freelist_addr((unsigned long)next_object, s);
+#endif
 		prefetch_freepointer(s, next_object);
 		stat(s, ALLOC_FASTPATH);
 	}
@@ -2728,6 +2825,10 @@ redo:
 
 	slab_post_alloc_hook(s, gfpflags, object);
 
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+	if (s->flags & SLAB_STORE_USER)
+		set_track(s, object, TRACK_ALLOC, addr);
+#endif
 	return object;
 }
 
@@ -2809,6 +2910,10 @@ static void __slab_free(struct kmem_cache *s, struct page *page,
 
 	stat(s, FREE_SLOWPATH);
 
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+	if (s->flags & SLAB_STORE_USER)
+		set_track(s, x, TRACK_FREE, addr);
+#endif
 	if (kmem_cache_debug(s) &&
 		!(n = free_debug_processing(s, page, x, addr, &flags)))
 		return;
@@ -3161,6 +3266,9 @@ static void early_kmem_cache_node_alloc(int node)
 	page->inuse = 1;
 	page->frozen = 0;
 	kmem_cache_node->node[node] = n;
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+	init_tracking(kmem_cache_node, n);
+#endif
 #ifdef CONFIG_SLUB_DEBUG
 	init_object(kmem_cache_node, n, SLUB_RED_ACTIVE);
 	init_tracking(kmem_cache_node, n);
@@ -3280,6 +3388,15 @@ static int calculate_sizes(struct kmem_cache *s, int forced_order)
 		size += sizeof(void *);
 	}
 
+#ifdef CONFIG_SLUB_DEBUG_LIGHT
+	if (flags & SLAB_STORE_USER) {
+		/*
+		 * Need to store information about allocs and frees after
+		 * the object.
+		 */
+		size += 2 * sizeof(struct track);
+	}
+#endif
 #ifdef CONFIG_SLUB_DEBUG
 	if (flags & SLAB_STORE_USER)
 		/*

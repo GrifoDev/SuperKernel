@@ -1,4 +1,4 @@
-#line 1 "external/sepolicy/property_contexts"
+#line 1 "system/sepolicy/property_contexts"
 ##########################
 # property service keys
 #
@@ -12,13 +12,15 @@ net.cdma                u:object_r:net_radio_prop:s0
 net.dns                 u:object_r:net_radio_prop:s0
 sys.usb.config          u:object_r:system_radio_prop:s0
 ril.                    u:object_r:radio_prop:s0
+ro.ril.                 u:object_r:radio_prop:s0
 gsm.                    u:object_r:radio_prop:s0
 persist.radio           u:object_r:radio_prop:s0
 
 net.                    u:object_r:system_prop:s0
 dev.                    u:object_r:system_prop:s0
-runtime.                u:object_r:system_prop:s0
+ro.runtime.             u:object_r:system_prop:s0
 hw.                     u:object_r:system_prop:s0
+ro.hw.                  u:object_r:system_prop:s0
 sys.                    u:object_r:system_prop:s0
 sys.powerctl            u:object_r:powerctl_prop:s0
 sys.usb.ffs.            u:object_r:ffs_prop:s0
@@ -30,16 +32,31 @@ bluetooth.              u:object_r:bluetooth_prop:s0
 
 debug.                  u:object_r:debug_prop:s0
 debug.db.               u:object_r:debuggerd_prop:s0
-log.                    u:object_r:shell_prop:s0
+dumpstate.              u:object_r:dumpstate_prop:s0
+log.                    u:object_r:log_prop:s0
+log.tag                 u:object_r:log_tag_prop:s0
+log.tag.WifiHAL         u:object_r:wifi_log_prop:s0
+security.perf_harden    u:object_r:shell_prop:s0
 service.adb.root        u:object_r:shell_prop:s0
 service.adb.tcp.port    u:object_r:shell_prop:s0
 
 persist.audio.          u:object_r:audio_prop:s0
+persist.debug.          u:object_r:persist_debug_prop:s0
 persist.logd.           u:object_r:logd_prop:s0
+persist.logd.security   u:object_r:device_logging_prop:s0
+persist.log.tag         u:object_r:log_tag_prop:s0
+persist.mmc.            u:object_r:mmc_prop:s0
 persist.sys.            u:object_r:system_prop:s0
+persist.sys.safemode    u:object_r:safemode_prop:s0
+ro.sys.safemode         u:object_r:safemode_prop:s0
+persist.sys.audit_safemode      u:object_r:safemode_prop:s0
 persist.service.        u:object_r:system_prop:s0
 persist.service.bdroid. u:object_r:bluetooth_prop:s0
 persist.security.       u:object_r:system_prop:s0
+
+# Boolean property set by system server upon boot indicating
+# if device owner is provisioned.
+ro.device_owner         u:object_r:device_logging_prop:s0
 
 # selinux non-persistent properties
 selinux.restorecon_recursive   u:object_r:restorecon_prop:s0
@@ -50,11 +67,11 @@ selinux.                       u:object_r:security_prop:s0
 
 # data partition encryption properties
 vold.                   u:object_r:vold_prop:s0
-crypto.                 u:object_r:vold_prop:s0
+ro.crypto.              u:object_r:vold_prop:s0
 
 # ro.build.fingerprint is either set in /system/build.prop, or is
 # set at runtime by system_server.
-build.fingerprint       u:object_r:fingerprint_prop:s0
+ro.build.fingerprint    u:object_r:fingerprint_prop:s0
 
 # ctl properties
 ctl.bootanim            u:object_r:ctl_bootanim_prop:s0
@@ -63,7 +80,6 @@ ctl.fuse_               u:object_r:ctl_fuse_prop:s0
 ctl.mdnsd               u:object_r:ctl_mdnsd_prop:s0
 ctl.ril-daemon          u:object_r:ctl_rildaemon_prop:s0
 ctl.bugreport           u:object_r:ctl_bugreport_prop:s0
-ctl.dhcpcd_bt-pan       u:object_r:ctl_dhcp_pan_prop:s0
 ctl.console             u:object_r:ctl_console_prop:s0
 ctl.                    u:object_r:ctl_default_prop:s0
 
@@ -74,8 +90,63 @@ nfc.                    u:object_r:nfc_prop:s0
 # They are only distinguished here for setting by qemu-props on the
 # emulator/goldfish.
 config.                 u:object_r:config_prop:s0
+ro.config.              u:object_r:config_prop:s0
 dalvik.                 u:object_r:dalvik_prop:s0
-#line 1 "vendor/samsung/common/sepolicy/BSP/bsp_qcom_v2/bsp/common/property_contexts"
+ro.dalvik.              u:object_r:dalvik_prop:s0
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/model/property_contexts"
+############ aosp and sec_common #############
+audioflinger.                   u:object_r:audio_prop:s0
+persist.bluetooth_fw_ver        u:object_r:bluetooth_prop:s0
+persist.data_netmgrd_mtu        u:object_r:rild_prop:s0
+ro.security.                    u:object_r:system_security_prop:s0
+recovery.                       u:object_r:recovery_prop:s0
+secmm.                          u:object_r:secmm_prop:s0
+security.                       u:object_r:system_security_prop:s0
+sec.fle.encryption.             u:object_r:vold_prop:s0
+storage.                        u:object_r:vold_prop:s0
+system.                         u:object_r:system_prop:s0
+user.                           u:object_r:user_prop:s0
+
+############ knox_common #############
+############ qcom_common #############
+qualcomm.perf.                  u:object_r:perf_prop:s0
+# SEC_SEPOLICY N_setup, conflict with Qcom BSP, qualcomm.bluetooth.             u:object_r:bluetooth_prop:s0
+
+############ slsi_common #############
+############ avc_log #############
+# avc:  denied  { set } for property=persist.bluetooth_fw_ver scontext=u:r:bluetooth:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
+# avc:  denied  { set } for property=qualcomm.bluetooth.opp scontext=u:r:init_shell:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
+# avc:  denied  { set } for property=secmm.player.uhqamode scontext=u:r:mediaserver:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
+
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/BSP/qcom_bsp/common/property_contexts"
+# Copyright (c) 2015-2016 Dolby Laboratories, Inc. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials provided
+#       with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 wc_transport.              u:object_r:bluetooth_prop:s0
 sys.usb_uicc.              u:object_r:uicc_prop:s0
 dolby.audio.               u:object_r:audio_prop:s0
@@ -83,38 +154,107 @@ persist.bluetooth.         u:object_r:bluetooth_prop:s0
 sys.ims.                   u:object_r:qcom_ims_prop:s0
 hw.fm.                     u:object_r:fm_prop:s0
 sys.usf.                   u:object_r:usf_prop:s0
-qc.sdk.us.                 u:object_r:usf_prop:s0
+ro.qc.sdk.us.                 u:object_r:usf_prop:s0
 radio.atfwd.               u:object_r:radio_prop:s0
 ctl.qmuxd                  u:object_r:ctl_qmuxd_prop:s0
 ctl.netmgrd                u:object_r:ctl_netmgrd_prop:s0
 ctl.port-bridge            u:object_r:ctl_port-bridge_prop:s0
+ro.min_freq_0                 u:object_r:freq_prop:s0
+ro.min_freq_4                 u:object_r:freq_prop:s0
 ctl.perfd                  u:object_r:perfd_prop:s0
+ctl.gamed                  u:object_r:gamed_prop:s0
 ctl.iop                    u:object_r:perfd_prop:s0
 ctl.vm_bms                 u:object_r:vm_bms_prop:s0
-##SEC removed dup context : qualcomm.bluetooth.        u:object_r:bluetooth_prop:s0
+ro.qualcomm.bluetooth.        u:object_r:bluetooth_prop:s0
 ctl.ipacm                  u:object_r:ipacm_prop:s0
 ctl.ipacm-diag             u:object_r:ipacm-diag_prop:s0
 ctl.qti                    u:object_r:qti_prop:s0
 ctl.sensors                u:object_r:sensors_prop:s0
 ctl.msm_irqbalance         u:object_r:msm_irqbalance_prop:s0
+ctl.msm_irqbal_lb          u:object_r:msm_irqbalance_prop:s0
 camera.                    u:object_r:camera_prop:s0
-sf.lcd_density             u:object_r:sf_lcd_density_prop:s0
-opengles.version           u:object_r:opengles_prop:s0
-qualcomm.bt.hci_transport  u:object_r:bluetooth_prop:s0
+# SEC_SEPOLICY N_setup, exclude : dup with SEC persist.camera.            u:object_r:camera_prop:s0
+spcomlib.                    u:object_r:spcomlib_prop:s0
+sdm.idle_time              u:object_r:sdm_idle_time_prop:s0
+ro.sf.lcd_density             u:object_r:sf_lcd_density_prop:s0
+ro.opengles.version           u:object_r:opengles_prop:s0
+ro.qualcomm.bt.hci_transport  u:object_r:bluetooth_prop:s0
 ctl.mdm_helper             u:object_r:mdm_helper_prop:s0
 ctl.mpdecision             u:object_r:mpdecision_prop:s0
 qualcomm.perf.cores_online u:object_r:mpdecision_prop:s0
 netd.fstman.               u:object_r:netd_prop:s0
 location.                  u:object_r:location_prop:s0
+qc.izat.                   u:object_r:location_prop:s0
 persist.rmnet.mux          u:object_r:rmnet_mux_prop:s0
+sys.usb.controller         u:object_r:sys_usb_controller_prop:s0
+sys.usb.configfs           u:object_r:sys_usb_configfs_prop:s0
+sys.usb.tethering          u:object_r:sys_usb_tethering_prop:s0
 qemu.hw.mainkeys           u:object_r:qemu_hw_mainkeys_prop:s0
-dbg.coresight.cfg_file     u:object_r:coresight_prop:s0
+ro.dbg.coresight.cfg_file     u:object_r:coresight_prop:s0
 ctl.hbtp                   u:object_r:ctl_hbtp_prop:s0
 sys.audio.init             u:object_r:audio_prop:s0
-alarm_boot                 u:object_r:alarm_boot_prop:s0
+ro.alarm_boot                 u:object_r:alarm_boot_prop:s0
 debug.sf.nobootanimation   u:object_r:boot_animation_prop:s0
-#line 1 "vendor/samsung/common/sepolicy/BSP/bsp_qcom_v2/qcom_common/property_contexts"
-qualcomm.bt.               u:object_r:qcom_bt_prop:s0
+debug.gralloc.             u:object_r:debug_gralloc_prop:s0
+persist.net.doxlat         u:object_r:xlat_prop:s0
+# DOLBY_START
+dolby.                     u:object_r:dolby_prop:s0
+# DOLBY_END
+wifi.ftmd.                 u:object_r:wififtmd_prop:s0
+ro.bluetooth.              u:object_r:bluetooth_prop:s0
+# WIGIG
+persist.fst.               u:object_r:fst_prop:s0
+ro.alarm_handled           u:object_r:alarm_handled_prop:s0
+ro.alarm_instance          u:object_r:alarm_instance_prop:s0
+#HWUI Property
+ro.hwui.texture_cache_size u:object_r:hwui_prop:s0
+persist.graphics.vulkan.disable     u:object_r:graphics_vulkan_prop:s0
+#boot mode property
+sys.boot_mode              u:object_r:boot_mode_prop:s0
+# GPU
+ro.gpu.available_frequencies u:object_r:freq_prop:s0
+
+# MSM 8952 qcom
+media.msm8956hw            u:object_r:media_msm8956hw_prop:s0
+media.settings.xml         u:object_r:media_settings_xml_prop:s0
+media.msm8956.version      u:object_r:media_msm8956_version_prop:s0
+
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/BSP/qcom_bsp/msm8996/property_contexts"
+# Copyright (c) 2016, The Linux Foundation. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials provided
+#       with the distribution.
+#     * Neither the name of The Linux Foundation nor the names of its
+#       contributors may be used to endorse or promote products derived
+#       from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ctl.qvrd                   u:object_r:ctl_qvrd_prop:s0
+
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/BSP/qcom_common/property_contexts"
+ro.qualcomm.bt.               u:object_r:qcom_bt_prop:s0
 usb_uicc.                  u:object_r:uicc_prop:s0
 #config.                    u:object_r:system_prop:s0
 
@@ -125,248 +265,9 @@ usb_uicc.                  u:object_r:uicc_prop:s0
 # avc:  denied  { set } for property=usb_uicc.loading scontext=u:r:init_shell:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 # avc:  denied  { set } for property=config.zram scontext=u:r:init_shell:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 
-#line 1 "vendor/samsung/common/sepolicy/BSP/bsp_sprd/property_contexts"
-##########################
-# property service keys
-#
-#
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
 
-persist.msms.           u:object_r:radio_prop:s0
-
-media.dump.switch u:object_r:media_prop:s0
-media.dump.path u:object_r:media_prop:s0
-volte.incall.camera.enable u:object_r:media_prop:s0
-persist.volte.cmr.fps u:object_r:media_prop:s0
-
-
-persist.storage         u:object_r:storage_prop:s0
-sys.internal.emulated   u:object_r:storage_prop:s0
-
-slog.reload                u:object_r:slog_prop:s0
-slog.step              u:object_r:slog_prop:s0
-slog.top_logdir u:object_r:slog_prop:s0
-
-flag.apr.bootmode u:object_r:apr_prop:s0
-
-#add for MSR test
-com.sprd.szsde.running  u:object_r:system_prop:s0
-com.sprd.szsde.reboot  u:object_r:system_prop:s0
-
-#line 1 "vendor/samsung/common/sepolicy/BSP/bsp_mediatek/property_contexts"
-# ==============================================
-# MTK Policy Rule
-# ==============================================
-#=============allow ccci_mdinit to start gsm0710muxd==============
-ctl.gsm0710muxd u:object_r:ctl_gsm0710muxd_prop:s0
-ctl.gsm0710muxd-s u:object_r:ctl_gsm0710muxd-s_prop:s0
-ctl.gsm0710muxd-d u:object_r:ctl_gsm0710muxd-d_prop:s0
-ctl.gsm0710muxdmd2 u:object_r:ctl_gsm0710muxdmd2_prop:s0
-
-#=============allow ccci_mdinit to ctl. mdlogger==============
-ctl.mdlogger u:object_r:ctl_mdlogger_prop:s0
-ctl.emdlogger1       u:object_r:ctl_emdlogger1_prop:s0
-ctl.emdlogger2       u:object_r:ctl_emdlogger2_prop:s0
-ctl.emdlogger3       u:object_r:ctl_emdlogger3_prop:s0
-ctl.dualmdlogger       u:object_r:ctl_dualmdlogger_prop:s0
-#=============allow eemcs_mdinit to start mdlogger==========
-ctl.eemcs_fmdl       u:object_r:ctl_eemcs_fmdl_prop:s0
-#ctl.emdlogger5       u:object_r:ctl_emdlogger5_prop:s0
-
-#=============allow mtkrild to set persist.ril property==============
-persist.ril u:object_r:persist_ril_prop:s0
-#=============allow terservice to set terservice property==============
-persist.ter u:object_r:terservice_prop:s0
-
-#=============allow netlog==============
-#debug.mtklog.init.flag
-debug.mtklog  u:object_r:debug_mtklog_prop:s0
-#persist.mtklog.log2sd.path
-persist.mtklog u:object_r:persist_mtklog_prop:s0
-#debug.netlog.stopreason
-debug.netlog u:object_r:debug_netlog_prop:s0
-
-#=============allow system_server to set media.wfd.*==============
-media.wfd. u:object_r:media_wfd_prop:s0
-
-#=============allow netd to set mtk_wifi.*========================
-mtk_wifi. u:object_r:mtk_wifi_prop:s0
-
-#=============allow mdlogger==============
-debug.mdlogger u:object_r:debug_mdlogger_prop:s0
-
-#=============allow AEE==============
-# persist.mtk.aee.mode && persist.mtk.aee.dal
-persist.mtk.aee u:object_r:persist_mtk_aee_prop:s0
-
-# persist.aee.core.dump && persist.aee.core.direct
-persist.aee u:object_r:persist_aee_prop:s0
-
-# debug.mtk.aee.db
-debug.mtk.aee u:object_r:debug_mtk_aee_prop:s0
-
-#=============allow AEE_Dumpstate==============
-debug.bq.dump u:object_r:debug_bq_dump_prop:s0
-
-#=============allow mux==============
-ril.mux.      u:object_r:gsm0710muxd_prop:s0
-
-#=============allow vold==============
-persist.vold.      u:object_r:vold_prop:s0
-ctl.sdcard         u:object_r:ctl_fuse_prop:s0
-
-#=============allow mdinit==============
-ctl.ril-daemon-mtk   u:object_r:ctl_ril-daemon-mtk_prop:s0
-ctl.ril-daemon-s   u:object_r:ctl_ril-daemon-s_prop:s0
-ctl.ril-daemon-d   u:object_r:ctl_ril-daemon-d_prop:s0
-ctl.ril-daemon-md2   u:object_r:ctl_ril-daemon-md2_prop:s0
-ctl.viarild       u:object_r:ctl_viarild_prop:s0
-
-ctl.ccci_fsd         u:object_r:ctl_ccci_fsd_prop:s0
-ctl.ccci2_fsd         u:object_r:ctl_ccci2_fsd_prop:s0
-ctl.ccci3_fsd         u:object_r:ctl_ccci3_fsd_prop:s0
-ctl.ccci_rpcd         u:object_r:ctl_ccci_rpcd_prop:s0
-ctl.ccci2_rpcd         u:object_r:ctl_ccci2_rpcd_prop:s0
-ctl.muxreport-daemon u:object_r:ctl_muxreport-daemon_prop:s0
-
-ril.active.md        u:object_r:ril_active_md_prop:s0
-ril.mux.report.case  u:object_r:ril_mux_report_case_prop:s0
-ril.cdma.report      u:object_r:ril_cdma_report_prop:s0
-
-#=============allow pppd_via==============
-ctl.pppd_via         u:object_r:ctl_pppd_via_prop:s0
-
-#=============allow ppp to set pppoe.ppp0.*========================
-pppoe.ppp0. u:object_r:pppoe_ppp0_prop:s0
-
-#=============allow mediatek_prop ==============
-mediatek. u:object_r:mediatek_prop:s0
-
-#=============allow bootanim==============
-persist.bootanim.     u:object_r:bootani_prop:s0
-
-#=============allow mnld_prop ==============
-gps.clock.type u:object_r:mnld_prop:s0
-gps.gps.version u:object_r:mnld_prop:s0
-
-#=============allow audiohal==============
-streamout.     u:object_r:audiohal_prop:s0
-af.     u:object_r:audiohal_prop:s0
-streamin.     u:object_r:audiohal_prop:s0
-a2dp.     u:object_r:audiohal_prop:s0
-persist.af.     u:object_r:audiohal_prop:s0
-
-#=============allow tedongle to set tedongle.*=============
-tedongle.   u:object_r:radio_prop:s0
-ctl.ril-3gddaemon   u:object_r:ctl_ril3gd_prop:s0
-ctl.zpppd_gprs      u:object_r:ctl_zpppdgprs_prop:s0
-
-#=============allow DM==============
-# persist.dm.lock
-persist.dm. u:object_r:persist_dm_prop:s0
-# dm fota
-ctl.rbfota u:object_r:ctl_rbfota_prop:s0
-
-#=============allow atcid==============
-ctl.atcid-daemon-u u:object_r:ctl_atcid-daemon-u_prop:s0
-ctl.atci_service u:object_r:ctl_atci_service_prop:s0
-persist.service.atci.   u:object_r:persist_service_atci_prop:s0
-
-#=============allow ipod==============
-ctl.ipod                u:object_r:ctl_ipod_prop:s0
-ctl.ipo_swap            u:object_r:ctl_ipo_swap_prop:s0
-ipo.ipoh.               u:object_r:ipod_prop:s0
-persist.ipoh.           u:object_r:ipod_prop:s0
-
-#=============allow wmt ==============
-persist.mtk.wcn u:object_r:wmt_prop:s0
-service.wcn u:object_r:wmt_prop:s0
-
-#============= permission_check ==============
-#persist.md.perm.checked
-persist.md    u:object_r:persist_md_prop:s0
-
-#=============allow sensor daemon==============
-ctl.msensord     u:object_r:ctl_msensord_prop:s0
-ctl.bmm050d     u:object_r:ctl_bmm050d_prop:s0
-ctl.s62xd     u:object_r:ctl_s62xd_prop:s0
-ctl.bmm056d     u:object_r:ctl_bmm056d_prop:s0
-ctl.akmd8963     u:object_r:ctl_akmd8963_prop:s0
-ctl.akmd09911     u:object_r:ctl_akmd09911_prop:s0
-ctl.akmd09912     u:object_r:ctl_akmd09912_prop:s0
-ctl.geomagneticd     u:object_r:ctl_geomagneticd_prop:s0
-ctl.orientationd     u:object_r:ctl_orientationd_prop:s0
-ctl.emdlogger5       u:object_r:ctl_emcsmdlogger_prop:s0
-ctl.eemcs_fsd         u:object_r:ctl_eemcs_fsd_prop:s0
-ctl.istd8303            u:object_r:ctl_istd8303_prop:s0
-ctl.st480               u:object_r:ctl_st480_prop:s0
-#=============allow statusd==============
-net.cdma.mdmstat u:object_r:net_cdma_mdmstat:s0
-
-#=============allow c2k_prop ==============
-cdma. u:object_r:cdma_prop:s0
-
-#=============allow saveLocale==============
-user.language                u:object_r:save_locale_prop:s0
-user.region                u:object_r:save_locale_prop:s0
-
-#=============allow bt prop==============
-bt.                         u:object_r:bt_prop:s0
-persist.bt.          u:object_r:persist_bt_prop:s0
-#=============allow ccci_mdinit EVDO ==============
-mtk_telephony   u:object_r:mtk_tele_prop:s0
-#=============allow ccci_mdinit md status ==============
-mtk.md   u:object_r:mtk_md_prop:s0
-#=============allow pppd ==============
-ctl.pppd_gprs   u:object_r:pppd_gprs_prop:s0
-
-#=============allow wifi offload deamon  ==============
-net.wo.   u:object_r:mtk_wod_prop:s0
-persist.net.wo.   u:object_r:persist_wod_prop:s0
-
-# DOLBY_START
-dolby.audio             u:object_r:audio_prop:s0
-dolby.                  u:object_r:system_prop:s0
-# DOLBY_END
-
-#=============allow program binary deamon  ==============
-debug.program_binary.    u:object_r:program_binary_prop:s0
-
-#=============allow radio to set mtk_volte_enable property  ==============
-mtk.volte.enable u:object_r:mtk_volte_prop:s0
-
-#=============allow volte deamon  ==============
-ctl.volte_imcb          u:object_r:ctl_volte_imcb_prop:s0
-ctl.volte_stack         u:object_r:ctl_volte_stack_prop:s0
-ctl.volte_ua            u:object_r:ctl_volte_ua_prop:s0
-ril.volte.              u:object_r:volte_prop:s0
-
-#=============allow hotknot deamon  ==============
-hotknot.    u:object_r:hotknot_prop:s0
-#line 1 "vendor/samsung/common/sepolicy/model/property_contexts"
-############ aosp and sec_common #############
-audioflinger.                   u:object_r:audio_prop:s0
-persist.bluetooth_fw_ver        u:object_r:bluetooth_prop:s0
-persist.data_netmgrd_mtu        u:object_r:rild_prop:s0
-recovery.                       u:object_r:recovery_prop:s0
-secmm.                          u:object_r:secmm_prop:s0
-security.                       u:object_r:system_prop:s0
-sec.fle.encryption.             u:object_r:vold_prop:s0
-storage.                        u:object_r:vold_prop:s0
-system.                         u:object_r:system_prop:s0
-user.                           u:object_r:user_prop:s0
-
-############ knox_common #############
-############ qcom_common #############
-qualcomm.perf.                  u:object_r:perf_prop:s0
-qualcomm.bluetooth.             u:object_r:bluetooth_prop:s0
-
-############ slsi_common #############
-############ avc_log #############
-# avc:  denied  { set } for property=persist.bluetooth_fw_ver scontext=u:r:bluetooth:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
-# avc:  denied  { set } for property=qualcomm.bluetooth.opp scontext=u:r:init_shell:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
-# avc:  denied  { set } for property=secmm.player.uhqamode scontext=u:r:mediaserver:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
-
-#line 1 "vendor/samsung/common/sepolicy/marvell_common/property_contexts"
+#line 1 "vendor/samsung/system/sepolicy/BSP/marvell_common/property_contexts"
 #
 # property_contexts
 #
@@ -382,29 +283,30 @@ mdc_initial_max_retry       u:object_r:radio_prop:s0
 # avc:  denied  { set } for property=marvell.ril.ppp.enabled scontext=u:r:marvelltel:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 # avc:  denied  { set } for property=mdc_initial_max_retry scontext=u:r:marvelltel:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 
-#line 1 "vendor/samsung/common/sepolicy/sprd_common/property_contexts"
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/BSP/sprd_common/property_contexts"
 media.                          u:object_r:media_prop:s0
 monitor.	u:object_r:monitor_prop:s0
 slog.	u:object_r:slog_prop:s0
 
-#line 1 "vendor/samsung/common/sepolicy/property_contexts"
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/property_contexts"
 #
 # property_contexts
 #
 
 ############ aosp and sec_common #############
 boot.	u:object_r:boot_prop:s0
-csc.                    u:object_r:csc_prop:s0
-csc.country_code	u:object_r:csc_prop:s0
-csc.countryiso_code	u:object_r:csc_prop:s0
-csc.sales_code	u:object_r:csc_prop:s0
-persist.csc.nosimlanguage	u:object_r:csc_prop:s0
-persist.csc.nosimcountry	u:object_r:csc_prop:s0
-com.google.clientidbase.    u:object_r:csc_prop:s0
+call.              u:object_r:radio_prop:s0
+csc.                                             u:object_r:csc_prop:s0
+ctl.at_distributor                               u:object_r:ctl_at_distributor_prop:s0
+ctl.factory_adsp                                 u:object_r:ctl_factory_adsp_prop:s0
+ctl.powersnd                                     u:object_r:ctl_powersnd_prop:s0
 ctl.redsocks             u:object_r:ctl_redsocks_prop:s0
 ctl.sdumpstate           u:object_r:ctl_dumpstate_prop:s0
-call.              u:object_r:radio_prop:s0
-cdma.home.operator.		u:object_r:radio_prop:s0
+ctl.preparefbe              u:object_r:ctl_preparefbe_prop:s0
 dev.MDPLimitCondition		u:object_r:system_prop:s0
 dev.kies.		u:object_r:kies_prop:s0
 dev.kiessupport		u:object_r:kies_prop:s0
@@ -415,6 +317,8 @@ hwui.                                       u:object_r:hwui_prop:s0
 installd.sdcard_manipulate_done	u:object_r:sdcard_prop:s0
 oneseg.                                     u:object_r:oneseg_prop:s0
 partition.system.               u:object_r:system_prop:s0
+
+
 persist.camera.                 u:object_r:camera_prop:s0
 persist.csc.                 u:object_r:csc_prop:s0
 persist.crypto.ucs                          u:object_r:ucs_prop:s0
@@ -432,35 +336,60 @@ persist.nfc.		u:object_r:nfc_prop:s0
 persist.omc.                 u:object_r:csc_prop:s0
 persist.ril.		u:object_r:rild_prop:s0
 persist.scan.		u:object_r:system_prop:s0
+persist.soc_camera.             u:object_r:camera_prop:s0
+persist.sys.camera.              u:object_r:camera_prop:s0
 persist.translation.		u:object_r:system_prop:s0
 product.brand                  u:object_r:csc_prop:s0
-persist.soc_camera.             u:object_r:camera_prop:s0
-rw.km_fips_status	u:object_r:km_fips_prop:s0
 radio.                          u:object_r:radio_prop:s0
-secure_os.init                  u:object_r:mobicore_prop:s0
+
+### ro property
+ro.cdma.home.operator.		                 u:object_r:radio_prop:s0
+ro.com.google.clientidbase.                      u:object_r:csc_prop:s0
+ro.csc.                                          u:object_r:csc_prop:s0
+ro.home.operator.                                u:object_r:radio_prop:s0
+
+# board/N_review_request/view/21077166/?page=1
+ro.setupwizard.                                u:object_r:setupwizard_prop:s0
+
+# OMC / ro.oem.key1 property should be set by scs, and can be read by others
+ro.oem.                                          u:object_r:oem_prop:s0
+
+# board/N_review_request/view/21585200/?page=1
+ro.product.brand                 u:object_r:csc_prop:s0
+
+runtime.omadm.                                   u:object_r:system_prop:s0
+rw.km_fips_status	u:object_r:km_fips_prop:s0
+
 secmm.player.aiastate	u:object_r:secmm_prop:s0
+service.bootanim.                  u:object_r:boot_prop:s0
 service.camera.	                u:object_r:camera_prop:s0
 setupwizard.                    u:object_r:setupwizard_prop:s0
+system.camera.                    u:object_r:camera_prop:s0
 sys.dumpstate.                  u:object_r:dumpstate_prop:s0
 sys.mobicoredaemon.          u:object_r:mobicore_prop:s0
 sys.mobicore.                    u:object_r:mobicore_prop:s0
 sys.reset_reason                            u:object_r:etc_debug_prop:s0
 sys.tzdaemon                    u:object_r:tzdaemon_prop:s0
+tunman.                         u:object_r:tunman_prop:s0
+vidc.debug.                 u:object_r:camera_prop:s0
 vpnclientpm.	u:object_r:vpn_prop:s0
 vpn.status	u:object_r:vpn_prop:s0
-vidc.debug.                 u:object_r:camera_prop:s0
+
 wifi.                                  u:object_r:wifi_prop:s0
-tunman.protocol	u:object_r:tunman_prop:s0
+
 
 #VZW
 vzw.os.rooted           u:object_r:system_prop:s0
 
 #SPR
 device.wapprofile.url   u:object_r:system_prop:s0
+ro.device.wapprofile.url                         u:object_r:system_prop:s0
 
-#from NSA
-net.rmnet0              u:object_r:radio_prop:s0
-net.rmnet_usb0.         u:object_r:radio_prop:s0
+# Enhanced Zygote ASLR - Req by mcneo.kang( Enterprise Service Group )
+zygote.aslr.agent.enabled           u:object_r:aslr_prop:s0
+zygote.aslr.agent64                 u:object_r:aslr_prop:s0
+zygote.aslr.agent32                 u:object_r:aslr_prop:s0
+
 
 ############ knox_common #############
 audit.ondenial u:object_r:denial_prop:s0
@@ -469,18 +398,23 @@ persist.security.good.      u:object_r:good_mgmt_prop:s0
 persist.security.tlc.	    u:object_r:tlc_mgmt_prop:s0
 persist.security.mdm.       u:object_r:policy_mgmt_prop:s0
 persist.sys.drs.date		u:object_r:drs_date_prop:s0
-security.knox_kap_mode		u:object_r:knox_kap_prop:s0
 persist.sys.kap.status 		u:object_r:knox_kap_prop:s0
 persist.sys.kap.date		u:object_r:knox_kap_prop:s0
+security.knox_kap_mode		u:object_r:knox_kap_prop:s0
+
 
 ############ qcom_common #############
-min_freq_0                 u:object_r:freq_prop:s0
-min_freq_4                 u:object_r:freq_prop:s0
+# SEC_SEPOLICY N_setup, conflict with Qcom BSP,min_freq_                 u:object_r:freq_prop:s0
 qc.sdk.us.digitalpen       u:object_r:digitalpen_prop:s0
 
 
 ############ SPRD_common #############
 marlin.hardware.                                      u:object_r:bluetooth_prop:s0
+
+
+# N OS has separation between ro and normal prop.
+crypto.              u:object_r:vold_prop:s0
+runtime.firstboot             u:object_r:system_prop:s0
 
 
 ############ avc_log #############
@@ -491,18 +425,26 @@ marlin.hardware.                                      u:object_r:bluetooth_prop:
 # avc:  denied  { set } for property=persist.translation.assistant scontext=u:r:system_app:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 # avc:  denied  { set } for property=min_freq_0 scontext=u:r:init_shell:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 # avc:  denied  { set } for property=vidc.debug.turbo scontext=u:r:mediaserver:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
-#line 1 "vendor/samsung/common/sepolicy/carrier/carrier_spr/property_contexts"
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/carrier/carrier_spr/property_contexts"
 cdma.home.	u:object_r:radio_prop:s0
-#line 1 "vendor/samsung/common/sepolicy/carrier/carrier_tfntmo/property_contexts"
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/carrier/carrier_tfntmo/property_contexts"
 #cdma.home.	u:object_r:radio_prop:s0
-#line 1 "vendor/samsung/common/sepolicy/carrier/carrier_kor/property_contexts"
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+
+#line 1 "vendor/samsung/system/sepolicy/carrier/carrier_kor/property_contexts"
 #
 # property_contexts
 #
 
 ############ carrier_kor #############
 ############ SKT #############
-media.sktdrm.timediff	u:object_r:sktdrm_prop:s0 
+media.sktdrm.                                    u:object_r:sktdrm_prop:s0 
 
 ############ LGT #############
-ctl.mwlan_vpncored	u:object_r:ctl_mwlan_vpncored_prop:s0
+ctl.mwlan_vpncored                               u:object_r:ctl_mwlan_vpncored_prop:s0
+#line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
+

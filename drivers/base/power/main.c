@@ -871,6 +871,11 @@ static void dpm_drv_timeout(unsigned long data)
 	struct device *dev = wd_data->dev;
 	struct task_struct *tsk = wd_data->tsk;
 
+#ifdef CONFIG_SEC_DEBUG
+	sec_debug_store_extra_buf(INFO_DPM_TIMEOUT, "%s (%s)", dev_name(dev),
+		(dev->driver ? dev->driver->name : "no driver"));
+#endif
+
 	printk(KERN_EMERG "**** DPM device timeout: %s (%s)\n", dev_name(dev),
 	       (dev->driver ? dev->driver->name : "no driver"));
 

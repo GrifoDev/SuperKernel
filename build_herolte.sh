@@ -3,8 +3,8 @@
 
 export MODEL=herolte
 export ARCH=arm64
-export VERSION=V1.9.7
-export BUILD_CROSS_COMPILE=../Toolchain/aarch64-linux-gnu-6.3.1/bin/aarch64-linux-gnu-
+export VERSION=V2.0
+export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.3.0/bin/aarch64-cortex_a53-linux-gnueabi-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
 RDIR=$(pwd)
@@ -155,11 +155,11 @@ FUNC_BUILD_ZIP()
 	case $MODEL in
 	herolte)
 		mv -f $RDIR/ramdisk/SM-G930F/image-new.img $RDIR/build/boot.img
-		zip SuperKernel_SM-G930F_$VERSION.zip -r boot.img mcRegistry META-INF files
+		zip SuperKernel_SM-G930F_$VERSION.zip -r boot.img mcRegistry META-INF files vendor
 		;;
 	hero2lte)
 		mv -f $RDIR/ramdisk/SM-G935F/image-new.img $RDIR/build/boot.img
-		zip SuperKernel_SM-G935F_$VERSION.zip -r boot.img mcRegistry META-INF files
+		zip SuperKernel_SM-G935F_$VERSION.zip -r boot.img mcRegistry META-INF files vendor
 		;;
 	*)
 		echo "Unknown device: $MODEL"

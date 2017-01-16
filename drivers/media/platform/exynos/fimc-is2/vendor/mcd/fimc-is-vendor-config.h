@@ -15,6 +15,8 @@
 
 #if defined(CONFIG_CAMERA_HERO)
 #include "fimc-is-vendor-config_hero.h"
+#elif defined(CONFIG_CAMERA_GRACE)
+#include "fimc-is-vendor-config_grace.h"
 #else
 #include "fimc-is-vendor-config_hero.h" /* Default */
 #endif

@@ -79,6 +79,7 @@
 #include <net/checksum.h>
 #include <net/tcp_states.h>
 #include <linux/net_tstamp.h>
+#include <net/tcp_states.h>
 
 struct cgroup;
 struct cgroup_subsys;

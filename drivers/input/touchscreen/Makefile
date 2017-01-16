@@ -85,3 +85,7 @@ obj-$(CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_DSX2)	+= synaptics_dsx2/
 obj-$(CONFIG_TOUCHSCREEN_SEC_TS)	+= sec_ts/
 obj-$(CONFIG_TOUCHSCREEN_FTS)          += stm/
 obj-$(CONFIG_TOUCHSCREEN_FTS7)		+= stm/fts7/
+obj-$(CONFIG_TOUCHSCREEN_FTS7_VALLEY)		+= stm/fts7/
+obj-$(CONFIG_TOUCHSCREEN_FTS7_HAECHI)		+= stm/fts7/
+obj-$(CONFIG_TOUCHSCREEN_FTS8)		+= stm/fts8/
+obj-$(CONFIG_TOUCHSCREEN_ATMEL_MXT874U)		+= mxt_t/
