@@ -191,7 +191,7 @@ void __init avc_init(void)
 	atomic_set(&avc_cache.lru_hint, 0);
 
 	avc_node_cachep = kmem_cache_create("avc_node", sizeof(struct avc_node),
-					     0, SLAB_PANIC, NULL);
+					0, SLAB_PANIC, NULL);
 	avc_xperms_cachep = kmem_cache_create("avc_xperms_node",
 					sizeof(struct avc_xperms_node),
 					0, SLAB_PANIC, NULL);
@@ -239,12 +239,12 @@ int avc_get_hash_stats(char *page)
 /*
  * using a linked list for extended_perms_decision lookup because the list is
  * always small. i.e. less than 5, typically 1
-*/
+ */
 static struct extended_perms_decision *avc_xperms_decision_lookup(u8 driver,
 					struct avc_xperms_node *xp_node)
 {
 	struct avc_xperms_decision_node *xpd_node;
-	
+
 	list_for_each_entry(xpd_node, &xp_node->xpd_head, xpd_list) {
 		if (xpd_node->xpd.driver == driver)
 			return &xpd_node->xpd;
@@ -257,7 +257,7 @@ avc_xperms_has_perm(struct extended_perms_decision *xpd,
 					u8 perm, u8 which)
 {
 	unsigned int rc = 0;
-	
+
 	if ((which == XPERMS_ALLOWED) &&
 			(xpd->used & XPERMS_ALLOWED))
 		rc = security_xperm_test(xpd->allowed->p, perm);
@@ -431,7 +431,7 @@ static int avc_xperms_populate(struct avc_node *node,
 		if (!dest_xpd)
 			goto error;
 		avc_copy_xperms_decision(&dest_xpd->xpd, &src_xpd->xpd);
-	list_add(&dest_xpd->xpd_list, &dest->xpd_head);
+		list_add(&dest_xpd->xpd_list, &dest->xpd_head);
 	}
 	node->ae.xp_node = dest;
 	return 0;
@@ -1046,13 +1046,14 @@ static noinline int avc_denied(u32 ssid, u32 tsid,
 	}
 #endif
 
-#ifdef CONFIG_ALWAYS_ENFORCE
+#if defined(CONFIG_SECURITY_SELINUX_ALWAYS_ENFORCE)
 	if (!(avd->flags & AVD_FLAGS_PERMISSIVE))
-#else
+		return -EACCES;
+#elif !defined(CONFIG_SECURITY_SELINUX_NEVER_ENFORCE)
 	if (selinux_enforcing && !(avd->flags & AVD_FLAGS_PERMISSIVE))
+		return -EACCES;
 #endif
 // ] SEC_SELINUX_PORTING_COMMON
-		return -EACCES;
 
 	avc_update_node(AVC_CALLBACK_GRANT, requested, driver, xperm, ssid,
 				tsid, tclass, avd->seqno, NULL, flags);
