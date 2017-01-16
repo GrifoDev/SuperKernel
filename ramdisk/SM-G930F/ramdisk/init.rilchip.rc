@@ -3,14 +3,14 @@
 # IMPORTANT: Do not create world writable files or directories.
 # This is a common source of Android security bugs.
 #
-on boot
+
 service ril-daemon /system/bin/rild
     class main
     socket rild stream 660 root radio
+    socket sap_uim_socket1 stream 660 bluetooth bluetooth
     socket rild-debug stream 660 radio system
-    socket rild-cas stream 660  casdrm mmb
     user root
-    group radio cache inet misc audio sdcard_r sdcard_rw log vpn system
+    group radio cache inet misc audio sdcard_r sdcard_rw log vpn system readproc
     onrestart restart cpboot-daemon
 
 service ril-daemon1 /system/bin/rild -c 2
@@ -18,7 +18,7 @@ service ril-daemon1 /system/bin/rild -c 2
     socket rild2 stream 660 root radio
     socket rild-debug2 stream 660 radio system
     user root
-    group radio cache inet misc audio sdcard_r sdcard_rw log vpn
+    group radio cache inet misc audio sdcard_r sdcard_rw log vpn system readproc
     disabled
     onrestart restart cpboot-daemon
 
@@ -31,10 +31,14 @@ service SMD-daemon /system/bin/smdexe
     user root
     group system radio inet net_raw
 
-on fs
 # DIAG
 service DIAG-daemon /system/bin/diagexe
     class main
     user root
     group system radio inet net_raw
 
+on boot
+# Assign TCP buffer thresholds to be ceiling value of technology maximums
+# Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max 1048576
+    write /proc/sys/net/core/wmem_max 2097152

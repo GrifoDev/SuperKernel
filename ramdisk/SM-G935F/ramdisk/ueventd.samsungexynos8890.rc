@@ -50,9 +50,9 @@
 
 # mscalers
 /dev/video50              0660   media      graphics
-/dev/video51              0660   media      graphics
-/dev/m2m1shot_scaler0     0660   media      graphics
-/dev/m2m1shot_scaler1     0660   media      graphics
+/dev/video51              0660   cameraserver     cameraserver
+/dev/m2m1shot_scaler0     0660   mediacodec      graphics
+/dev/m2m1shot_scaler1     0660   cameraserver     cameraserver
 
 /dev/video55              0666   system     graphics
 /dev/fimg2d               0666   system     graphics
@@ -60,10 +60,10 @@
 /dev/HPD                  0660   system     system
 
 # mfc
-/dev/video6               0660   media      media
-/dev/video7               0660   media      media
-/dev/video8               0660   media      media
-/dev/video9               0660   media      media
+/dev/video6               0660   mediacodec      mediadrm
+/dev/video7               0660   media      mediadrm
+/dev/video8               0660   media      mediadrm
+/dev/video9               0660   media      mediadrm
 
 # camera
 /dev/video101             0660   media      media
@@ -123,6 +123,13 @@
 # audio
 /dev/seiren               0660   system     audio
 
+# MobiCore
+#/dev/mobicore             0600   drmrpc     drmrpc
+#/dev/mobicore-user        0660   drm        drmrpc
+
+# Secure MEM driver
+#/dev/s5p-smem             0660   drm        drmrpc
+
 #temporary
 /data/modem.bin           0400   radio      system
 
@@ -135,13 +142,29 @@
 /dev/umts_ipc0            0660   radio      radio
 /dev/umts_ipc1            0660   radio      radio
 /dev/umts_rfs0            0660   radio      radio
-/dev/block/platform/155a0000.ufs/by-name/CP_DEBUG	0660	radio	system
 
 # Modem Interface
 /dev/block/platform/155a0000.ufs/by-name/RADIO	0660   system     radio
+/dev/block/platform/155a0000.ufs/by-name/CP_DEBUG	0660	radio	system
 /dev/umts*                0660   system     radio
 /dev/umts_csd             0660   system     loop_radio
 /dev/smd4                 0660   system     radio
+
+# interactive governor parameters
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/timer_rate			0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/timer_slack			0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/min_sample_time		0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/hispeed_freq		0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/target_loads		0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/go_hispeed_load		0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/above_hispeed_delay		0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/boost			0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/boostpulse			0200	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/input_boost			0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/boostpulse_duration		0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/io_is_busy			0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/param_index			0660	system	system
+/sys/devices/system/cpu/cpu*	cpufreq/interactive/mode				0660	system	system
 
 # sensor sysfs properties
 /sys/devices/virtual/input/input*	poll_delay	0660	system	radio
@@ -169,38 +192,3 @@
 
 # Reactivation lock
 /dev/block/platform/155a0000.ufs/by-name/STEADY    0660    system    system
-
-# MobiCore
-/dev/mobicore             0700   system     system
-/dev/mobicore-user        0666   radio     	system
-
-# RTC Dev
-/dev/rtc0                 0660   system     system
-
-# interactive governor parameters
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/timer_rate			0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/timer_slack			0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/min_sample_time		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/hispeed_freq		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/target_loads		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/go_hispeed_load		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/above_hispeed_delay		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/boost			0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/boostpulse			0200	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/input_boost			0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/boostpulse_duration		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/io_is_busy			0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/cpu_util			0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/enforced_mode		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/mode				0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/multi_cluster0_min_freq		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/multi_enter_load	0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/multi_enter_time	0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/multi_exit_load		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/multi_exit_time		0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/param_index			0200	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/single_cluster0_min_freq	0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/single_enter_load	0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/single_enter_time	0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/single_exit_load	0660	system	system
-/sys/devices/system/cpu/cpu*	cpufreq/interactive/single_exit_time	0660	system	system
