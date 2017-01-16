@@ -88,7 +88,7 @@ static int avtab_insert(struct avtab *h, struct avtab_key *key, struct avtab_dat
 			/* extended perms may not be unique */
 			if (specified & AVTAB_XPERMS)
 				break;
-		  return -EEXIST;
+			return -EEXIST;
 		}
 		if (key->source_type < cur->key.source_type)
 			break;
@@ -464,7 +464,7 @@ int avtab_read_item(struct avtab *a, void *fp, struct policydb *pol,
 		printk(KERN_ERR "SELinux:  avtab:  more than one specifier\n");
 		return -EINVAL;
 	}
-	
+
 	if ((vers < POLICYDB_VERSION_XPERMS_IOCTL) &&
 			(key.specified & AVTAB_XPERMS)) {
 		printk(KERN_ERR "SELinux:  avtab:  policy version %u does not "
@@ -571,7 +571,7 @@ int avtab_write_item(struct policydb *p, struct avtab_node *cur, void *fp)
 	rc = put_entry(buf16, sizeof(u16), 4, fp);
 	if (rc)
 		return rc;
-		
+
 	if (cur->key.specified & AVTAB_XPERMS) {
 		rc = put_entry(&cur->datum.u.xperms->specified, sizeof(u8), 1, fp);
 		if (rc)
