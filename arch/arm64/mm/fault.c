@@ -123,7 +123,7 @@ static void __do_kernel_fault(struct mm_struct *mm, unsigned long addr,
 	sec_debug_store_fault_addr(addr, regs);
 #endif
 	
-	pr_alert("Unable to handle kernel %s at virtual address %08lx\n",
+	pr_auto(ASL1, "Unable to handle kernel %s at virtual address %08lx\n",
 		 (addr < PAGE_SIZE) ? "NULL pointer dereference" :
 		 "paging request", addr);
 
@@ -507,7 +507,7 @@ asmlinkage void __exception do_mem_abort(unsigned long addr, unsigned int esr,
 	sec_debug_store_fault_addr(addr, regs);
 #endif
 
-	pr_alert("Unhandled fault: %s (0x%08x) at 0x%016lx\n",
+	pr_auto(ASL1, "Unhandled fault: %s (0x%08x) at 0x%016lx\n",
 		 inf->name, esr, addr);
 
 	info.si_signo = inf->sig;

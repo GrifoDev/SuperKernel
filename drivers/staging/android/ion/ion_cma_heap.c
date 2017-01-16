@@ -134,8 +134,11 @@ static int ion_cma_allocate(struct ion_heap *heap, struct ion_buffer *buffer,
 		}
 	}
 #endif
-	if (buffer->flags & ION_FLAG_PROTECTED)
-		ion_secure_protect(buffer);
+	if (buffer->flags & ION_FLAG_PROTECTED) {
+		ret = ion_secure_protect(buffer);
+		if (ret)
+			goto free_table;
+	}
 
 	dev_dbg(dev, "Allocate buffer %p\n", buffer);
 	return 0;

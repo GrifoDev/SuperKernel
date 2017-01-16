@@ -243,7 +243,7 @@ static int propagate_one(struct mount *m)
 	if (!is_subdir(mp->m_dentry, m->mnt.mnt_root))
 #endif
 		return 0;
-	if (m->mnt_group_id && (peers(m, last_dest))) {
+	if (peers(m, last_dest)) {
 		type = CL_MAKE_SHARED;
 	} else {
 		struct mount *n, *p;

@@ -2650,8 +2650,6 @@ static int sc_run_next_job(struct sc_dev *sc)
 
 	sc_set_prefetch_buffers(sc->dev, ctx);
 
-	mod_timer(&sc->wdt.timer, jiffies + SC_TIMEOUT);
-
 	if (__measure_hw_latency) {
 		if (ctx->context_type == SC_CTX_V4L2_TYPE) {
 			struct vb2_buffer *vb =
@@ -2682,6 +2680,7 @@ static int sc_run_next_job(struct sc_dev *sc)
 	}
 #endif
 	sc_hwset_start(sc);
+	mod_timer(&sc->wdt.timer, jiffies + SC_TIMEOUT);
 
 	return 0;
 }
@@ -3236,6 +3235,9 @@ static int sc_m2m1shot_prepare_buffer(struct m2m1shot_context *m21ctx,
 		return ret;
 	}
 
+        m2m1shot_sync_for_device(m21ctx->m21dev->dev,
+		&buf_dma->plane[plane], dir);
+
 	return 0;
 }
 
@@ -3244,6 +3246,8 @@ static void sc_m2m1shot_finish_buffer(struct m2m1shot_context *m21ctx,
 			int plane,
 			enum dma_data_direction dir)
 {
+	m2m1shot_sync_for_cpu(m21ctx->m21dev->dev,
+		&buf_dma->plane[plane], dir);
 	m2m1shot_dma_addr_unmap(m21ctx->m21dev->dev, buf_dma, plane);
 	m2m1shot_unmap_dma_buf(m21ctx->m21dev->dev,
 				&buf_dma->plane[plane], dir);
@@ -3417,13 +3421,37 @@ static int __attribute__((unused)) sc_sysmmu_fault_handler(struct iommu_domain *
 	struct device *dev, unsigned long iova, int flags, void *token)
 {
 	struct sc_dev *sc = dev_get_drvdata(dev);
+	int ret = 0;
 
-	if (test_bit(DEV_RUN, &sc->state)) {
-		dev_info(dev, "System MMU fault called for IOVA %#lx\n", iova);
-		sc_hwregs_dump(sc);
+	dev_info(dev, "System MMU fault called for IOVA %#lx MSCL state %d flag %d\n",
+		iova, (unsigned int)sc->state, (unsigned int)sc->current_ctx->flags);
+
+	if (!IS_ERR(sc->pclk)) {
+		ret = clk_enable(sc->pclk);
+		if (ret) {
+			dev_err(sc->dev, "%s: Failed to enable PCLK (err %d)\n",
+				__func__, ret);
+			goto err_pclk;
+		}
 	}
 
+	if (!IS_ERR(sc->aclk)) {
+		ret = clk_enable(sc->aclk);
+		if (ret) {
+			dev_err(sc->dev, "%s: Failed to enable ACLK (err %d)\n",
+				__func__, ret);
+			goto err_aclk;
+		}
+	}
+
+	sc_hwregs_dump(sc);
+
 	return 0;
+err_aclk:
+	if (!IS_ERR(sc->pclk))
+		clk_disable(sc->pclk);
+err_pclk:
+	return ret;	
 }
 
 static int sc_busmon_handler(struct notifier_block *nb,

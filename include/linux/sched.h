@@ -328,7 +328,12 @@ extern void show_regs(struct pt_regs *);
  * task), SP is the stack pointer of the first frame that should be shown in the back
  * trace (or NULL if the entire call-chain of the task should be shown).
  */
+
 extern void show_stack(struct task_struct *task, unsigned long *sp);
+
+#ifdef CONFIG_KFAULT_AUTO_SUMMARY
+extern void show_stack_auto_summary(struct task_struct *task, unsigned long *sp);
+#endif
 
 void io_schedule(void);
 long io_schedule_timeout(long timeout);
@@ -3112,4 +3117,7 @@ extern int hp_sysload_to_dual_ratio;
 extern int hp_sysload_param_calc(void);
 extern int hp_little_multiplier_ratio;
 #endif
+
+extern void save_pcpu_tick(int cpu);
+extern void restore_pcpu_tick(int cpu);
 #endif
