@@ -21,7 +21,7 @@ mount -o remount,rw /data
 mount -o remount,rw /cache
 
 # Google play services wakelock fix
-sleep 40
+sleep 1
 su -c "pm enable com.google.android.gms/.update.SystemUpdateActivity"
 su -c "pm enable com.google.android.gms/.update.SystemUpdateService"
 su -c "pm enable com.google.android.gms/.update.SystemUpdateService$ActiveReceiver"
