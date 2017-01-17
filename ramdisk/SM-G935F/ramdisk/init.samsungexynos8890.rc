@@ -692,6 +692,7 @@ on property:ro.debuggable=1
 # LPM
 on property:ro.bootmode=charger
     mount ext4 /dev/block/platform/155a0000.ufs/by-name/SYSTEM /system wait ro
+    mount f2fs /dev/block/platform/155a0000.ufs/by-name/SYSTEM /system wait ro
 
 on property:ro.bootmode=charger
     wait /dev/block/platform/155a0000.ufs/by-name/EFS
