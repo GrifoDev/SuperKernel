@@ -4,11 +4,8 @@ cat << CTAG
 {
     name:GPU,
     elements:[
-	{ SPane:{
-		title:"GPU state"
-	}},
 	{ SLiveLabel:{
-		title:"GPU live frequency",
+		title:"GPU Live Frequency",
 		refresh:500,
 		action:"live gpu"
 	}},
@@ -26,7 +23,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SPane:{
-		title:"GPU power policy control",
+		title:"Power Policy Control",
 		description:"COARSE DEMAND power policy is to control only external power (PMU for G3D). It is better at saving power and performance. COARSE DEMAND turns off GPU power in case of being no job for 100ms and turns it on in case of incomming first job on the state of GPU off. Default is coarse_demand."
 	}},
 	{ SSpacer:{
@@ -39,7 +36,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Mali power policy control",
+		title:"Mali Power Policy",
 		description:" ",
 		default:$(echo "$(/res/synapse/actions/bracket-option /sys/devices/14ac0000.mali/power_policy)"),
 		action:"bracket-option /sys/devices/14ac0000.mali/power_policy",
@@ -52,17 +49,17 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"GPU scaling settings",
+		title:"GPU Frequency Scaling",
 		description:"By editing the following configurables you can change the performance behaviour of the GPU. WARNING: Not all frequencies outside defaults may be stable for your device!"
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"GPU MAX freq",
+		title:"Max Freq",
 		description:"Set the maximum frequency the GPU scales up to.\n",
 		unit:" MHz",
 		default:$(cat /sys/devices/14ac0000.mali/max_clock),
@@ -80,8 +77,8 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"GPU MIN freq",
-		description:"Set the minimum frequency the GPU scales up to.\n",
+		title:"Min Freq",
+		description:"Set the minimum frequency the GPU scales down to.\n",
 		unit:" MHz",
 		default:$(cat /sys/devices/14ac0000.mali/min_clock),
 		action:"generic /sys/devices/14ac0000.mali/min_clock",
@@ -95,30 +92,33 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"GPU Governor",
+		title:"DVFS Governor",
 		description:"Booster may give improved graphic & benchmark performance at the expense of battery."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"GPU Governor",
+		title:"Governor",
 		description:" ",
 		default:$(echo "$(/res/synapse/actions/gpu_governor gpu_gov)"),
 		action:"gpu_governor gpu_gov",
 		values:[Default, Interactive, Static, Booster]
 	}},
+	{ SSpacer:{
+		height:2
+	}},
 	{ SPane:{
-		title:"GPU Interactive governor tunables"
+		title:"Interactive Governor Tunables"
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"GPU highspeed clock",
+		title:"Highspeed Clock",
 		description:"Boost the minimum frequency the GPU scales up to.\n",
 		default:$(cat /sys/devices/14ac0000.mali/highspeed_clock),
 		unit:" MHz",
@@ -136,7 +136,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"GPU highspeed load",
+		title:"Highspeed Load",
 		description:"Jump the minimum frequency level to highspeed_clock when the GPU utilization over this value.\n",
 		default:$(cat /sys/devices/14ac0000.mali/highspeed_load),
 		max:100, min:1, unit:" %", step:1,
@@ -146,14 +146,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"GPU highspeed delay",
+		title:"Highspeed Delay",
 		description:"Jump the minimum frequency level to highspeed_clock when the GPU utilization over highspeed_load and over this delayed value.\n",
 		default:$(cat /sys/devices/14ac0000.mali/highspeed_delay),
 		max:5, min:0, unit:" ms", step:1,
 		action:"generic /sys/devices/14ac0000.mali/highspeed_delay",
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

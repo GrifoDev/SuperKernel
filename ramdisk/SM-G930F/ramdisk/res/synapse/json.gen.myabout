@@ -50,12 +50,9 @@ cat << CTAG
 			echo Opening browser...;"
 		}},
 		{ SSpacer:{
-			height:1
+			height:2
 		}},'
 	fi;`
-	{ SSpacer:{
-		height:2
-	}},
 	{ SPane:{
 		title:"Up Time:"
 	}},

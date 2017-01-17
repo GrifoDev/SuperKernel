@@ -5,7 +5,7 @@ cat << CTAG
     name:"A53 GOV",
     elements:[
 	{ SPane:{
-		title:"A53 Governor tunables",
+		title:"A53 Governor Tunables",
 		description:"The various configuration items which are governor-dependent."
 	}},
 	{ SSpacer:{
@@ -90,7 +90,8 @@ cat << CTAG
 						"lockout_hotplug_screen_off_core_4",
 						"lockout_hotplug_screen_off_core_5",
 						"lockout_hotplug_screen_off_core_6",
-						"lockout_hotplug_screen_off_core_7"
+						"lockout_hotplug_screen_off_core_7",
+						"down_threshold_suspended"
 					]
 				},
 			}

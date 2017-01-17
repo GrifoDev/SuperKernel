@@ -5,20 +5,28 @@ cat << CTAG
     name:"BUS",
     elements:[
 	{ SPane:{
-		title:"HPM Voltage Control",
-        }},
+		title:"HPM Voltage Control"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
 	{ SSeekBar:{
-		title:"Memory Bus HPM voltage margin",
+		title:"Memory Bus HPM Voltage Margin",
 		description:"Set the maximum voltage margin the APM undervolts down to.\n",
 		default:$(cat /sys/kernel/debug/mailbox/mif_cl_margin),
 		action:"generic /sys/kernel/debug/mailbox/mif_cl_margin",
 		unit:" µV", weight:6250.0, min:0, step:1, max:10
 	}},
 	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Memory Bus Voltage Control",
+		description:"Voltage supplied to the CCI and memory controllers."
+	}},
+	{ SSpacer:{
 		height:1
 	}},
-	{ SPane:{ title:"Memory Bus Voltage control",
-		description:"Voltage supplied to the CCI and memory controllers.\n" }},
 `
 while read -r FREQ VOLT; do
 	echo '{ SSeekBar:{'
@@ -27,10 +35,15 @@ while read -r FREQ VOLT; do
 done < /sys/class/devfreq/17000010.devfreq_mif/volt_table
 `
 	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Internal Bus",
+		description:"Voltage supplied to the internal auxiliary IP blocks, such as the hardware video decoders, the scaling blocks, the display controllers, and the MMC controllers."
+	}},
+	{ SSpacer:{
 		height:1
 	}},
-	{ SPane:{ title:"Internal Bus",
-		description:"Voltage supplied to the internal auxiliary IP blocks, such as the hardware video decoders, the scaling blocks, the display controllers, and the MMC controllers.\n" }},
 `
 while read -r FREQ VOLT; do
 	echo '{ SSeekBar:{'
@@ -39,10 +52,12 @@ while read -r FREQ VOLT; do
 done < /sys/class/devfreq/17000020.devfreq_int/volt_table
 `
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
-	{ SPane:{ title:"Image Signal Processor",
-		description:"Voltage supplied to the ISP power plane.\n" }},
+	{ SPane:{
+		title:"Image Signal Processor",
+		description:"Voltage supplied to the ISP power plane."
+	}},
 `
 while read -r FREQ VOLT; do
 	echo '{ SSeekBar:{'
@@ -63,7 +78,7 @@ while read -r FREQ VOLT; do
 done < /sys/class/devfreq/17000040.devfreq_cam/volt_table
 `
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

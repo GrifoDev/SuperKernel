@@ -6,13 +6,7 @@ cat << CTAG
     elements:[
 	{ SPane:{
 		title:"KNOX",
-		description:"Disabling will prevent Samsung security feature and allow some apps to run outside the secure container. KEEP DISABLED !! More info: <a href='https://www.samsungknox.com/en/products/knox-workspace/technical'>KNOX Workspace </a>. In addition, some annoying security related warnings will also be prevented from running in the back-ground."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SDescription:{
-		description:"Set Disabled or Enabled and then apply, NO_ACTION will automatically be set so Synapse will complete loading faster every boot. KNOX and other related processes will still be Disabled or Enabled as set by the User."
+		description:"Freezing will stop any KNOX related processes and prevent the annoying warning about modified device 'Unauthorized actions have been detected...' This allows some apps to run outside the secure container. More info: <a href='https://www.samsungknox.com/en/products/knox-workspace/technical'>KNOX Workspace </a>."
 	}},
 	{ SSpacer:{
 		height:1
@@ -24,14 +18,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Disable KNOX",
+		title:"Freeze KNOX",
 		description:" ",
 		default:$(echo "$(/res/synapse/actions/security knox_security)"),
 		action:"security knox_security",
-		values:[NO_ACTION, Disabled, Enabled,]
+		values:[NO_ACTION, Freeze, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"SELinux (Security-Enhanced Linux)"
@@ -41,7 +35,7 @@ cat << CTAG
 	}},
 	{ SLiveLabel:{
 		title:"Status",
-		description:"",
+		description:" ",
 		refresh:3000,
 		action:"live selinux_status"
 	}},
@@ -56,7 +50,7 @@ cat << CTAG
 		values:[Enforcing, Permissive,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Force Audit",
@@ -68,7 +62,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

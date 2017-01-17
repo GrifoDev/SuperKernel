@@ -7,12 +7,12 @@ cat << CTAG
     name:MEMORY,
     elements:[
 	{ SLiveLabel:{
-		title:"Memory state",
+		title:"Memory State",
 		refresh:1000,
 		action:"live LiveMemory"
 	}},
 	{ SLiveLabel:{
-		title:"Swap state",
+		title:"Swap State",
 		refresh:1000,
 		action:"live LiveSwap"
 	}},
@@ -28,7 +28,7 @@ cat << CTAG
 					height:1
 				}},
 				{ SOptionList:{
-					title:"LMK Profile",
+					title:"Profile",
 					description:"This option will auto-tune LMK minfree values as per selected profile. More aggressive equals more free RAM but more killed apps (less multi-tasking).\n",
 					default:Default,
 					action:"lmk profile",
@@ -48,29 +48,32 @@ cat << CTAG
 								],
 							}
 					]
+				}},
+				{ SSpacer:{
+					height:2
 				}},'
 					for LMK in 1 2 3 4 5 6; do
 						$BB echo '{ SSeekBar:{ '
 							case $LMK in
 								1)
-									$BB echo 'title:"Foreground App", description:"The application currenty on the screen and running.\nDefault is 72.\n", default:72' ;;
+									$BB echo 'title:"Foreground App", description:"The application currenty on the screen and running.\n", default:72' ;;
 								2)
-									$BB echo 'title:"Visible App", description:"The application that is open and running in background.\nDefault is 90.\n", default:90' ;;
+									$BB echo 'title:"Visible App", description:"The application that is open and running in background.\n", default:90' ;;
 								3)
-									$BB echo 'title:"Secondary Server", description:"This is a service an application needs that is alive and ready.\nDefault is 108.\n", default:108' ;;
+									$BB echo 'title:"Secondary Server", description:"This is a service an application needs that is alive and ready.\n", default:108' ;;
 								4)
-									$BB echo 'title:"Hidden App", description:"An idle process that wakes up on application request.\nDefault is 126.\n", default:126' ;;
+									$BB echo 'title:"Hidden App", description:"An idle process that wakes up on application request.\n", default:126' ;;
 								5)
-									$BB echo 'title:"Content Provider", description:"Apps that provide data (content) to the system.\nDefault is 219.\n", default:219' ;;
+									$BB echo 'title:"Content Provider", description:"Apps that provide data (content) to the system.\n", default:219' ;;
 								6)
-									$BB echo 'title:"Empty App", description:"Apps closed by the user but ready to run.\nDefault is 317.\n", default:317' ;;
+									$BB echo 'title:"Empty App", description:"Apps closed by the user but ready to run.\n", default:317' ;;
 							esac
 						$BB echo ', action:"lmk '${LMK}'",
 						unit:" MB", min:1, max:350 }},'
 					done
 			fi`
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Samsung SPCM Service",
@@ -80,14 +83,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Samsung SPCM Service",
+		title:"SPCM Service",
 		description:" ",
 		default:$(echo "$(/res/synapse/actions/devtools spcm_service)"),
 		action:"devtools spcm_service",
 		values:[Enabled, Disabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Ultra Kernel SamePage Merging (UKSM)",
@@ -97,7 +100,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable UKSM",
+		title:"UKSM",
 		description:" ",
 		default:0,
 		action:"generic /sys/kernel/mm/uksm/run",
@@ -106,10 +109,10 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SLiveLabel:{
-                title:"UKSM stats",
+                title:"Stats",
 		description:"Memory samepage merging is not a quick process, so stats may initially show 0 MB.",
 		refresh:3000,
 		action:"live UKSMStats"
@@ -119,7 +122,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Scan Delay Interval",
-		description:"Set how long the daemon sleeps before it wakes up and starts scanning memory pages. Default is 0.5.\n",
+		description:"Set how long the daemon sleeps before it wakes up and starts scanning memory pages.\n",
 		unit:" sec",
 		step:100,
 		min:0,
@@ -132,7 +135,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"UKSM CPU Governor",
+		title:"Governor",
 		description:"Controls how aggressively the daemon uses CPU power. This sets a preset for the maximum CPU consumption below.\n\n full = 18 % \n med = 12 %\n low = 7 %\n quiet = 1 %\n",
 		default:$(cat /sys/kernel/mm/uksm/cpu_governor | $BB awk 'NR>1{print $1}' RS=[ FS=]),
 		action:"UKSM_gov /sys/kernel/mm/uksm/cpu_governor",
@@ -148,7 +151,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
 		title:"Max CPU Consumption",
@@ -161,7 +164,7 @@ cat << CTAG
 		action:"generic /sys/kernel/mm/uksm/max_cpu_percentage"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Lazytime Mount",
@@ -177,7 +180,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Lazytime Mount",
+		title:"Lazytime",
 		description:"Enable to mount EXT4 file systems with lazytime. Changing this value requires REBOOT.\n",
 		default:$(cat /data/.Super/lazytime_mount),
 		action:"generic /data/.Super/lazytime_mount",
@@ -188,26 +191,19 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-	{ SPane:{
-		title:"Filesync",
-		description:"While screen is on file sync is disabled, when screen is off a file sync is called to flush all outstanding writes and restore file sync operation as normal."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
 	{ SOptionList:{
-		title:"Enable FSYNC",
-		description:" ",
-		default:1,
+		title:"FSync",
+		description:"Disabling fsync will increase I/O speed but decrease data integrity in the case of an app crash, freeze or reboot.\n",
+		default:Y,
 		action:"generic /sys/module/sync/parameters/fsync_enabled",
 		values:{
-			0:"Disabled", 1:"Enabled"
+			N:"Disabled", Y:"Enabled"
 		}
 	}},
 	{ SSpacer:{
 		height:1
 	}},
-	{ STitleBar:{
+	{ SPane:{
 		title:"Virtual Memory",
 		description:"Tune the operation of the VM subsystem of the Linux kernel and the writeout of dirty data to disk."
 	}},
@@ -215,8 +211,8 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Virtual NAND Swap",
-		description:"VNSwap attempts to improve performance & multitasking by avoiding paging on physical storage, instead using a compressed virtual device in RAM. Paging takes place in RAM until it is necessary to use the swap space on physical storage. Depending on the amount of swap currently in use, disabling can take ~1 minute with Synapse being UNRESPONSIVE during this time. PLEASE WAIT for the process to finish.\n\n Disabling or Enabling will auto set swappiness to 0 or 190 respectively. Default is Enabled.\n",
+		title:"VNSwap (Virtual NAND Swap)",
+		description:"VNSwap attempts to improve performance & multitasking by avoiding paging on physical storage, instead using a compressed virtual device in RAM. Paging takes place in RAM until it is necessary to use the swap space on physical storage. Depending on the amount of swap currently in use, disabling can take ~1 minute with Synapse being UNRESPONSIVE during this time. PLEASE WAIT for the process to finish.\n\n Disabling or Enabling will auto set swappiness to 0 or 190 respectively.\n",
 		default:Enabled,
 		action:"swaps vnswap0",
 		values:[Disabled, Enabled,],
@@ -229,7 +225,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"E-Swap",
@@ -241,10 +237,10 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
-		title:"Exynos Swap memory pool",
+		title:"Exynos Swap Memory Pool",
 		description:"Exynos Swap memory pool percentage of main memory that may be used as compressed page cache. Default is 50.\n",
 		min:0, max:50, unit:" %", step:1,
 		default:$(cat /sys/module/exynos_swap/parameters/max_pool_percent),
@@ -254,7 +250,19 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"Adaptive dirty_background_ratio on Suspend / Resume",
+		title:"Swappiness",
+		description:"A low value means the kernel will try to avoid swapping as much as possible where a higher value instead will make the kernel aggressively try to use swap space.\n",
+		max:200,
+		min:0,
+		step:10,
+		default:$(cat /proc/sys/vm/swappiness),
+		action:"generic /proc/sys/vm/swappiness",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Adaptive Dirty Background Ratio on Suspend / Resume",
 		description:"Dirty background memory buffer, more you set, more memory will be used for write buffer for background operations, buffer is released on need to free RAM. The set value is a percentage of total system memory, the number of pages at which the pdflush background writeback daemon will start writing out dirty data.\nDefault: screen ON is 20 & screen OFF is fixed at 10.\n",
 		min:0,
 		max:100, 
@@ -267,7 +275,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"Adaptive dirty_ratio on Suspend / Resume",
+		title:"Adaptive Dirty Ratio on Suspend / Resume",
 		description:"Dirty real time memory buffer, more you set, more memory will be used for write buffer for real time operations, buffer is released on need to free RAM. The set value is a percentage of total system memory, the number of pages at which a process which is generating disk writes will itself start writing out dirty data.\nDefault: screen ON is 40 & screen OFF is fixed at 20.\n",
 		min:0,
 		max:100,
@@ -280,7 +288,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Drop Caches (Clear VFS Cache After Boot)",
+		title:"Drop Caches (Clear VFS Cache After Boot)",
 		description:"This option will force rebuild of file system cache based on actual app usage rather than boot/startup processes. NOTE: This process can take from 1-2 minutes (Enable for better file system read/write performance).\n",
 		default:0,
 		action:"dropcaches /res/synapse/Super/dropcaches_prof",
@@ -288,10 +296,10 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
-		title:"Enable Laptop Mode (Auto FS Writeback Delay Mode)",
+		title:"Laptop Mode (Auto FS Writeback Delay Mode)",
 		description:"This option will delay the writebacks of file system bits cached in RAM while screen is ON (Enable for better performance @ slight risk of possible data loss if crashed or sudden loss of power).\n",
 		default:0,
 		action:"generic /proc/sys/vm/laptop_mode",
@@ -299,22 +307,10 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
-		title:"swappiness",
-		description:"A low value means the kernel will try to avoid swapping as much as possible where a higher value instead will make the kernel aggressively try to use swap space. Default is 190.\n",
-		max:200,
-		min:0,
-		step:10,
-		default:$(cat /proc/sys/vm/swappiness),
-		action:"generic /proc/sys/vm/swappiness",
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SSeekBar:{
-		title:"Adaptive vfs_cache_pressure on Suspend / Resume",
+		title:"Adaptive VFS Cache Pressure on Suspend / Resume",
 		description:"Value used to control the tendency of the kernel to reclaim the memory which is used for caching of directory and inode objects. Low values save battery while idle, but may cause stutter with longer up times. Default: screen is ON is 100 & screen OFF is fixed at 20.\n",
 		unit:" %",
 		step:1,
@@ -324,7 +320,7 @@ cat << CTAG
 		action:"generic /proc/sys/vm/vfs_cache_pressure"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 		`if [ -f "/sys/devices/virtual/block/zram0/disksize" ]; then
 		ZRAM=\`$BB cat /sys/devices/virtual/block/zram0/disksize\`;

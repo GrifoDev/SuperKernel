@@ -22,7 +22,7 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"CortexBrain Functions",
@@ -39,7 +39,7 @@ cat << CTAG
 		values:[Disabled, Auto,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"WiFi Auto Control (Screen-ON)",
@@ -49,7 +49,7 @@ cat << CTAG
 		values:[Disabled, Auto,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
 		title:"WiFi Auto Interval ON (Screen-ON)",
@@ -69,7 +69,7 @@ cat << CTAG
 		action:"hmp /res/synapse/Super/cortexbrain_wifi_delay_scron_disable"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"WiFi Auto Control (Screen-OFF)",
@@ -79,7 +79,7 @@ cat << CTAG
 		values:[Disabled, Auto,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
 		title:"WiFi Auto Interval ON (Screen-OFF)",
@@ -132,14 +132,14 @@ cat << CTAG
 		height:2
 	}},
 	{ SOptionList:{
-		title:"nmi_watchdog",
+		title:"NMI Watchdog",
 		description:"The NMI Watchdog is a debugging feature to catch hardware hangs that cause a kernel panic. On some systems it can generate a lot of interrupts, causing a noticeable increase in power usage. Setting to 'Auto' will disable nmi_watchdog when the screen is OFF & auto enable when the screen is ON. WARNING: may cause instability on some devices if set to anything other than Enabled.\n",
 		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_nmi_auto)"),
 		action:"cortex cortexbrain_nmi_auto",
 		values:[Disabled, Enabled, Auto,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

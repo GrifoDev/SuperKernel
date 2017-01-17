@@ -19,7 +19,7 @@ cat << CTAG
 		values:[Default, Battery,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Touch-Key Boost",
@@ -29,7 +29,7 @@ cat << CTAG
 		values:[Default, Battery,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

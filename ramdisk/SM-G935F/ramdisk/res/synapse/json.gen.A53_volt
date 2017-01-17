@@ -5,17 +5,20 @@ cat << CTAG
     name:"A53 VOLT",
     elements:[
 	{ SPane:{
-		title:"HPM Voltage Control",
+		title:"HPM Voltage Control"
+	}},
+	{ SSpacer:{
+		height:1
 	}},
 	{ SSeekBar:{
-		title:"Apollo HPM voltage margin",
+		title:"Apollo HPM Voltage Margin",
 		description:"Set the maximum voltage margin the APM undervolts down to.\n",
 		default:$(cat /sys/kernel/debug/mailbox/apl_cl_margin),
 		action:"generic /sys/kernel/debug/mailbox/apl_cl_margin",
 		unit:" µV", weight:6250.0, min:0, step:1, max:10
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"A53 LITTLE Cores Voltage Control",
@@ -31,7 +34,7 @@ while read -r FREQ VOLT; do
 done < /sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster0_volt_table
 `
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

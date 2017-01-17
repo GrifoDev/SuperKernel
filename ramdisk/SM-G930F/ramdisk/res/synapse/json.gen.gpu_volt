@@ -5,19 +5,28 @@ cat << CTAG
     name:GPU VOLT,
     elements:[
 	{ SPane:{
-		title:"HPM Voltage Control",
+		title:"HPM Voltage Control"
+	}},
+	{ SSpacer:{
+		height:1
 	}},
 	{ SSeekBar:{
-		title:"Mali HPM voltage margin",
+		title:"Mali HPM Voltage Margin",
 		description:"Set the maximum voltage margin the APM undervolts down to.\n",
 		default:$(cat /sys/kernel/debug/mailbox/g3d_cl_margin),
 		action:"generic /sys/kernel/debug/mailbox/g3d_cl_margin",
 		unit:" µV", weight:6250.0, min:0, step:1, max:10
 	}},
 	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"GPU Voltage Control",
+		description:"Decreasing voltage will lower power consumption of the GPU. Increasing it on overclocked frequencies improves stability.\nToo low voltage may cause instabilities and freezes."
+	}},
+	{ SSpacer:{
 		height:1
 	}},
-	{ SPane:{ title:"GPU voltage control" }},
 `
 	while read -r FREQ VOLT; do
 		echo '{ SSeekBar:{'
@@ -26,7 +35,7 @@ cat << CTAG
 	done < /sys/devices/14ac0000.mali/volt_table
 `
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

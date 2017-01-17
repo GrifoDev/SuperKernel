@@ -14,7 +14,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Multi-Path TCP",
+		title:"MPTCP Advanced Path-Manager Control",
 		description:"MPTCP improves resource utilization, TCP throughput & smoother reaction to failures. Available MPTCP Congestion Algorithm : WVEGAS - OLIA - LIA. More info: <a href='https://en.wikipedia.org/wiki/Multipath_TCP'>Wiki</a>.\n",
 		default:0,
 		action:"generic /proc/sys/net/mptcp/mptcp_enabled",
@@ -23,17 +23,17 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
-		title:"MPTCP Advanced Path-Manager Control",
+		title:"Multi-Path TCP",
 		description:" ",
 		default:fullmesh,
 		action:"generic /proc/sys/net/mptcp/mptcp_path_manager",
 		values:[fullmesh, ndiffports, binder,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"TCP Congestion Algorithm",
@@ -43,24 +43,24 @@ cat << CTAG
 		values:[`while read values; do $BB printf "%s, \n" $values; done < /proc/sys/net/ipv4/tcp_available_congestion_control`]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
-	{ STitleBar:{
-		title:"Screen mirroring / AllShare Cast fix",
+	{ SPane:{
+		title:"Screen Mirroring / AllShare Cast Fix",
 		description:"Possible screen mirroring / AllShare Cast fix for rooted devices, works for some. Turn OFF WIFI first."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Screen mirroring / AllShare Cast fix",
+		title:"Screen Mirroring / AllShare Cast Fix",
 		description:" ",
 		default:$(echo "$(/res/synapse/actions/mirror mirror_fix)"),
 		action:"mirror mirror_fix",
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"WiFi Passwords",
@@ -91,14 +91,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable TCP/IP Network Security",
+		title:"TCP/IP Network Security",
 		description:" ",
 		default:$(echo "$(/res/synapse/actions/network tcp_security)"),
 		action:"network tcp_security",
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"DNS Tweaks",
@@ -131,12 +131,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
+		title:"DNS Tweaks",
+		description:" ",
 		default:$(echo "$(/res/synapse/actions/network dns)"),
 		action:"network dns",
 		values:[Disabled, Google, OpenDNS, Comodo, Level3, Norton, Verisign,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SButton:{
 		label:"Clean WIFI Lease",
@@ -146,12 +148,12 @@ cat << CTAG
 		height:1
 	}},
 	{ SButton:{
-		label:"Test DNS connectivity",
+		label:"Test DNS Connectivity",
 		action:"am start -a android.intent.action.VIEW -d https://dnsleaktest.com/ > /dev/null;
 		echo Opening browser...;"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"GPS Region",
@@ -167,7 +169,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SLiveLabel:{
-                title:"Current region",
+                title:"Current Region",
 		refresh:3000,
 		action:"live gps"
 	}},
@@ -180,17 +182,17 @@ cat << CTAG
 		values:[No_Action, Original, Asia, Europe, Oceania, North_America, South_America, Africa,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"IPv6-protocol",
+		title:"IPv6-Protocol",
 		description:"Test IPv6 connectivity before Disabling to ensure it's actually supported. After Enabling, allow up to 30s for IPv6 addresses to be added before testing."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SButton:{
-		label:"Test IPv6 connectivity",
+		label:"Test IPv6 Connectivity",
 		action:"am start -a android.intent.action.VIEW -d http://test-ipv6.com/ > /dev/null;
 		echo Opening browser...;"
 	}},
@@ -205,10 +207,10 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
-		title:"IPv6 optimistic_dad",
+		title:"IPv6 Optimistic DAD",
 		description:"Perform Optimistic Duplicate Address Detection.\n",
 		default:1,
 		action:"generic /proc/sys/net/ipv6/conf/all/optimistic_dad",
@@ -217,10 +219,10 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
-		title:"IPv6 use_optimistic",
+		title:"IPv6 Us Optimistic",
 		description:" ",
 		default:1,
 		action:"generic /proc/sys/net/ipv6/conf/all/use_optimistic",
@@ -229,7 +231,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

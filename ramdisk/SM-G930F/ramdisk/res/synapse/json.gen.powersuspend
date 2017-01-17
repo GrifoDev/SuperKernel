@@ -6,12 +6,14 @@ cat << CTAG
     elements:[
 	{ SPane:{
 		title:"PowerSuspend",
-		description:"PowerSuspend driver is a replacement for the early_suspend/late_resume driver. Hybrid uses autosleep & display panel hook. Default is Hybrid."
+		description:"PowerSuspend driver is a replacement for the early_suspend/late_resume driver."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
+		title:"Mode",
+		description:"Hybrid (best) uses both 'Autosleep' & 'DisplayPanel' hooks.\n",
 		default:3,
 		action:"generic /sys/kernel/power_suspend/power_suspend_mode",
 		values:{
@@ -19,11 +21,11 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
-		title:"PowerSuspend State",
-		description:"Kernel power management driver when screen is off. If using Userspace hook, enable for better battery savings. Note: You can only change this setting with Userspace mode.\n",
+		title:"State",
+		description:"Kernel power management driver when screen is off. Use only with 'Userspace' hook for better battery savings for only that particular mode.\n",
 		default:0,
 		action:"suspend_state /sys/kernel/power_suspend/power_suspend_state",
 		values:{
@@ -31,14 +33,26 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Debug",
+		description:"Enable here to print state to kernel log.\n",
+		default:0,
+		action:"generic /sys/module/powersuspend/parameters/debug_mask",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
 	}},
 	{ SButton:{
 		label:"PowerSuspend version",
 		action:"show susp"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

@@ -4,7 +4,7 @@ cat << CTAG
 {
     name:REBOOT,
     elements:[
-	{ STitleBar:{
+	{ SPane:{
 		title:"Reboot Options"
 	}},
 	{ SSpacer:{
@@ -43,7 +43,7 @@ cat << CTAG
 		action:"devtools reboot -p"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"General Actions",
@@ -64,7 +64,7 @@ cat << CTAG
 		action:"devtools restart"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

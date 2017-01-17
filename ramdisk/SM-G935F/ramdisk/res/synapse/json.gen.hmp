@@ -4,11 +4,11 @@ BB=/system/xbin/busybox;
 
 cat << CTAG
 {
-    name:MULTICORE HMP,
+    name:MULTICORE,
     elements:[
 	{ SPane:{
-		title:"HMP Thresholds up/down ratios for task migrating",
-		description:"Adjust HMP ratios for up/down scaling for tasks migrating between A53 LITTLE cores and A72 BIG cores. Higher up-threshold values use less battery because use more of the power efficient Little cores."
+		title:"HMP Threshold Up / Down Ratios for Task Migrating",
+		description:"Adjust HMP ratios for up/down scaling for tasks migrating between A53 LITTLE cores and A57 big cores. Higher up-threshold values use less battery because use more of the power efficient Little cores."
 	}},
 	{ SSpacer:{
 		height:1
@@ -34,8 +34,8 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"HMP UP Thresholds",
-		description:"Min load required for migrating tasks to the faster A72 big cores.\n",
+		title:"Up Threshold",
+		description:"Min load required for migrating tasks to the faster A57 big cores.\n",
 		min:1, max:1000, unit:"", step:1,
 		default:$(cat /sys/kernel/hmp/up_threshold),
 		action:"hmp /sys/kernel/hmp/up_threshold"
@@ -44,24 +44,24 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"HMP DOWN Thresholds",
+		title:"Down Threshold",
 		description:"Max load allowed for tasks migrating to the slower A53 little cores.\n",
 		min:1, max:512, unit:"", step:1,
 		default:$(cat /sys/kernel/hmp/down_threshold),
 		action:"hmp /sys/kernel/hmp/down_threshold"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"HMP UP / DOWN Hysteresis",
+		title:"HMP Up / Down Hysteresis",
 		description:"Maximum total capacity difference in percentage to enact scheduler power migration."
-        }},
+	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"HMP UP Perf Hysteresis",
+		title:"Up Hysteresis",
 		description:"Lower = faster migration response (more battery drain).\n",
 		min:1, max:1000, unit:"", step:1,
 		default:$(cat /sys/kernel/hmp/up_perf_hysteresis),
@@ -71,14 +71,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"HMP DOWN Perf Hysteresis",
+		title:"Down Hysteresis",
 		description:"Lower = faster migration response (more battery drain).\n",
 		min:1, max:1000, unit:"", step:1,
 		default:$(cat /sys/kernel/hmp/down_perf_hysteresis),
 		action:"generic /sys/kernel/hmp/down_perf_hysteresis"
-        }},
+	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
         { SPane:{
                 title:"Power Aware Scheduling",
@@ -88,14 +88,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Power Aware Scheduling",
+		title:"Power Migration",
 		description:"'Auto' will enable Power Aware Scheduling when the screen is OFF (if not in-call) & auto disable when the screen is ON. Enable only if Hotplug & Interactive Turbo Modes are disabled ! 'Auto' requires CortexBrain ENABLED !\n",
 		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_power_aware_sched)"),
 		action:"cortex cortexbrain_power_aware_sched",
 		values:[Disabled, Enabled, Auto,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
         { SPane:{
                 title:"HMP LITTLE Packing",
@@ -105,24 +105,24 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable HMP LITTLE Packing",
+		title:"Packing",
 		description:"'Auto' will enable HMP LITTLE Packing when the screen is OFF (if not in-call) & auto disable when the screen is ON. Enable only if Hotplug & Interactive Turbo Modes are disabled ! 'Auto' requires CortexBrain ENABLED !\n",
 		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_hmp_little_pack)"),
 		action:"cortex cortexbrain_hmp_little_pack",
 		values:[Disabled, Enabled, Auto,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"PEWQ (Power-Efficient Workqueues)",
-		description:"Enable or disable PEWQ will help to reduce power consumption at the cost of slight performance overhead. By enabling this, PEWQ are used for unbound scheduled work to save load on sibling CPU cores and queuing work on CPU 0."
+		title:"Power-Efficient Workqueues",
+		description:"PEWQ are used for unbound scheduled work to save load on sibling CPU cores and queuing work on CPU 0. This helps to reduce power consumption at the cost of slight performance overhead."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable PEWQ",
+		title:"PEWQ",
 		description:"'Auto' will enable PEWQ when the screen is OFF (if not in-call) & auto disable when the screen is ON. Enable only if Hotplug & Interactive Turbo Modes are disabled ! 'Auto' requires CortexBrain ENABLED !\n",
 		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_pewq)"),
 		action:"cortex cortexbrain_pewq",

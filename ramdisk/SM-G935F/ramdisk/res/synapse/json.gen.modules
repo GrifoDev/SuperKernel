@@ -12,7 +12,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SLiveLabel:{
-		title:"Loaded modules",
+		title:"Loaded Modules",
 		refresh:1000,
 		action:"live Live_modules"
 	}},
@@ -30,7 +30,7 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"NFS",
@@ -40,7 +40,7 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"DOS/FAT/NT FS"
@@ -56,7 +56,7 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"CD-ROM/DVD FS"
@@ -72,7 +72,7 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"UDF",
@@ -82,7 +82,7 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Input Device Drivers",
@@ -99,7 +99,7 @@ cat << CTAG
 		values:[Disabled, Enabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

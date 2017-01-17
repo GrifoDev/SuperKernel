@@ -36,7 +36,7 @@ cat << CTAG
 		action:"log kmsg"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

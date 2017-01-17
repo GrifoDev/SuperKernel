@@ -53,12 +53,14 @@ cat << CTAG
 			fi;"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"Filesystem Controls",
-		description:""
-        }},
+		title:"Filesystem Controls"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
 	{ SButton:{
 		label:"Remount /system as Writeable",
 		action:"mount -o remount,rw \/system;
@@ -92,25 +94,21 @@ cat << CTAG
 		height:2
 	}},
 	{ SPane:{
-		title:"Scrolling Cache control",
+		title:"Scrolling Cache Control",
 		description:"Disable to increase in-app scrolling speed and responsiveness. Default is (2). If you experience problems, set to (1). REBOOT REQUIRED !!"
 	}},
 	{ SSpacer:{
 		height:1
 	}},
-	{ SDescription:{
-		description:"0- force to enable regardless of app setting.\n1- enable unless app specifies.\n2- disable unless app specifies.\n3- force to disable regardless of app setting."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
 	{ SOptionList:{
+		title:"Scrolling Cache",
+		description:"0- force to enable regardless of app setting.\n1- enable unless app specifies.\n2- disable unless app specifies.\n3- force to disable regardless of app setting.\n",
 		default:$(echo "$(/res/synapse/actions/devtools scr_cache)"),
-                action:"devtools scr_cache",
+		action:"devtools scr_cache",
 		values:[0, 1, 2, 3,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Optimize Databases",
@@ -120,17 +118,17 @@ cat << CTAG
 		height:1
 	}},
 	{ SDescription:{
-		description:"NOTE: This process can take from 1-2 minutes and device may be UNRESPONSIVE during this time, PLEASE WAIT for the process to finish ! An error just means that some databases weren't succesful. Log output to /sdcard/Super/Logs/SQLite.txt."
+		description:"NOTE: This process can take from 1-2 minutes and device may be UNRESPONSIVE during this time, PLEASE WAIT for the process to finish ! An error just means that some databases weren't succesful. Log output to /sdcard/SkyHigh/Logs/SQLite.txt."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SButton:{
-		label:"Optimize Databases",
+		label:"Defrag Databases",
 		action:"devtools optimizedb"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"File System Trim",
@@ -150,11 +148,11 @@ cat << CTAG
 		action:"devtools fstrim"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	`if grep -q 'cache ext4' /proc/mounts && grep -q 'data ext4' /proc/mounts ; then
 		echo '{ SPane:{
-			title:"Wipe Options",
+			title:"Wipe Options"
 		}},
 		{ SSpacer:{
 			height:1
@@ -178,7 +176,7 @@ cat << CTAG
 			action:"devtools wipe_cache-dalvik_reboot"
 		}},
 		{ SSpacer:{
-			height:1
+			height:2
 		}},'
 	fi;`
 	{ SPane:{
@@ -211,7 +209,7 @@ cat << CTAG
 		action:"devtools clean_initd"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

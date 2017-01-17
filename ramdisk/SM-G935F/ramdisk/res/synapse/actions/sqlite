@@ -27,7 +27,7 @@ case "$1" in
 			$BB echo "None" > /res/synapse/Super/bck_prof;
 			cd $SYNAPSE_DATA || exit;
 			$SQL3 -separator '=' actionValueStore "SELECT key, value FROM action_value WHERE context = 'global' AND key NOT IN ($DISABLED_SETTINGS) $DISABLED_ACTIONS ORDER BY key ASC;" > "$SYNAPSE_CONFIG_DIR/$BCK_PROF.txt" 2> /dev/null;
-			$BB echo "$BCK_PROF.txt saved to /data/media/0/Super. Press the Restart Synapse button below to see updated list.";
+			$BB echo "$BCK_PROF.txt saved to /sdcard/Super. Press the Restart Synapse button below to see updated list.";
 		fi;
 	;;
 	ImportConfigSynapse)

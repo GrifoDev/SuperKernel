@@ -20,14 +20,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Google Play Services",
+		title:"SystemUpdateService",
 		description:"Enable to apply fix on every boot. If Disable, then REBOOT required for stock behaviour.\n",
 		default:$(echo "$(/res/synapse/actions/devtools SystemUpdateService)"),
 		action:"devtools SystemUpdateService",
 		values:[Enabled, Disabled,]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 			`if [ -f "/sys/module/wakeup/parameters/enable_sensorhub_wl" ] || [ -f "/sys/module/ssp_sensorhub/parameters/wl_sensorhub" ] || [ -f "/sys/module/ssp_sensorhub/parameters/enable_ssp_wl" ] || [ -f "/sys/module/ssp_iio/parameters/wl_ssp" ] || [ -f "/sys/module/sx9310/parameters/wl_grip" ] || [ -f "/sys/module/ssp_input/parameters/wl_motion" ] || [ -f "/sys/module/ssp_input/parameters/wl_pickup" ] || [ -f "/sys/module/ssp_sensorhub/parameters/wl_grip" ] || [ -f "/sys/module/ssp_sensorhub/parameters/wl_tilt" ] || [ -f "/sys/module/ssp_sensorhub/parameters/wl_prox" ]; then
 				$BB echo '{ SPane:{
@@ -45,7 +45,7 @@ cat << CTAG
 						}
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 				fi
 				if [ -f "/sys/module/ssp_sensorhub/parameters/wl_sensorhub" ]; then
@@ -75,7 +75,7 @@ cat << CTAG
 						}
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 				fi
 				if [ -f "/sys/module/ssp_iio/parameters/wl_ssp" ]; then
@@ -190,6 +190,9 @@ cat << CTAG
 						height:1
 					}},'
 				fi
+				$BB echo '{ SSpacer:{
+					height:1
+				}},'
 			fi`
 			`if [ -f "/sys/module/wakeup/parameters/enable_bcmdhd4359_wl" ] || [ -f "/sys/module/bcm_gps_spi/parameters/wl_divide_gps" ]; then
 				$BB echo '{ SPane:{
@@ -207,7 +210,7 @@ cat << CTAG
 						}
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 				fi
 				if [ -f "/sys/module/bcm_gps_spi/parameters/wl_divide_gps" ]; then
@@ -226,6 +229,9 @@ cat << CTAG
 						height:1
 					}},'
 				fi
+				$BB echo '{ SSpacer:{
+					height:1
+				}},'
 			fi`
 			`if [ -f "/sys/module/dhd/parameters/wl_divide" ]; then
 				WIFI=\`$BB cat /sys/module/dhd/parameters/wl_divide\`
@@ -264,12 +270,12 @@ cat << CTAG
 						action:"generic /sys/module/bcm4359/parameters/wl_divide_bt"
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 			fi`
 			`if [ -f "/sys/module/sec_battery/parameters/wl_polling" ] || [ -f "/sys/module/max77833_charger/parameters/wl_mains" ] || [ -f "/sys/module/max77833_charger/parameters/wl_wireless" ]; then
 				$BB echo '{ SPane:{
-					title:"Battery polling & max77833_charger_function",
+					title:"Battery",
 					description:" "
 				}},'
 				if [ -f "/sys/module/sec_battery/parameters/wl_polling" ]; then
@@ -320,12 +326,15 @@ cat << CTAG
 						height:1
 					}},'
 				fi
+				$BB echo '{ SSpacer:{
+					height:1
+				}},'
 			fi`
 			`if [ -f "/sys/module/certify_hall/parameters/wl_hall" ]; then
 				HALL=\`$BB cat /sys/module/certify_hall/parameters/wl_hall\`
 				$BB echo '{ SPane:{
-					title:"Hall sensor flip cover detect status",
-					description:" "
+					title:"Hall Sensor",
+					description:"Flip cover detect status.\n"
 				}},
 					{ SSeekBar:{
 						title:"certify_cover_detect",
@@ -338,7 +347,7 @@ cat << CTAG
 						action:"generic /sys/module/certify_hall/parameters/wl_hall"
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 			fi`
 			`if [ -f "/sys/module/sec_nfc/parameters/wl_nfc" ] || [ -f "/sys/module/pn547/parameters/wl_nfc" ]; then
@@ -378,6 +387,9 @@ cat << CTAG
 						height:1
 					}},'
 				fi
+				$BB echo '{ SSpacer:{
+					height:1
+				}},'
 			fi`
 			`if [ -f "/sys/module/snd_soc_noble_arizona/parameters/wl_arizona" ]; then
 				VWU=\`$BB cat /sys/module/snd_soc_noble_arizona/parameters/wl_arizona\`
@@ -396,7 +408,7 @@ cat << CTAG
 						action:"generic /sys/module/snd_soc_noble_arizona/parameters/wl_arizona"
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 			fi`
 			`if [ -f "/sys/module/wacom_i2c/parameters/wl_divide_pen" ]; then
@@ -416,7 +428,7 @@ cat << CTAG
 						action:"generic /sys/module/wacom_i2c/parameters/wl_divide_pen"
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 			fi`
 			`if [ -f "/sys/module/wakeup/parameters/enable_lli_pm_wl" ] || [ -f "/sys/module/wakeup/parameters/enable_radio_interface_wl" ] || [ -f "/sys/module/wakeup/parameters/enable_umts_ipc0_wl" ] || [ -f "/sys/module/wakeup/parameters/enable_power_manager_service_wl" ]; then
@@ -435,7 +447,7 @@ cat << CTAG
 						}
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 				fi
 				if [ -f "/sys/module/wakeup/parameters/enable_radio_interface_wl" ]; then
@@ -449,7 +461,7 @@ cat << CTAG
 						}
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 				fi
 				if [ -f "/sys/module/wakeup/parameters/enable_umts_ipc0_wl" ]; then
@@ -463,7 +475,7 @@ cat << CTAG
 						}
 					}},'
 					$BB echo '{ SSpacer:{
-						height:1
+						height:2
 					}},'
 				fi
 				if [ -f "/sys/module/wakeup/parameters/enable_power_manager_service_wl" ]; then
@@ -476,10 +488,10 @@ cat << CTAG
 						values:{ Y:"Enabled", N:"Disabled"
 						}
 					}},'
-					$BB echo '{ SSpacer:{
-						height:1
-					}},'
 				fi
+				$BB echo '{ SSpacer:{
+					height:2
+				}},'
 			fi`
     ]
 }

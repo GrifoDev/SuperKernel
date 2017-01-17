@@ -17,10 +17,10 @@ cat << CTAG
     name:BATTERY,
     elements:[
 	{ SDescription:{ 
-		description:"Device charging currents are composed of input current coming into the device (Nominal 5V) and charge current fed to the battery (Battery Charge Voltage). Charger detection divides charging cable types into several categories as described below. If charging current exceeds input load, then charging current is dynamically adjusted. For avoiding battery deterioration, charging currents of less than 0.7 Coloumb are advised; ex. 3000mAh (Capacity) * 0.7C = ~2100mA."
+		description:"Device charging currents are composed of input current coming into the device (Nominal 5V - HV 9V) and charge current fed to the battery (Battery Charge Voltage). Charger detection divides charging cable types into several categories as described below. If charging current exceeds input load, then charging current is dynamically adjusted. For avoiding battery deterioration, charging currents of less than 0.7 Coloumb are advised; ex. 3000mAh (Capacity) * 0.7C = ~2100mA."
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Battery Info"
@@ -67,7 +67,7 @@ cat << CTAG
 		description:"Input is the live current limit coming through the USB port into the device at 5/9V. Charge is the desired target current to charge the battery. Now is the actual current limit applied to the battery."
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Charging Logic",
@@ -77,7 +77,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Unstable Power Detection",
+		title:"Unstable Power Detection",
 		description:" ",
 		default:1,
 		action:"generic $P/unstable_power_detection",
@@ -86,7 +86,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"HV Power Supplies",
@@ -97,7 +97,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"HV Prepare Mains Input Current",
-		description:"",
+		description:" ",
 		min:800, max:2000, unit:" mA", step:25,
 		default:$(cat $P/hv_prep_input),
 		action:"generic $P/hv_prep_input"
@@ -107,7 +107,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"HV Prepare Mains Charge Current",
-		description:"",
+		description:" ",
 		min:800, max:2000, unit:" mA", step:25,
 		default:$(cat $P/hv_prep_charge),
 		action:"generic $P/hv_prep_charge"
@@ -117,7 +117,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"HV Input Current",
-		description:"",
+		description:" ",
 		min:400, max:3000, unit:" mA", step:25,
 		default:$(cat $P/hv_input),
 		action:"generic $P/hv_input"
@@ -133,7 +133,7 @@ cat << CTAG
 		action:"generic $P/hv_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"AC/Mains",
@@ -144,7 +144,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"AC/Mains Input Current",
-		description:"",
+		description:" ",
 		min:400, max:3150, unit:" mA", step:25,
 		default:$(cat $P/ac_input),
 		action:"generic $P/ac_input"
@@ -169,8 +169,8 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"AC/Mains Input Current (screen-on)",
-		description:"",
+		title:"AC/Mains Input Current (Screen-ON)",
+		description:" ",
 		min:400, max:3150, unit:" mA", step:25,
 		default:$(cat $P/so_limit_input),
 		action:"generic $P/so_limit_input"
@@ -179,14 +179,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"AC/Mains Charge Current (screen-on)",
+		title:"AC/Mains Charge Current (Screen-ON)",
 		description:"AC or mains charge current supplied to battery during charging whilst screen is on.\n",
 		min:400, max:3150, unit:" mA", step:25,
 		default:$(cat $P/so_limit_charge),
 		action:"generic $P/so_limit_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{ 
 		title:"Standard Downstream Port",
@@ -197,7 +197,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"SDP Input Current",
-		description:"",
+		description:" ",
 		min:400, max:1000, unit:" mA", step:25,
 		default:$(cat $P/sdp_input),
 		action:"generic $P/sdp_input"
@@ -213,7 +213,7 @@ cat << CTAG
 		action:"generic $P/sdp_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{ 
 		title:"Dedicated Charging Port",
@@ -224,7 +224,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"DCP Input Current",
-		description:"",
+		description:" ",
 		min:400, max:2000, unit:" mA", step:25,
 		default:$(cat $P/dcp_input),
 		action:"generic $P/dcp_input"
@@ -234,13 +234,13 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"DCP Charge Current",
-		description:"",
+		description:" ",
 		min:400, max:2000, unit:" mA", step:25,
 		default:$(cat $P/dcp_charge),
 		action:"generic $P/dcp_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{ 
 		title:"Charging Downstream Port",
@@ -251,7 +251,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"CDP Input Current",
-		description:"",
+		description:" ",
 		min:400, max:1500, unit:" mA", step:25,
 		default:$(cat $P/cdp_input),
 		action:"generic $P/cdp_input"
@@ -261,13 +261,13 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"CDP Charge Current",
-		description:"",
+		description:" ",
 		min:400, max:1500, unit:" mA", step:25,
 		default:$(cat $P/cdp_charge),
 		action:"generic $P/cdp_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{ 
 		title:"Accessory Charging Adapter",
@@ -278,7 +278,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"ACA Input Current",
-		description:"",
+		description:" ",
 		min:100, max:1000, unit:" mA", step:20,
 		default:$(cat $P/aca_input),
 		action:"generic $P/aca_input"
@@ -288,13 +288,13 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"ACA Charge Current",
-		description:"",
+		description:" ",
 		min:100, max:1000, unit:" mA", step:20,
 		default:$(cat $P/aca_charge),
 		action:"generic $P/aca_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{ 
 		title:"Car Dock power",
@@ -305,7 +305,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Car Dock Input Current",
-		description:"",
+		description:" ",
 		min:400, max:3150, unit:" mA", step:25,
 		default:$(cat $P/car_input),
 		action:"generic $P/car_input"
@@ -315,16 +315,16 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Car Dock Charge Current",
-		description:"",
+		description:" ",
 		min:400, max:3150, unit:" mA", step:25,
 		default:$(cat $P/car_charge),
 		action:"generic $P/car_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{ 
-		title:"MHL power",
+		title:"MHL Power",
 		description:"Mobile High-Definition Link power sources."
 	}},
 	{ SSpacer:{
@@ -332,7 +332,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"500 mA MHL Class Input Current",
-		description:"",
+		description:" ",
 		min:300, max:1000, unit:" mA", step:25,
 		default:$(cat $P/mhl_500_input),
 		action:"generic $P/mhl_500_input"
@@ -342,7 +342,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"500 mA MHL Class Charge Current",
-		description:"",
+		description:" ",
 		min:300, max:1000, unit:" mA", step:25,
 		default:$(cat $P/mhl_500_charge),
 		action:"generic $P/mhl_500_charge"
@@ -352,7 +352,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"500 mA MHL Class Input Current",
-		description:"",
+		description:" ",
 		min:300, max:1000, unit:" mA", step:25,
 		default:$(cat $P/mhl_500_input),
 		action:"generic $P/mhl_500_input"
@@ -362,7 +362,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"500 mA MHL Class Charge Current",
-		description:"",
+		description:" ",
 		min:300, max:1000, unit:" mA", step:25,
 		default:$(cat $P/mhl_500_charge),
 		action:"generic $P/mhl_500_charge"
@@ -372,7 +372,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"900 mA MHL Class Input Current",
-		description:"",
+		description:" ",
 		min:300, max:1500, unit:" mA", step:25,
 		default:$(cat $P/mhl_900_input),
 		action:"generic $P/mhl_900_input"
@@ -382,7 +382,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"900 mA MHL Class Charge Current",
-		description:"",
+		description:" ",
 		min:300, max:1500, unit:" mA", step:25,
 		default:$(cat $P/mhl_900_charge),
 		action:"generic $P/mhl_900_charge"
@@ -392,7 +392,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"1500 mA MHL Class Input Current",
-		description:"",
+		description:" ",
 		min:300, max:2000, unit:" mA", step:25,
 		default:$(cat $P/mhl_1500_input),
 		action:"generic $P/mhl_1500_input"
@@ -402,7 +402,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"1500 mA MHL Class Charge Current",
-		description:"",
+		description:" ",
 		min:300, max:2000, unit:" mA", step:25,
 		default:$(cat $P/mhl_1500_charge),
 		action:"generic $P/mhl_1500_charge"
@@ -412,7 +412,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"100 mA MHL USB Class Input Current",
-		description:"",
+		description:" ",
 		min:80, max:500, unit:" mA", step:20,
 		default:$(cat $P/mhl_usb100_input),
 		action:"generic $P/mhl_usb100_input"
@@ -422,7 +422,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"100 mA MHL USB Class Charge Current",
-		description:"",
+		description:" ",
 		min:80, max:500, unit:" mA", step:20,
 		default:$(cat $P/mhl_usb100_charge),
 		action:"generic $P/mhl_usb100_charge"
@@ -432,7 +432,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"USB powered MHL Adapter Input Current",
-		description:"",
+		description:" ",
 		min:300, max:2000, unit:" mA", step:25,
 		default:$(cat $P/mhl_usb_input),
 		action:"generic $P/mhl_usb_input"
@@ -442,16 +442,16 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"USB powered MHL Adapter Charge Current",
-		description:"",
+		description:" ",
 		min:300, max:2000, unit:" mA", step:25,
 		default:$(cat $P/mhl_usb_charge),
 		action:"generic $P/mhl_usb_charge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{ 
-		title:"Wireless power",
+		title:"Wireless Power",
 		description:"Wireless power sources."
 	}},
 	{ SSpacer:{
@@ -459,7 +459,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Wireless Input Current",
-		description:"",
+		description:" ",
 		min:800, max:1500, unit:" mA", step:20,
 		default:$(cat $P/wc_input),
 		action:"generic $P/wc_input"
@@ -469,8 +469,8 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Wireless Charge Current",
-		description:"",
-		min:800, max:2500, unit:" mA", step:20,
+		description:" ",
+		min:800, max:1500, unit:" mA", step:20,
 		default:$(cat $P/wc_charge),
 		action:"generic $P/wc_charge"
 	}},
@@ -500,14 +500,14 @@ cat << CTAG
 		description:" 5- Unplug then use normally. Device should re-calibrate itself"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SButton:{
 		label:"Reset Fuel-Gauge Chip Now",
 		action:"fuel-gauge fuel-gauge"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

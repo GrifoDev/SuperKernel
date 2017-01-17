@@ -17,7 +17,7 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Read Wakeup Threshold",
-		description:"Default is 256.\n",
+		description:" ",
 		max:2048, min:64, step:64,
 		default:$(cat /proc/sys/kernel/random/read_wakeup_threshold),
 		action:"generic /proc/sys/kernel/random/read_wakeup_threshold"
@@ -27,13 +27,13 @@ cat << CTAG
 	}},
 	{ SSeekBar:{
 		title:"Write Wakeup Threshold",
-		description:"Default is 320.\n",
+		description:" ",
 		max:2048, min:64, step:64,
 		default:$(cat /proc/sys/kernel/random/write_wakeup_threshold),
 		action:"generic /proc/sys/kernel/random/write_wakeup_threshold"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Gentle Fair Sleepers",
@@ -43,7 +43,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Gentle Fair Sleepers",
+		title:"Gentle Fair Sleepers",
 		description:" ",
 		default:0,
 		action:"generic /sys/kernel/sched/gentle_fair_sleepers",
@@ -52,7 +52,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Randomisation",
@@ -62,7 +62,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"randomize_va_space",
+		title:"Randomize va Space",
 		description:" ",
 		max:2,
 		min:0,
@@ -71,20 +71,20 @@ cat << CTAG
 		action:"generic /proc/sys/kernel/randomize_va_space"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"Freeze Timeout",
+		title:"PM Freeze Timeout",
 		description:"Controls how long it will cost at most to freeze all user space processes or all freezable kernel threads.",
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"pm_freeze_timeout",
+		title:"Freeze Timeout",
 		description:" ",
 		unit:" sec",
-		max:40000,
+		max:2000,
 		min:1000,
 		step:100,
 		weight:0.001,
@@ -92,7 +92,7 @@ cat << CTAG
 		action:"generic /sys/power/pm_freeze_timeout"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

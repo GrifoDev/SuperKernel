@@ -17,7 +17,7 @@ vnswap0)
 	if [ "$(grep "vnswap0" /proc/swaps)" != "" ]; then
 		$BB swapoff $SWAP > /dev/null 2>&1
 		$BB sync;
-		$BB echo "0" > /proc/sys/vm/swappiness;
+		echo "0" > /proc/sys/vm/swappiness;
 	fi;
   elif [ "$2" == Enabled ]; then
     echo 1 > $P
@@ -25,7 +25,7 @@ vnswap0)
 		$BB mkswap $SWAP > /dev/null 2>&1
 		$BB swapon $SWAP > /dev/null 2>&1
 		$BB sync;
-		$BB echo "190" > /proc/sys/vm/swappiness;
+		echo "190" > /proc/sys/vm/swappiness;
 	fi;
   fi; fi
   copy=$(cat $P)

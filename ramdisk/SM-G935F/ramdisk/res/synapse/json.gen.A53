@@ -5,7 +5,7 @@ cat << CTAG
     name:"A53 CPU",
     elements:[
 	{ SLiveLabel:{
-		title:"A53 LITTLE Cores live frequency",
+		title:"A53 LITTLE Cores Live Frequency",
 		refresh:500,
 		action:"live LiveCPUFrequency_LITTLE"
 	}},
@@ -25,7 +25,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"A53 LITTLE Cores MAX frequency",
+		title:"Max Freq",
 		description:"Set the maximum frequency the CPU scales up to.\n",
 		default:1586000,
 		action:"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
@@ -42,7 +42,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"A53 LITTLE Cores MIN frequency",
+		title:"Min Freq",
 		description:"Set the minimum frequency the CPU scales down to.\n",
 		default:442000,
 		action:"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq",
@@ -56,7 +56,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

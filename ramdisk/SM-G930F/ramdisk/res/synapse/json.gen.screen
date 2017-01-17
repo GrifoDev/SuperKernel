@@ -8,7 +8,7 @@ cat << CTAG
     elements:[
 	{ SLiveLabel:{
 		title:"Lux",
-		description:"Live ambient light value as read from the light sensor",
+		description:"Live ambient light value as read from the light sensor.",
 		refresh:500,
 		action:"live lux"
 	}},
@@ -16,7 +16,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SLiveLabel:{
-		title:"Display brightness",
+		title:"Display Brightness",
 		description:"Live panel brightness value 0-255",
 		refresh:500,
 		action:"live actual_brightness"
@@ -26,7 +26,7 @@ cat << CTAG
 	}},
 	{ SPane:{
 		title:"ALPM (Aggressive Link Power Management)",
-		description:"ALPM is a mechanism for reducing SSD/HDD power consumption. If ALPM is enabled, SSD goes into low-power mode when SSD has no I/O activity. On I/O request, SSD power is resumed. More info: <a href='http://www.fit-pc.com/wiki/index.php/Aggressive_Link_Power_Management_(ALPM)'>Wiki</a>"
+		description:"ALPM is a mechanism for reducing SSD/HDD power consumption. If ALPM is enabled, SSD goes into low-power mode when SSD has no I/O activity. On I/O request, SSD power is resumed.\nMore info: <a href='http://www.fit-pc.com/wiki/index.php/Aggressive_Link_Power_Management_(ALPM)'>Wiki</a>"
 	}},
 	{ SSpacer:{
 		height:1
@@ -39,10 +39,10 @@ cat << CTAG
 		values:[Disabled, Enabled, Auto]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
-		title:"Lux threshold",
+		title:"Lux Threshold",
 		description:"Max ambient light value required to enable 'Auto' LCD ALPM. Requires CortexBrain ENABLED !\n",
 		min:0, max:200, unit:" lx", step:1,
 		default:$(cat /res/synapse/Super/cortexbrain_lux),

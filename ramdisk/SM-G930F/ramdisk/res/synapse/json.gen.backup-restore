@@ -70,7 +70,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Selected Profile",
@@ -91,7 +91,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SDescription:{
 		description:"NOTE: After you restore a profile and press the [Restart Synapse] button, you MUST also press the [X] (Cancel) button on top to load the new settings!"
@@ -125,9 +125,9 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
-	{ STitleBar:{
+	{ SPane:{
 		title:"Kernel Image"
 	}},
 	{ SSpacer:{
@@ -160,7 +160,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Selected Image",
@@ -176,7 +176,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SButton:{
 		label:"Restore Selected Kernel",
@@ -197,7 +197,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"General Actions",
@@ -211,7 +211,7 @@ cat << CTAG
 		action:"restorebackup restart"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

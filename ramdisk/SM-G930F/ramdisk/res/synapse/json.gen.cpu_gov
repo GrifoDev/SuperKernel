@@ -12,8 +12,8 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Current governor",
-		description:"Set your governor for BOTH A72 & A53 cores.\n",
+		title:"Scaling Governor",
+		description:"Set your governor for BOTH A57 & A53 cores.\n",
 		default:$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor),
 		action:"governor /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
 		values:[
@@ -43,7 +43,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Interactive Governor Tuning",
@@ -72,7 +72,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"A72 Profile",
@@ -89,7 +89,7 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Turbo Mode",
@@ -106,14 +106,14 @@ cat << CTAG
 		]
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SButton:{
 		label:"Reboot Device",
 		action:"devtools reboot"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

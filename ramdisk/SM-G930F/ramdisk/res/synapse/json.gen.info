@@ -39,7 +39,7 @@ cat << CTAG
 		description:"Tkkg1994"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	`if [ "$(grep "G930F" /proc/cmdline)" != "" ] || [ "$(grep "G930FD" /proc/cmdline)" != "" ] || [ "$(grep "G930W8" /proc/cmdline)" != "" ]; then
 		echo '{ SPane:{
@@ -63,7 +63,7 @@ cat << CTAG
 		description:"<a href='https://github.com/Tkkg1994/SuperKernel/'>Github Source Code</a>"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Special Thanks to"
@@ -72,7 +72,7 @@ cat << CTAG
 		description:"UpInTheAir, AndreiLux, Jesec, Halaszk, Neobuddy and Dorimanx!"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"ASV Summary",
@@ -83,7 +83,7 @@ cat << CTAG
 		action:"default asv"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Kernel Version"
@@ -93,7 +93,7 @@ cat << CTAG
 		action:"default version"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Build"
@@ -111,7 +111,7 @@ cat << CTAG
 		echo Opening browser...;"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Android Version"
@@ -121,7 +121,7 @@ cat << CTAG
 		action:"default android_version"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Build Date"
@@ -131,7 +131,7 @@ cat << CTAG
 		action:"default date"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Baseband"
@@ -141,7 +141,7 @@ cat << CTAG
 		action:"default baseband"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Bootloader"
@@ -151,7 +151,7 @@ cat << CTAG
 		action:"default bootloader"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Ramdisk"
@@ -161,7 +161,7 @@ cat << CTAG
 		action:"default ramdisk"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Busybox Version"
@@ -171,7 +171,7 @@ cat << CTAG
 		action:"default busybox_version"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Superuser Version"
@@ -181,7 +181,7 @@ cat << CTAG
 		action:"default su_version"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Serial"
@@ -191,7 +191,7 @@ cat << CTAG
 		action:"default serial"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

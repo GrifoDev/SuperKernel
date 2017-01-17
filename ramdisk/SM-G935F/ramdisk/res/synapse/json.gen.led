@@ -12,8 +12,8 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable LED Notifications",
-		description:"Enable or disable all LED notifications ! Default is Enabled.\n",
+		title:"Notifications",
+		description:"Enable or disable all LED notifications !\n",
 		default:0,
 		action:"generic /sys/class/sec/led/led_always_disable",
 		values:{
@@ -21,10 +21,10 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"LED Notification Delay",
+		title:"Notification Delay",
 		description:"Control LED delay for missed notifications."
 	}},
 	{ SSpacer:{
@@ -56,17 +56,17 @@ cat << CTAG
 		action:"generic /sys/class/sec/led/led_notification_delay_off"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
-		title:"LED Fade-in/out Time Period",
+		title:"LED Fade-In/Out Time Period",
 		description:"Control LED fade-in/out time period for missed notifications.",
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"LED Fade Control",
+		title:"Fade Control",
 		description:" ",
 		default:0,
 		action:"generic /sys/class/sec/led/led_notification_ramp_control",
@@ -75,10 +75,10 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
-		title:"Fade-in",
+		title:"Fade-In",
 		description:"Sets the time period of the rising slope. (no fade-in time = 0 / default = 0.8)\n",
 		unit:" sec",
 		weight:0.001,
@@ -92,18 +92,18 @@ cat << CTAG
 		height:1
 	}},
 	{ SSeekBar:{
-		title:"Fade-out",
+		title:"Fade-Out",
 		description:"Sets the time period of the falling slope. (no fade-out time = 0 / default = 1)\n",
 		unit:" sec",
 		weight:0.001,
 		min:0,
 		max:1900,
-		step:10,
+		step:100,
 		default:$(cat /sys/class/sec/led/led_notification_ramp_down),
 		action:"generic /sys/class/sec/led/led_notification_ramp_down"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"Test"
@@ -123,7 +123,7 @@ cat << CTAG
 		action:"led 0"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

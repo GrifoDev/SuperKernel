@@ -35,7 +35,10 @@ battvoltnow)
   echo "Voltage Now: $(($(cat $P/power_supply/battery/voltage_now) /1000)) mV"
   ;;
 batttemp)
-  echo "Temp: $(($(cat $P/power_supply/battery/batt_temp) /10)) °C"
+  BAT_C=$(($(cat $P/power_supply/battery/batt_temp) /10));
+  BAT_F=$($BB awk "BEGIN { print ( ($BAT_C * 1.8) + 32 ) }");
+  BAT_F_ROUNDED="$($BB printf "%.0f" $BAT_F)";
+  echo "Temp: $BAT_C °C | $BAT_F_ROUNDED °F";
   ;;
 battcapa)
   echo "Capacity: $(cat $P/power_supply/battery/capacity) %"

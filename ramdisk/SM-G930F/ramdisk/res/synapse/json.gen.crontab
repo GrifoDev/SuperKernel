@@ -41,14 +41,14 @@ cat << CTAG
 		height:2
 	}},
 	{ SPane:{
-		title:"Clean RAM cache",
+		title:"Clean RAM Cache",
 		description:"Clear RAM-cache every 1 hours, but only if CPU is resting (IDLE) and more than 50% of your memory is used! This will free RAM from unused buffers and cache."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Clean RAM cache",
+		title:"Clean RAM Cache",
 		description:" ",
 		default:1,
 		action:"crontab /res/synapse/Super/cron/drop_cache",
@@ -57,7 +57,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
 		title:"Interval",
@@ -70,14 +70,14 @@ cat << CTAG
 		height:2
 	}},
 	{ SPane:{
-		title:"Google Service restart",
+		title:"Google Service Restart",
 		description:"Restart Google Services to release memory leak and CPU non-stop activity. This is one of the LP RAM leak BUGS where the Service can get stuck, drain RAM, and force CPU to work non-stop. Fix this by restarting the service every 3 hours."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Google Service restart",
+		title:"Google Service Restart",
 		description:" ",
 		default:0,
 		action:"crontab /res/synapse/Super/cron/google",
@@ -86,7 +86,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SSeekBar:{
 		title:"Interval",
@@ -99,14 +99,14 @@ cat << CTAG
 		height:2
 	}},
 	{ SPane:{
-		title:"Clean app-cache",
+		title:"App-Cache",
 		description:"Clear app-cache every day at 4:30AM, only if CPU is resting (IDLE)! This can maintain free space on data partition, and clean all old junk folders (clipboard-cache, tombstones, anr logs, dropbox logs & lost+found)."
 	}},
 	{ SSpacer:{
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Clean app-cache",
+		title:"Clean App-Cache",
 		description:" ",
 		default:1,
 		action:"crontab /res/synapse/Super/cron/cache",
@@ -148,7 +148,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Optimize Databases",
+		title:"Optimize Databases",
 		description:" ",
 		default:1,
 		action:"crontab /res/synapse/Super/cron/sqlite",
@@ -190,7 +190,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable File System Trim",
+		title:"FSTrim",
 		description:" ",
 		default:1,
 		action:"crontab /res/synapse/Super/cron/fstrim",
@@ -232,7 +232,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable Battery Scaling Calibration",
+		title:"Calibration",
 		description:" ",
 		default:1,
 		action:"crontab /res/synapse/Super/cron/fg_reset",
@@ -241,7 +241,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Day to run task",
@@ -286,7 +286,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SLiveLabel:{
-		title:"Internal storage free space",
+		title:"Internal Storage Free Space",
 		description:"Display (approx) free space for TWRP Auto Backups",
 		refresh:10000,
 		action:"live Live_storage"
@@ -295,7 +295,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
-		title:"Enable TWRP Auto Backup",
+		title:"TWRP Auto Backup",
 		description:" ",
 		default:0,
 		action:"crontab /res/synapse/Super/cron/twrp_backup",
@@ -304,7 +304,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Delete TWRP Auto Backup",
@@ -316,7 +316,7 @@ cat << CTAG
 		}
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SOptionList:{
 		title:"Day to run task",
@@ -365,7 +365,7 @@ cat << CTAG
 		action:"crontab log"
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }
