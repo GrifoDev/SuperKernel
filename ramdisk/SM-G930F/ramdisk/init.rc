@@ -13,6 +13,7 @@ import /init.rilcommon.rc
 import /init.container.rc
 import /init.fac.rc
 import /init.d_support.sh
+import /init.Super.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
@@ -1461,3 +1462,9 @@ service preparefbe_ce /system/bin/preparefbe storage_ce
 service preparefbe_de /system/bin/preparefbe storage_de
     oneshot
     disabled
+
+# Call Post-init script
+service Super-init /sbin/Super.sh
+    class main
+    user root
+    oneshot
