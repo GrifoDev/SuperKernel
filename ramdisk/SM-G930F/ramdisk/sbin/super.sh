@@ -37,18 +37,9 @@ fi;
 # vnswap (parse defaults from prop)
 SWAP=/dev/block/vnswap0;
 SWAPSIZE=2684354560; # Android 6.0.1 == 2560 MB
-if [ "$(grep "vnswap_enabled" /system/SkyHigh.prop)" != "" ]; then
-	if [ "$(grep "vnswap0" /proc/swaps)" == "" ]; then
-		echo "$SWAPSIZE" > /sys/block/vnswap0/disksize;
-		$BB mkswap $SWAP > /dev/null 2>&1
-		$BB swapon $SWAP > /dev/null 2>&1
-		$BB sync;
-		echo "190" > /proc/sys/vm/swappiness;
-	fi;
-else
-	echo "0" > /sys/block/vnswap0/disksize;
-	$BB sync;
-	echo "0" > /proc/sys/vm/swappiness;
+echo "0" > /sys/block/vnswap0/disksize;
+$BB sync;
+echo "0" > /proc/sys/vm/swappiness;
 fi;
 
 # Backup EFS
@@ -152,7 +143,7 @@ if [ -e /data/.Supertest.log ]; then
 	rm /data/.Supertest.log
 fi;
 echo  Kernel script is working !!! >> /data/.Supertest.log
-echo "excecuted on $(date +"%d-%m-%Y %r" )" >> /data/.Super.log
+echo "excecuted on $(date +"%d-%m-%Y %r" )" >> /data/.Supertest.log
 
 fi;
 
