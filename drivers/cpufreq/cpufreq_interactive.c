@@ -32,9 +32,6 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <linux/pm_qos.h>
-#ifdef CONFIG_STATE_NOTIFIER
-#include <linux/state_notifier.h>
-#endif
 
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
 #include <soc/samsung/cpufreq.h>
@@ -78,12 +75,6 @@ struct task_struct *speedchange_task;
 static cpumask_t speedchange_cpumask;
 static spinlock_t speedchange_cpumask_lock;
 static struct mutex gov_lock;
-#ifdef CONFIG_STATE_NOTIFIER
-static struct notifier_block notif;
-
-/* boolean for determining screen on/off state */
-static bool suspended = false;
-#endif
 
 /* Target load.  Lower values result in higher CPU speeds. */
 #define DEFAULT_TARGET_LOAD 90
@@ -215,12 +206,12 @@ static void cpufreq_interactive_timer_resched(
 				  tunables->io_is_busy);
 	pcpu->cputime_speedadj = 0;
 	pcpu->cputime_speedadj_timestamp = pcpu->time_in_idle_timestamp;
-	expires = jiffies + tunables->timer_rate;
+	expires = jiffies + usecs_to_jiffies(tunables->timer_rate);
 	mod_timer_pinned(&pcpu->cpu_timer, expires);
 
 	if (tunables->timer_slack_val >= 0 &&
 	    pcpu->target_freq > pcpu->policy->min) {
-		expires += tunables->timer_slack_val;
+		expires += usecs_to_jiffies(tunables->timer_slack_val);
 		mod_timer_pinned(&pcpu->cpu_slack_timer, expires);
 	}
 
@@ -235,14 +226,15 @@ static void cpufreq_interactive_timer_start(
 	struct cpufreq_interactive_tunables *tunables, int cpu)
 {
 	struct cpufreq_interactive_cpuinfo *pcpu = &per_cpu(cpuinfo, cpu);
-	unsigned long expires = jiffies + tunables->timer_rate;
+	unsigned long expires = jiffies +
+		usecs_to_jiffies(tunables->timer_rate);
 	unsigned long flags;
 
 	pcpu->cpu_timer.expires = expires;
 	add_timer_on(&pcpu->cpu_timer, cpu);
 	if (tunables->timer_slack_val >= 0 &&
 	    pcpu->target_freq > pcpu->policy->min) {
-		expires += tunables->timer_slack_val;
+		expires += usecs_to_jiffies(tunables->timer_slack_val);
 		pcpu->cpu_slack_timer.expires = expires;
 		add_timer_on(&pcpu->cpu_slack_timer, cpu);
 	}
@@ -511,19 +503,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 	if (WARN_ON_ONCE(!delta_time))
 		goto rearm;
 #ifdef CONFIG_DYNAMIC_MODE_SUPPORT
-#ifdef CONFIG_STATE_NOTIFIER
-	if (!suspended) {
-		spin_lock_irqsave(&tunables->mode_lock, flags);
-		if(tunables->old_mode != tunables->mode){
-			if(tunables->mode & PERF_MODE || tunables->mode & SLOW_MODE)
-				enter_mode(tunables);
-			else
-				exit_mode(tunables);
-		}
-		tunables->old_mode = tunables->mode;
-		spin_unlock_irqrestore(&tunables->mode_lock, flags);
-	}
-#else
 	spin_lock_irqsave(&tunables->mode_lock, flags);
 	if(tunables->old_mode != tunables->mode){
 		if(tunables->mode & PERF_MODE || tunables->mode & SLOW_MODE)
@@ -534,7 +513,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 	tunables->old_mode = tunables->mode;
 	spin_unlock_irqrestore(&tunables->mode_lock, flags);
 #endif
-#endif
 
 	spin_lock_irqsave(&pcpu->target_freq_lock, flags);
 	do_div(cputime_speedadj, delta_time);
@@ -542,11 +520,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	cpu_load = loadadjfreq / pcpu->policy->cur;
 	tunables->boosted = tunables->boost_val || now < tunables->boostpulse_endtime;
 
-#ifdef CONFIG_STATE_NOTIFIER
-	if ((cpu_load >= tunables->go_hispeed_load&& !suspended) || tunables->boosted) {
-#else
 	if (cpu_load >= tunables->go_hispeed_load || tunables->boosted) {
-#endif
 		if (pcpu->policy->cur < tunables->hispeed_freq) {
 			new_freq = tunables->hispeed_freq;
 		} else {
@@ -555,8 +529,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 			if (new_freq < tunables->hispeed_freq)
 				new_freq = tunables->hispeed_freq;
 		}
-	} else if (cpu_load <= 6) {
-		new_freq = pcpu->policy->cpuinfo.min_freq;
 	} else {
 		new_freq = choose_freq(pcpu, loadadjfreq);
 		if (new_freq > tunables->hispeed_freq &&
@@ -825,7 +797,7 @@ static int cpufreq_interactive_notifier(
 	int cpu;
 	unsigned long flags;
 
-	if (val == CPUFREQ_PRECHANGE) {
+	if (val == CPUFREQ_POSTCHANGE) {
 		pcpu = &per_cpu(cpuinfo, freq->cpu);
 		if (!down_read_trylock(&pcpu->enable_sem))
 			return 0;
@@ -1151,7 +1123,7 @@ static ssize_t store_min_sample_time(struct cpufreq_interactive_tunables
 static ssize_t show_timer_rate(struct cpufreq_interactive_tunables *tunables,
 		char *buf)
 {
-	return sprintf(buf, "%u\n", jiffies_to_usecs(tunables->timer_rate));
+	return sprintf(buf, "%lu\n", tunables->timer_rate);
 }
 
 static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
@@ -1169,7 +1141,6 @@ static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
 		pr_warn("timer_rate not aligned to jiffy. Rounded up to %lu\n",
 			val_round);
 
-	val_round = usecs_to_jiffies(val_round);
 	tunables->timer_rate = val_round;
 	return count;
 }
@@ -1177,7 +1148,7 @@ static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
 static ssize_t show_timer_slack(struct cpufreq_interactive_tunables *tunables,
 		char *buf)
 {
-	return sprintf(buf, "%u\n", jiffies_to_usecs(tunables->timer_slack_val));
+	return sprintf(buf, "%d\n", tunables->timer_slack_val);
 }
 
 static ssize_t store_timer_slack(struct cpufreq_interactive_tunables *tunables,
@@ -1190,7 +1161,7 @@ static ssize_t store_timer_slack(struct cpufreq_interactive_tunables *tunables,
 	if (ret < 0)
 		return ret;
 
-	tunables->timer_slack_val = usecs_to_jiffies(val);
+	tunables->timer_slack_val = val;
 	return count;
 }
 
@@ -2590,9 +2561,9 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 			tunables->target_loads = default_target_loads;
 			tunables->ntarget_loads = ARRAY_SIZE(default_target_loads);
 			tunables->min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
-			tunables->timer_rate = usecs_to_jiffies(DEFAULT_TIMER_RATE);
+			tunables->timer_rate = DEFAULT_TIMER_RATE;
 			tunables->boostpulse_duration_val = DEFAULT_MIN_SAMPLE_TIME;
-			tunables->timer_slack_val = usecs_to_jiffies(DEFAULT_TIMER_SLACK);
+			tunables->timer_slack_val = DEFAULT_TIMER_SLACK;
 #if defined(CONFIG_EXYNOS_DUAL_GOV_PARAMS_SUPPORT)
 			if (policy->cpu) {
 				for (j = 0; j < NR_MODE; j++) {
@@ -3119,25 +3090,6 @@ static struct notifier_block cpufreq_interactive_cluster0_max_qos_notifier = {
 #endif
 #endif
 
-#ifdef CONFIG_STATE_NOTIFIER
-static int state_notifier_callback(struct notifier_block *this,
- 				unsigned long event, void *data)
-{
-	switch (event) {
-		case STATE_NOTIFIER_ACTIVE:
-			suspended = false;
-			break;
-		case STATE_NOTIFIER_SUSPEND:
-			suspended = true;
-			break;
-		default:
-			break;
-	}
-
-	return NOTIFY_OK;
-}
-#endif
-
 static int __init cpufreq_interactive_init(void)
 {
 	unsigned int i;
@@ -3155,12 +3107,6 @@ static int __init cpufreq_interactive_init(void)
 		spin_lock_init(&pcpu->target_freq_lock);
 		init_rwsem(&pcpu->enable_sem);
 	}
-
-#ifdef CONFIG_STATE_NOTIFIER
-	notif.notifier_call = state_notifier_callback;
-	if (state_register_client(&notif))
-		pr_err("Failed to register State notifier callback for interactive governor\n");
-#endif
 
 	spin_lock_init(&speedchange_cpumask_lock);
 	mutex_init(&gov_lock);
