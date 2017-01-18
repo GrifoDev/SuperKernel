@@ -25,14 +25,14 @@ cat << CTAG
 		height:1
 	}},
 	{ SLiveLabel:{
-		title:"A57 big Cores Time in State",
+		title:"A72 big Cores Time in State",
 		description:"CPU4",
 		refresh:2500,
-		action:"live Live_A57_Time 0 9"
+		action:"live Live_A72_Time 0 9"
 	}},
 	{ SLiveLabel:{
 		refresh:2500,
-		action:"live Live_A57_Time 10 19"
+		action:"live Live_A72_Time 10 19"
 	}},
 	{ SSpacer:{
 		height:1

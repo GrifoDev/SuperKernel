@@ -1,4 +1,4 @@
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 if [[ ! -z $2 ]]; then
 	echo "$2" > "$1"

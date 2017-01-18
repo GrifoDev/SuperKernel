@@ -1,4 +1,4 @@
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 if [ -f "$1" ]; then
 	if [[ ! -z $2 ]]; then

@@ -84,9 +84,9 @@ cat << CTAG
 		title:"Freeze Timeout",
 		description:" ",
 		unit:" sec",
-		max:2000,
+		max:40000,
 		min:1000,
-		step:100,
+		step:10,
 		weight:0.001,
 		default:$(cat /sys/power/pm_freeze_timeout),
 		action:"generic /sys/power/pm_freeze_timeout"

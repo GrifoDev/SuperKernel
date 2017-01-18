@@ -39,7 +39,7 @@ cortexbrain_pewq=$(cat /res/synapse/Super/cortexbrain_pewq);
 # GLOBAL VARIABLES || without "local" also a variable in a function is global
 # ==============================================================
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 	$BB mount -o remount,rw /;

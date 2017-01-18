@@ -1,6 +1,6 @@
 # By UpInTheAir for SkyHigh kernels
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 	$BB mount -o remount,rw /;

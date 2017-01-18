@@ -37,7 +37,7 @@ cat << CTAG
 		weight:0.001,
 		min:0,
 		max:3000,
-		step:100,
+		step:10,
 		default:$(cat /sys/class/sec/led/led_notification_delay_on),
 		action:"generic /sys/class/sec/led/led_notification_delay_on"
 	}},
@@ -51,7 +51,7 @@ cat << CTAG
 		weight:0.001,
 		min:0,
 		max:10000,
-		step:100,
+		step:10,
 		default:$(cat /sys/class/sec/led/led_notification_delay_off),
 		action:"generic /sys/class/sec/led/led_notification_delay_off"
 	}},
@@ -84,7 +84,7 @@ cat << CTAG
 		weight:0.001,
 		min:0,
 		max:1900,
-		step:100,
+		step:10,
 		default:$(cat /sys/class/sec/led/led_notification_ramp_up),
 		action:"generic /sys/class/sec/led/led_notification_ramp_up"
 	}},
@@ -98,7 +98,7 @@ cat << CTAG
 		weight:0.001,
 		min:0,
 		max:1900,
-		step:100,
+		step:10,
 		default:$(cat /sys/class/sec/led/led_notification_ramp_down),
 		action:"generic /sys/class/sec/led/led_notification_ramp_down"
 	}},

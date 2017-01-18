@@ -4,7 +4,7 @@
 # Original by dorimanx for ExTweaks
 # Modified by UpInTheAir for SkyHigh kernels & Synapse
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 CACHE=$(cat /res/synapse/Super/cron/cache);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then

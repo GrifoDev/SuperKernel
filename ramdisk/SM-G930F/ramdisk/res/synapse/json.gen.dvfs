@@ -2,11 +2,14 @@
 
 cat << CTAG
 {
-    name:"DVFS",
+    name:DVFS,
     elements:[
-    	{ SPane:{
+	{ SPane:{
 		title:"DVFS Decision Mode",
 		description:"CPU DVFS min/max limitation determined by decision mode."
+	}},
+	{ SSpacer:{
+		height:1
 	}},
 	{ SOptionList:{
 		default:`cat /sys/devices/system/cpu/cpufreq/mp-cpufreq/cpu_dvfs_mode_control`,
@@ -17,7 +20,7 @@ cat << CTAG
 	}},
 	{ SPane:{
 		title:"DVFS Thermal Contorl"
-      	}},
+	}},
 	{ SDescription:{
 		description:"CPU DVFS min/max limitation determined by temperature."
 	}},

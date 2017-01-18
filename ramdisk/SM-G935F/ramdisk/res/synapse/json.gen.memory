@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 cat << CTAG
 {
@@ -230,10 +230,10 @@ cat << CTAG
 	{ SOptionList:{
 		title:"E-Swap",
 		description:"Compresses swap pages in a dynamically allocated cache in RAM. Potentially improves I/O speed of swap devices at the cost of CPU to de/compress pages.\n",
-		default:Y,
-		action:"generic /sys/module/eswap/parameters/enabled",
+		default:0,
+		action:"generic /sys/module/exynos_swap/parameters/verify_enable",
 		values:{
-			N:"Disabled", Y:"Enabled"
+			0:"Disabled", 1:"Enabled"
 		}
 	}},
 	{ SSpacer:{

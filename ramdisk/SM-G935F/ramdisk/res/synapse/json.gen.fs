@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 cat << CTAG
 {
@@ -118,7 +118,7 @@ cat << CTAG
 		height:1
 	}},
 	{ SDescription:{
-		description:"NOTE: This process can take from 1-2 minutes and device may be UNRESPONSIVE during this time, PLEASE WAIT for the process to finish ! An error just means that some databases weren't succesful. Log output to /sdcard/SkyHigh/Logs/SQLite.txt."
+		description:"NOTE: This process can take from 1-2 minutes and device may be UNRESPONSIVE during this time, PLEASE WAIT for the process to finish ! An error just means that some databases weren't succesful. Log output to /sdcard/Super/Logs/SQLite.txt."
 	}},
 	{ SSpacer:{
 		height:1

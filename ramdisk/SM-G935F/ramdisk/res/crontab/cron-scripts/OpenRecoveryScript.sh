@@ -3,8 +3,8 @@
 # OpenRecoveryScript
 # by UpInTheAir for SkyHigh kernels using Synapse & TWRP
 
-BB=/system/xbin/busybox;
-TWRP=$(cat /res/synapse/SkyHigh/cron/twrp_backup);
+BB=/sbin/busybox;
+TWRP=$(cat /res/synapse/Super/cron/twrp_backup);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 	$BB mount -o remount,rw /;
@@ -90,7 +90,7 @@ if [ "$TWRP" == 1 ]; then
 		/system/bin/reboot recovery;
 
 	# check if deleting oldest backup will create enough free space ('Delete TWRP Auto Backup' is ENABLED)
-	elif [ $(($DATA_FREE + $OLDEST_BACKUP)) -gt "$BACKUP" ] && [[ "$(cat /res/synapse/SkyHigh/cron/twrp_backup_del)" == "1" ]]; then
+	elif [ $(($DATA_FREE + $OLDEST_BACKUP)) -gt "$BACKUP" ] && [[ "$(cat /res/synapse/Super/cron/twrp_backup_del)" == "1" ]]; then
 
 		# delete oldest twrp_backup folder if it exists & create free space
 		if [ -d $OLDEST_BACKUP_DIR ]; then

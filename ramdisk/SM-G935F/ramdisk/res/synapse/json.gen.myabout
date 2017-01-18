@@ -12,7 +12,7 @@ cat << CTAG
 	{ SLiveLabel:{
 		refresh:10000000,
 		style:"bold",
-		action:"echo Welcome to Super-Kernel!"
+		action:"echo Welcome to the Nougat Super-Kernel!"
 	}},
 	{ SLiveLabel:{
 		refresh:10000000,

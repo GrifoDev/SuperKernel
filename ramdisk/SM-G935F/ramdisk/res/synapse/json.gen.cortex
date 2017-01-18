@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 cat << CTAG
 {

@@ -1,6 +1,6 @@
 # By UpInTheAir for SkyHigh kernels
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 if [ -d "/sys/devices/battery" ]; then
 	P=/sys/devices/battery

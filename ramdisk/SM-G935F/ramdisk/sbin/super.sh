@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-BB=/system/xbin/busybox;
+BB=/sbin/busybox;
 
 # Mount root as RW to apply tweaks and settings
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
@@ -20,26 +20,6 @@ fi;
 if [ ! -d /data/.Super ]; then
 	$BB mkdir -p /data/.Super
 	$BB chmod -R 0777 /.Super/
-fi;
-
-# Setup for cpuset
-if [ -d /dev/cpuset ]; then
-	echo "0-7" > /dev/cpuset/foreground/cpus;
-	echo "4-7" > /dev/cpuset/foreground/boost/cpus;
-	echo "0" > /dev/cpuset/background/cpus;
-	echo "0-3" > /dev/cpuset/system-background/cpus;
-	# Move invisible apps to A53
-	if [ -d /dev/cpuset/invisible ]; then
-		echo "0-3" > /dev/cpuset/invisible/cpus;
-	fi;
-fi;
-
-# vnswap (parse defaults from prop)
-SWAP=/dev/block/vnswap0;
-SWAPSIZE=2684354560; # Android 6.0.1 == 2560 MB
-echo "0" > /sys/block/vnswap0/disksize;
-$BB sync;
-echo "0" > /proc/sys/vm/swappiness;
 fi;
 
 # Backup EFS
@@ -143,7 +123,7 @@ if [ -e /data/.Supertest.log ]; then
 	rm /data/.Supertest.log
 fi;
 echo  Kernel script is working !!! >> /data/.Supertest.log
-echo "excecuted on $(date +"%d-%m-%Y %r" )" >> /data/.Supertest.log
+echo "excecuted on $(date +"%d-%m-%Y %r" )" >> /data/.Super.log
 
 fi;
 
