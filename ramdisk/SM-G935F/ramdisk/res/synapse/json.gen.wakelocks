@@ -54,9 +54,10 @@ cat << CTAG
 						title:"ssp_sensorhub",
 						description:"Default = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$SEN',
 						action:"generic /sys/module/ssp_sensorhub/parameters/wl_sensorhub"
 					}},'
@@ -84,9 +85,10 @@ cat << CTAG
 						title:"ssp_iio",
 						description:"sig_motion_sensor, pickup_gesture, tilt_detector & proximity_sensor wakelock timeout controls.\n\nDefault = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$SSP',
 						action:"generic /sys/module/ssp_iio/parameters/wl_ssp"
 					}},'
@@ -100,9 +102,10 @@ cat << CTAG
 						title:"grip_sensor",
 						description:"Default = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$GRIP',
 						action:"generic /sys/module/sx9310/parameters/wl_grip"
 					}},'
@@ -116,9 +119,10 @@ cat << CTAG
 						title:"sig_motion_sensor",
 						description:"Default = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$MOTION',
 						action:"generic /sys/module/ssp_input/parameters/wl_motion"
 					}},'
@@ -132,9 +136,10 @@ cat << CTAG
 						title:"pickup_gesture",
 						description:"Default = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$PICKUP',
 						action:"generic /sys/module/ssp_input/parameters/wl_pickup"
 					}},'
@@ -148,9 +153,10 @@ cat << CTAG
 						title:"grip_sensor",
 						description:"Default = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$GRIP',
 						action:"generic /sys/module/ssp_input/parameters/wl_grip"
 					}},'
@@ -164,9 +170,10 @@ cat << CTAG
 						title:"tilt_detector",
 						description:"Default = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$TILT',
 						action:"generic /sys/module/ssp_input/parameters/wl_tilt"
 					}},'
@@ -180,9 +187,10 @@ cat << CTAG
 						title:"proximity_sensor",
 						description:"Default = 1. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$PROX',
 						action:"generic /sys/module/ssp_input/parameters/wl_prox"
 					}},'
@@ -219,9 +227,10 @@ cat << CTAG
 						title:"bcm4773_gps",
 						description:"Default = 4. Stock = 2 (Higher = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:4,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$GPS',
 						action:"generic /sys/module/bcm_gps_spi/parameters/wl_divide_gps"
 					}},'
@@ -243,9 +252,10 @@ cat << CTAG
 						title:"wlan_rx & wlan_ctrl",
 						description:"Default = 3. Stock = 1 (Higher = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:5,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$WIFI',
 						action:"generic /sys/module/dhd/parameters/wl_divide"
 					}},'
@@ -263,9 +273,10 @@ cat << CTAG
 						title:"bt_lpm",
 						description:"Default = 2. Stock = 2 (Higher = lower wake time)\n",
 						unit:"",
-						min:2,
-						max:5,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$BT',
 						action:"generic /sys/module/bcm4359/parameters/wl_divide_bt"
 					}},'
@@ -284,9 +295,10 @@ cat << CTAG
 						title:"Battery polling",
 						description:"Default = 5. Stock = 5 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:20,
-						step:0.1,
+						min:1000,
+						max:50000,
+						weight:0.001,
+						step:10,
 						default:'$MAINS',
 						action:"generic /sys/module/sec_battery/parameters/wl_polling"
 					}},'
@@ -300,9 +312,10 @@ cat << CTAG
 						title:"Mains charging",
 						description:"Default = 3. Stock = 3 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$MAINS',
 						action:"generic /sys/module/max77833_charger/parameters/wl_mains"
 					}},'
@@ -316,9 +329,10 @@ cat << CTAG
 						title:"Wireless charging",
 						description:"Default = 7. Stock = 7 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:7,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$WL',
 						action:"generic /sys/module/max77833_charger/parameters/wl_wireless"
 					}},'
@@ -340,9 +354,10 @@ cat << CTAG
 						title:"certify_cover_detect",
 						description:"Default = 5. Stock = 5 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:5,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$HALL',
 						action:"generic /sys/module/certify_hall/parameters/wl_hall"
 					}},'
@@ -361,9 +376,10 @@ cat << CTAG
 						title:"NFC",
 						description:"Default = 2. Stock = 2 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:5,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$NFC_SEC',
 						action:"generic /sys/module/sec_nfc/parameters/wl_nfc"
 					}},'
@@ -377,9 +393,10 @@ cat << CTAG
 						title:"NFC",
 						description:"Default = 2. Stock = 2 (Lower = lower wake time)\n",
 						unit:"",
-						min:1,
-						max:3,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$NFC_PN',
 						action:"generic /sys/module/pn547/parameters/wl_nfc"
 					}},'
@@ -421,9 +438,10 @@ cat << CTAG
 						title:"wacom_pen_detect",
 						description:"Default = 10. Stock = 10 (Higher = lower wake time)\n",
 						unit:"",
-						min:10,
-						max:20,
-						step:0.1,
+						min:1000,
+						max:5000,
+						weight:0.001,
+						step:10,
 						default:'$PEN',
 						action:"generic /sys/module/wacom_i2c/parameters/wl_divide_pen"
 					}},'
