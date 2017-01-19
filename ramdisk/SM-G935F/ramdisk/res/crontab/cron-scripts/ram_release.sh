@@ -3,7 +3,15 @@
 # Original by dorimanx for ExTweaks
 # Modified by UpInTheAir for SkyHigh kernels & Synapse
 
-BB=/sbin/busybox;
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
 GOOGLE=$(cat /res/synapse/Super/cron/google);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then

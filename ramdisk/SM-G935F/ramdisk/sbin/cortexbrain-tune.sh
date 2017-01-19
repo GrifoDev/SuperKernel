@@ -1,4 +1,12 @@
-#!/sbin/busybox sh
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	#!/su/xbin/busybox sh
+else if [ -e /sbin/busybox ]; then
+	#!/sbin/busybox sh
+else
+	#!/system/xbin/busybox sh
+fi;
+fi;
 
 # Credits:
 # Zacharias.maladroit
@@ -39,7 +47,15 @@ cortexbrain_pewq=$(cat /res/synapse/Super/cortexbrain_pewq);
 # GLOBAL VARIABLES || without "local" also a variable in a function is global
 # ==============================================================
 
-BB=/sbin/busybox;
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 	$BB mount -o remount,rw /;

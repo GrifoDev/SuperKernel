@@ -1,4 +1,12 @@
-BB=/sbin/busybox;
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
 
 if [ -f "$1" ]; then
 	if [[ ! -z $2 ]]; then

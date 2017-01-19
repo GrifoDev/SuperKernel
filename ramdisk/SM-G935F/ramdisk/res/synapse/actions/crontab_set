@@ -2,7 +2,15 @@
 
 # by UpInTheAir for SkyHigh kernels
 
-BB=/sbin/busybox;
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 	$BB mount -o remount,rw /;
@@ -46,13 +54,13 @@ echo "# This file is at /var/spool/cron/crontabs/root
 #day of week    0-7 (0 or 7 is Sun, or use names)
 
 #JOBS
-* 0-23/$intvl_hour_1 * * * /sbin/busybox sh /data/crontab/cron-scripts/drop-cache.sh
-* 0-23/$intvl_hour_2 * * * /sbin/busybox sh /data/crontab/cron-scripts/ram_release.sh
-$time_min_3 $time_hour_3 * * * /sbin/busybox sh /data/crontab/cron-scripts/clear-file-cache.sh
-$time_min_4 $time_hour_4 * * * /sbin/busybox sh /data/crontab/cron-scripts/database_optimizing.sh
-$time_min_5 $time_hour_5 * * * /sbin/busybox sh /data/crontab/cron-scripts/fstrim.sh
-$time_min_6 $time_hour_6 * * $day_6 /sbin/busybox sh /data/crontab/cron-scripts/reset_battery.sh
-$time_min_7 $time_hour_7 * * $day_7 /sbin/busybox sh /data/crontab/cron-scripts/OpenRecoveryScript.sh" >> /res/crontab_service/cron-root
+* 0-23/$intvl_hour_1 * * * $BB sh /data/crontab/cron-scripts/drop-cache.sh
+* 0-23/$intvl_hour_2 * * * $BB sh /data/crontab/cron-scripts/ram_release.sh
+$time_min_3 $time_hour_3 * * * $BB sh /data/crontab/cron-scripts/clear-file-cache.sh
+$time_min_4 $time_hour_4 * * * $BB sh /data/crontab/cron-scripts/database_optimizing.sh
+$time_min_5 $time_hour_5 * * * $BB sh /data/crontab/cron-scripts/fstrim.sh
+$time_min_6 $time_hour_6 * * $day_6 $BB sh /data/crontab/cron-scripts/reset_battery.sh
+$time_min_7 $time_hour_7 * * $day_7 $BB sh /data/crontab/cron-scripts/OpenRecoveryScript.sh" >> /res/crontab_service/cron-root
 
 # re-start Crontab
 $BB nohup $BB sh /res/crontab_service/service.sh 2> /dev/null;

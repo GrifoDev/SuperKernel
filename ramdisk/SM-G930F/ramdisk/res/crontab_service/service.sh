@@ -3,7 +3,15 @@
 # Created By Dorimanx and Dairinin
 # Modified by UpInTheAir for SkyHigh kernel & Synapse
 
-BB=/sbin/busybox;
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
 
 ROOTFS_MOUNT=$(mount | grep rootfs | cut -c26-27 | grep -c rw)
 if [ "$ROOTFS_MOUNT" -eq "0" ]; then
