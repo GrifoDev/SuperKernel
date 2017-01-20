@@ -1,0 +1,35 @@
+on post-fs-data
+
+# HD-DMB CAS Key Data
+    mkdir /data/.dmbca 0771
+    chown media system /data/.dmbca
+    chmod 0771 /data/.dmbca
+
+# SKT PM PlayReady for hoppin
+    mkdir /data/playready 771 system skt
+    chown system skt /data/playready
+    chmod 0771 /data/playready
+
+# SKT DRM
+    mkdir /data/.sktdrm 0775
+    chown system system /data/.sktdrm
+    chmod 0775 /data/.sktdrm
+
+on boot
+
+#   Assign TCP buffer thresholds to be ceiling value of technology maximums
+#   Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  8388608
+    write /proc/sys/net/core/wmem_max  8388608
+
+# tdmb
+    chown system system /dev/tdmb
+    chmod 0660 /dev/tdmb
+
+on fs
+
+service dmb /system/bin/dmbserver
+    class main
+    user media
+    group system radio inet misc audio graphics net_bt net_bt_admin sdcard_rw sdcard_r shell media_rw dpgp
+

@@ -1,7 +1,8 @@
 #!/bin/bash
-# kernel build script by Tkkg1994 v0.5 (optimized from apq8084 kernel source)
+# kernel build script by Tkkg1994 v0.6 (optimized from apq8084 kernel source)
 
 export MODEL=herolte
+export VARIANT=xx
 export ARCH=arm64
 export VERSION=V2.0.1
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.3.0/bin/aarch64-cortex_a53-linux-gnueabi-
@@ -17,15 +18,40 @@ INCDIR=$RDIR/include
 PAGE_SIZE=2048
 DTB_PADDING=0
 
-if [ $MODEL = herolte ]; then
-	KERNEL_DEFCONFIG=StockKernel-herolte_defconfig
-else if [ $MODEL = hero2lte ]; then
-	KERNEL_DEFCONFIG=StockKernel-hero2lte_defconfig
-else
+case $MODEL in
+herolte)
+	case $VARIANT in
+	can|duos|eur|xx)
+		KERNEL_DEFCONFIG=StockKernel-$MODEL-eur_defconfig
+		;;
+	kor|ktt|lgt|skt)
+		KERNEL_DEFCONFIG=StockKernel-$MODEL-kor_defconfig
+		;;
+	*)
+		echo "Unknown variant: $VARIANT"
+		exit 1
+		;;
+	esac
+;;
+hero2lte)
+	case $VARIANT in
+	can|duos|eur|xx)
+		KERNEL_DEFCONFIG=StockKernel-$MODEL-eur_defconfig
+		;;
+	kor|ktt|lgt|skt)
+		KERNEL_DEFCONFIG=StockKernel-$MODEL-kor_defconfig
+		;;
+	*)
+		echo "Unknown variant: $VARIANT"
+		exit 1
+		;;
+	esac
+;;
+*)
 	echo "Unknown device: $MODEL"
 	exit 1
-fi
-fi
+	;;
+esac
 
 FUNC_CLEAN_DTB()
 {
@@ -49,16 +75,42 @@ FUNC_BUILD_DTIMAGE_TARGET()
 
 	case $MODEL in
 	herolte)
-		DTSFILES="exynos8890-herolte_eur_open_00 exynos8890-herolte_eur_open_01
-				exynos8890-herolte_eur_open_02 exynos8890-herolte_eur_open_03
-				exynos8890-herolte_eur_open_04 exynos8890-herolte_eur_open_08
-				exynos8890-herolte_eur_open_09"
-		;;
+		case $VARIANT in
+		can|duos|eur|xx)
+			DTSFILES="exynos8890-herolte_eur_open_00 exynos8890-herolte_eur_open_01
+					exynos8890-herolte_eur_open_02 exynos8890-herolte_eur_open_03
+					exynos8890-herolte_eur_open_04 exynos8890-herolte_eur_open_08
+					exynos8890-herolte_eur_open_09"
+			;;
+		kor|ktt|lgt|skt)
+			DTSFILES="exynos8890-herolte_kor_all_00 exynos8890-herolte_kor_all_01
+					exynos8890-herolte_kor_all_02 exynos8890-herolte_kor_all_03
+					exynos8890-herolte_kor_all_04 exynos8890-herolte_kor_all_08"
+			;;
+		*)
+			echo "Unknown variant: $VARIANT"
+			exit 1
+			;;
+		esac
+	;;
 	hero2lte)
-		DTSFILES="exynos8890-hero2lte_eur_open_00 exynos8890-hero2lte_eur_open_01
-				exynos8890-hero2lte_eur_open_03 exynos8890-hero2lte_eur_open_04
-				exynos8890-hero2lte_eur_open_08"
-		;;
+		case $VARIANT in
+		can|duos|eur|xx)
+			DTSFILES="exynos8890-hero2lte_eur_open_00 exynos8890-hero2lte_eur_open_01
+					exynos8890-hero2lte_eur_open_03 exynos8890-hero2lte_eur_open_04
+					exynos8890-hero2lte_eur_open_08"
+			;;
+		kor|ktt|lgt|skt)
+			DTSFILES="exynos8890-hero2lte_kor_all_00 exynos8890-hero2lte_kor_all_01
+					exynos8890-hero2lte_kor_all_03 exynos8890-hero2lte_kor_all_04
+					exynos8890-hero2lte_kor_all_08"
+			;;
+		*)
+			echo "Unknown variant: $VARIANT"
+			exit 1
+			;;
+		esac
+	;;
 	*)
 		echo "Unknown device: $MODEL"
 		exit 1
@@ -97,7 +149,7 @@ FUNC_BUILD_KERNEL()
         echo "=============================================="
         echo ""
         echo "build common config="$KERNEL_DEFCONFIG ""
-        echo "build variant config="$MODEL ""
+        echo "build model config="$MODEL ""
 
 	FUNC_CLEAN_DTB
 
@@ -124,23 +176,93 @@ FUNC_BUILD_RAMDISK()
 
 	case $MODEL in
 	herolte)
-		rm -f $RDIR/ramdisk/SM-G930F/split_img/boot.img-zImage
-		rm -f $RDIR/ramdisk/SM-G930F/split_img/boot.img-dtb
-		mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930F/split_img/boot.img-zImage
-		mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930F/split_img/boot.img-dtb
-		cd $RDIR/ramdisk/SM-G930F
-		./repackimg.sh
-		echo SEANDROIDENFORCE >> image-new.img
-		;;
+		case $VARIANT in
+		can|duos|eur|xx)
+			rm -f $RDIR/ramdisk/SM-G930F/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G930F/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930F/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930F/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G930F
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		ktt)
+			rm -f $RDIR/ramdisk/SM-G930K/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G930K/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930K/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930K/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G930K
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		lgt)
+			rm -f $RDIR/ramdisk/SM-G930L/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G930L/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930L/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930L/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G930L
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		skt)
+			rm -f $RDIR/ramdisk/SM-G930S/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G930S/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930S/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930S/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G930S
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		*)
+			echo "Unknown variant: $VARIANT"
+			exit 1
+			;;
+		esac
+	;;
 	hero2lte)
-		rm -f $RDIR/ramdisk/SM-G935F/split_img/boot.img-zImage
-		rm -f $RDIR/ramdisk/SM-G935F/split_img/boot.img-dtb
-		mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935F/split_img/boot.img-zImage
-		mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935F/split_img/boot.img-dtb
-		cd $RDIR/ramdisk/SM-G935F
-		./repackimg.sh
-		echo SEANDROIDENFORCE >> image-new.img
-		;;
+		case $VARIANT in
+		can|duos|eur|xx)
+			rm -f $RDIR/ramdisk/SM-G935F/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G935F/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935F/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935F/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G935F
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		ktt)
+			rm -f $RDIR/ramdisk/SM-G935K/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G935K/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935K/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935K/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G935K
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		lgt)
+			rm -f $RDIR/ramdisk/SM-G935L/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G935L/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935L/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935L/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G935L
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		skt)
+			rm -f $RDIR/ramdisk/SM-G935S/split_img/boot.img-zImage
+			rm -f $RDIR/ramdisk/SM-G935S/split_img/boot.img-dtb
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935S/split_img/boot.img-zImage
+			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935S/split_img/boot.img-dtb
+			cd $RDIR/ramdisk/SM-G935S
+			./repackimg.sh
+			echo SEANDROIDENFORCE >> image-new.img
+			;;
+		*)
+			echo "Unknown variant: $VARIANT"
+			exit 1
+			;;
+		esac
+	;;
 	*)
 		echo "Unknown device: $MODEL"
 		exit 1
@@ -151,16 +273,48 @@ FUNC_BUILD_RAMDISK()
 FUNC_BUILD_ZIP()
 {
 	cd $RDIR/build
-	rm boot.img
+	rm $MODEL-$VARIANT.img
 	case $MODEL in
 	herolte)
-		mv -f $RDIR/ramdisk/SM-G930F/image-new.img $RDIR/build/boot.img
-		zip SuperStock_SM-G930F_$VERSION.zip -r boot.img mcRegistry META-INF files vendor
-		;;
+		case $VARIANT in
+		can|duos|eur|xx)
+			mv -f $RDIR/ramdisk/SM-G930F/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		ktt)
+			mv -f $RDIR/ramdisk/SM-G930K/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		lgt)
+			mv -f $RDIR/ramdisk/SM-G930L/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		skt)
+			mv -f $RDIR/ramdisk/SM-G930S/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		*)
+			echo "Unknown variant: $VARIANT"
+			exit 1
+			;;
+		esac
+	;;
 	hero2lte)
-		mv -f $RDIR/ramdisk/SM-G935F/image-new.img $RDIR/build/boot.img
-		zip SuperStock_SM-G935F_$VERSION.zip -r boot.img mcRegistry META-INF files vendor
-		;;
+		case $VARIANT in
+		can|duos|eur|xx)
+			mv -f $RDIR/ramdisk/SM-G935F/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		ktt)
+			mv -f $RDIR/ramdisk/SM-G935K/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		lgt)
+			mv -f $RDIR/ramdisk/SM-G935L/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		skt)
+			mv -f $RDIR/ramdisk/SM-G935S/image-new.img $RDIR/build/$MODEL-$VARIANT.img
+			;;
+		*)
+			echo "Unknown variant: $VARIANT"
+			exit 1
+			;;
+		esac
+	;;
 	*)
 		echo "Unknown device: $MODEL"
 		exit 1
