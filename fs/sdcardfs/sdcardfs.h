@@ -121,6 +121,18 @@ typedef enum {
 	PERM_ANDROID_OBB,
 	/* This node is "/Android/media" */
 	PERM_ANDROID_MEDIA,
+	/* knox folder */
+	PERM_ANDROID_KNOX,
+	/* knox user folder*/
+	PERM_ANDROID_KNOX_USER,
+	/* knox Android folder*/
+	PERM_ANDROID_KNOX_ANDROID,
+	/* knox shared folder */
+	PERM_ANDROID_KNOX_SHARED,
+	/* knox data folder */
+	PERM_ANDROID_KNOX_DATA,
+	/* knox package data folder */
+	PERM_ANDROID_KNOX_PACKAGE_DATA
 } perm_t;
 
 typedef enum {
@@ -200,6 +212,12 @@ struct sdcardfs_dentry_info {
 #ifdef CONFIG_SDP
 	int under_knox;
 	int userid;
+#define PERMISSION_PRE_ROOT 		0
+#define PERMISSION_ROOT 		1
+#define PERMISSION_ANDROID 		2
+#define PERMISSION_UNDER_ANDROID 	3
+	int permission;
+	appid_t appid;	
 #endif	
 };
 

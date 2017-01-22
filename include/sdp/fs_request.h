@@ -31,9 +31,13 @@
 #define FSOP_DLP_FILE_INIT_RESTRICTED     24
 #define FSOP_DLP_FILE_REMOVE     25
 #define FSOP_DLP_FILE_RENAME     26
+#define FSOP_DLP_FILE_ACCESS_DENIED     27
+#define FSOP_DLP_FILE_OPENED_CREATOR    28
+#define FSOP_DLP_FILE_REMOVE_MEDIA     29
 
 #define FSOP_AUDIT_FAIL_ENCRYPT		51
 #define FSOP_AUDIT_FAIL_DECRYPT		52
+#define FSOP_AUDIT_FAIL_ACCESS		53
 
 // opcode, ret, inode
 typedef void (*fs_request_cb_t)(int, int, unsigned long);

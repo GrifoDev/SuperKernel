@@ -18,7 +18,7 @@
 
 
 
-#define SSP_DEBUG_TIMER_SEC		(10 * HZ)
+#define SSP_DEBUG_TIMER_SEC		(5 * HZ)
 
 #define LIMIT_RESET_CNT			40
 #define LIMIT_TIMEOUT_CNT		3
@@ -242,9 +242,6 @@ void reset_mcu(struct ssp_data *data)
 	ssp_enable(data, false);
 	clean_pending_list(data);
 	bbd_mcu_reset();
-#ifdef CONFIG_SENSORS_SSP_HIFI_BATCHING
-	ssp_reset_batching_resources(data);
-#endif
 }
 
 void sync_sensor_state(struct ssp_data *data)
@@ -293,6 +290,7 @@ void sync_sensor_state(struct ssp_data *data)
 	}
 
 	set_proximity_threshold(data);
+	set_light_coef(data);
 
 	set_gyro_cal_lib_enable(data, true);
 
@@ -366,6 +364,11 @@ static void print_sensordata(struct ssp_data *data, unsigned int uSensor)
 			data->buf[uSensor].prox[0], data->buf[uSensor].prox[1],
 			get_msdelay(data->adDelayBuf[uSensor]));
 		break;
+	case PROXIMITY_ALERT_SENSOR:
+		ssp_dbg("[SSP] %u : %d, %d (%ums)\n", uSensor,
+			data->buf[uSensor].prox_alert[0], data->buf[uSensor].prox_alert[1],
+			get_msdelay(data->adDelayBuf[uSensor]));
+		break;
 	case STEP_DETECTOR:
 		ssp_dbg("[SSP] %u : %u (%ums, %dms)\n", uSensor,
 			data->buf[uSensor].step_det,
@@ -404,15 +407,48 @@ static void print_sensordata(struct ssp_data *data, unsigned int uSensor)
 		break;
 	}
 }
+/*
+	check_sensor_event
+	- return 
+		true : there is no accel or light sensor event over 5sec when sensor is registered
+*/
+bool check_wait_event(struct ssp_data *data)
+{
+	u64 timestamp = get_current_timestamp();
+	int check_sensors[2] = {ACCELEROMETER_SENSOR, LIGHT_SENSOR};
+	int i, sensor; 
+	bool res = false;
+	
+	for(i = 0 ; i < 2 ; i++)
+	{
+		sensor = check_sensors[i];
+		//the sensor is registered
+		if((atomic64_read(&data->aSensorEnable) & (1 << sensor))
+			//non batching mode
+			&& data->IsBypassMode[sensor] == 1
+			//there is no sensor event over 3sec
+			&& data->LastSensorTimeforReset[sensor] + 3000000000ULL < timestamp)
+		{
+			pr_info("[SSP] %s - sensor(%d) last = %lld, cur = %lld\n",
+				__func__,sensor,data->LastSensorTimeforReset[sensor],timestamp);
+			res = true;
+			data->uNoRespSensorCnt++;
+		}
+		//pr_info("[SSP]test %s - sensor(%d mode %d) last = %lld, cur = %lld\n",
+		//__func__,sensor,data->IsBypassMode[sensor],data->LastSensorTimeforReset[sensor],timestamp);
+	}
+
+	return res;
+}
 
 static void debug_work_func(struct work_struct *work)
 {
 	unsigned int uSensorCnt;
 	struct ssp_data *data = container_of(work, struct ssp_data, work_debug);
 
-	ssp_dbg("[SSP]: %s(%u) - Sensor state: 0x%llx, RC: %u, CC: %u, TC: %u\n",
-		__func__, data->uIrqCnt, data->uSensorState, data->uResetCnt,
-		data->uComFailCnt, data->uTimeOutCnt);
+	ssp_dbg("[SSP]: %s(%u) - Sensor state: 0x%llx, RC: %u(%u), CC: %u, TC: %u NSC: %u EC: %u\n",
+		__func__, data->uIrqCnt, data->uSensorState, data->uResetCnt, data->mcuCrashedCnt,
+		data->uComFailCnt, data->uTimeOutCnt, data->uNoRespSensorCnt, data->errorCount);
 
 	for (uSensorCnt = 0; uSensorCnt < SENSOR_MAX; uSensorCnt++)
 		if ((atomic64_read(&data->aSensorEnable) & (1 << uSensorCnt))
@@ -422,24 +458,29 @@ static void debug_work_func(struct work_struct *work)
 	if (((atomic64_read(&data->aSensorEnable) & (1 << ACCELEROMETER_SENSOR))
 		&& (data->batchLatencyBuf[ACCELEROMETER_SENSOR] == 0)
 		&& (data->uIrqCnt == 0) && (data->uTimeOutCnt > 0))
-		|| (data->uTimeOutCnt > LIMIT_TIMEOUT_CNT)) {
+		|| (data->uTimeOutCnt > LIMIT_TIMEOUT_CNT)
+		|| (check_wait_event(data))
+		|| (data->mcuAbnormal == true)) {
 
-		if (data->uResetCnt < LIMIT_RESET_CNT) {
+		mutex_lock(&data->ssp_enable_mutex);
 			pr_info("[SSP] : %s - uTimeOutCnt(%u), pending(%u)\n",
 				__func__, data->uTimeOutCnt,
 				!list_empty(&data->pending_list));
 			reset_mcu(data);
-		} else
-			ssp_enable(data, false);
+		mutex_unlock(&data->ssp_enable_mutex);
 
 		data->uTimeOutCnt = 0;
 		data->uComFailCnt = 0;
+		data->mcuAbnormal = false;
 	}
 
 	data->uIrqCnt = 0;
 
 	if(data->gyro_lib_state == GYRO_CALIBRATION_STATE_EVENT_OCCUR)
 		set_gyro_cal_lib_enable(data, false);
+
+	if(data->sensor_dump_flag_proximity == true || data->sensor_dump_flag_light == true)
+		send_sensor_dump_command(data,PROXIMITY_SENSOR);
 }
 
 static void debug_timer_func(unsigned long ptr)

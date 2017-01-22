@@ -59,9 +59,6 @@
 #endif
 	.endm
 
-#ifdef CONFIG_RKP_CFP_JOPP
-alloc_function_entry_magic_number entry_magic
-#endif
 
 /*
  * Bad Abort numbers
@@ -77,6 +74,20 @@ alloc_function_entry_magic_number entry_magic
 	.if	\regsize == 32
 	mov	w0, w0				// zero upper 32 bits of x0
 	.endif
+
+#ifdef CONFIG_SOC_EXYNOS8890
+	.if     \regsize == 32
+	.if     \el == 0
+	msr     cntp_cval_el0, x0
+	mov     x0, sp
+	lsr     x0, x0, #12
+	tlbi    vaae1, x0
+	dsb     nsh
+	mrs     x0, cntp_cval_el0
+	.endif
+	.endif
+#endif
+
 	push	x28, x29
 	push	x26, x27
 	push	x24, x25
@@ -97,11 +108,6 @@ alloc_function_entry_magic_number entry_magic
 	push	x4, x5
 	push	x2, x3
 	push	x0, x1
-#ifdef CONFIG_RKP_CFP_JOPP
-	/* Might be in the middle of a blr springboard and RRS != the magic number. Load it again.*/
-	load_function_entry_magic_number_far_away entry_magic
-#endif
-
 	.if	\el == 0
 	mrs	x21, sp_el0
 	get_thread_info tsk			// Ensure MDSCR_EL1.SS is clear,
@@ -163,27 +169,17 @@ alloc_function_entry_magic_number entry_magic
 	ldr	x23, [sp, #S_SP]		// load return stack pointer
 
 #ifdef CONFIG_ARM64_ERRATUM_845719
-#ifdef CONFIG_SOC_EXYNOS8890
-	/*
-	 * Skip "Cortex-A53: 845719" on MNGS.
-	 */
-	mrs	x29, midr_el1
-	lsr	x29, x29, #0x04
-	and	x29, x29, #0xfff
-	cmp	x29, #0xd03
-	b.eq	2f
-
-	tlbi	vaae1, xzr
-	dsb	sy
-	isb
-
-	b	3f
-2:
-#endif
 	alternative_insn						\
 	"nop",								\
 	"tbz x22, #4, 1f",						\
 	ARM64_WORKAROUND_845719
+#ifdef CONFIG_SOC_EXYNOS8890
+	alternative_insn						\
+	"nop; nop; nop; nop; nop",					\
+	"mrs x29, midr_el1; lsr x29, x29, #0x04; and x29, x29, #0xfff;	\
+	 cmp x29, #0xd03; b.ne 1f",					\
+	ARM64_WORKAROUND_845719
+#endif
 #ifdef CONFIG_PID_IN_CONTEXTIDR
 	alternative_insn						\
 	"nop; nop",							\
@@ -195,7 +191,6 @@ alloc_function_entry_magic_number entry_magic
 	"msr contextidr_el1, xzr; 1:",					\
 	ARM64_WORKAROUND_845719
 #endif
-3:
 #endif
 	.endif
 	.if	\ret
@@ -235,6 +230,10 @@ alloc_function_entry_magic_number entry_magic
 	pop	x26, x27
 	pop	x28, x29
 	ldr	lr, [sp], #S_FRAME_SIZE - S_LR	// load LR and restore SP
+
+	.if	\el == 0
+	dsb	nsh
+	.endif
 	eret					// return to kernel
 	.endm
 
@@ -261,7 +260,8 @@ tsk	.req	x28		// current thread_info
  * Interrupt handling.
  */
 	.macro	irq_handler
-	ldr	x1, handle_arch_irq
+	adrp	x1, handle_arch_irq
+	ldr	x1, [x1, #:lo12:handle_arch_irq]
 	mov	x0, sp
 	blr	x1
 	.endm
@@ -310,7 +310,7 @@ END(vectors)
  * Invalid mode handlers
  */
 	.macro	inv_entry, el, reason, regsize = 64
-	kernel_entry el, \regsize
+	kernel_entry \el, \regsize
 	mov	x0, sp
 	mov	x1, #\reason
 	mrs	x2, esr_el1
@@ -386,6 +386,8 @@ el1_da:
 	 */
 	mrs	x0, far_el1
 
+	enable_dbg
+
 	/*
 	 * tlb conflict handling
 	*/
@@ -393,7 +395,6 @@ el1_da:
 	cmp     x24, #ESR_EL1_ISS_DFSC_TLB_CONFLICT
 	b.eq	el1_da_tlb_conflict
 
-	enable_dbg
 	// re-enable interrupts if they were enabled in the aborted context
 	tbnz	x23, #7, 1f			// PSR_I_BIT
 	enable_irq
@@ -694,9 +695,6 @@ ENTRY(cpu_switch_to)
 	load_key	tsk
 	pop		x27, x28
 #endif
-#ifdef CONFIG_RKP_CFP_JOPP
-	load_function_entry_magic_number_far_away entry_magic
-#endif
 	ret
 ENDPROC(cpu_switch_to)
 
@@ -826,6 +824,3 @@ ENTRY(sys_rt_sigreturn_wrapper)
 	mov	x0, sp
 	b	sys_rt_sigreturn
 ENDPROC(sys_rt_sigreturn_wrapper)
-
-ENTRY(handle_arch_irq)
-	.quad	0

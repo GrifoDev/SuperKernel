@@ -55,25 +55,32 @@ static bool __need_migrate_cma_page(struct page *page,
 	return true;
 }
 
-static int __migrate_cma_pinpage(struct page *page, struct vm_area_struct *vma)
+static int __isolate_cma_pinpage(struct page *page)
 {
 	struct zone *zone = page_zone(page);
-	struct list_head migratepages;
 	struct lruvec *lruvec;
+
+	spin_lock_irq(&zone->lru_lock);
+	if (__isolate_lru_page(page, 0) != 0) {
+		spin_unlock_irq(&zone->lru_lock);
+		dump_page(page, "failed to isolate lru page");
+		return -EBUSY;
+	} else {
+		lruvec = mem_cgroup_page_lruvec(page, page_zone(page));
+		del_page_from_lru_list(page, lruvec, page_lru(page));
+	}
+	spin_unlock_irq(&zone->lru_lock);
+
+	return 0;
+}
+
+static int __migrate_cma_pinpage(struct page *page, struct vm_area_struct *vma)
+{
+	struct list_head migratepages;
 	int tries = 0;
 	int ret = 0;
 
 	INIT_LIST_HEAD(&migratepages);
-
-	if (__isolate_lru_page(page, 0) != 0) {
-		dump_page(page, "failed to isolate lru page");
-		return -EFAULT;
-	} else {
-		spin_lock_irq(&zone->lru_lock);
-		lruvec = mem_cgroup_page_lruvec(page, page_zone(page));
-		del_page_from_lru_list(page, lruvec, page_lru(page));
-		spin_unlock_irq(&zone->lru_lock);
-	}
 
 	list_add(&page->lru, &migratepages);
 	inc_zone_page_state(page, NR_ISOLATED_ANON + page_is_file_cache(page));
@@ -110,6 +117,16 @@ static struct page *no_page_table(struct vm_area_struct *vma,
 	return NULL;
 }
 
+/*
+ * FOLL_FORCE can write to even unwritable pte's, but only
+ * after we've gone through a COW cycle and they are dirty.
+ */
+static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
+{
+	return pte_write(pte) ||
+		((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
+}
+
 static struct page *follow_page_pte(struct vm_area_struct *vma,
 		unsigned long address, pmd_t *pmd, unsigned int flags)
 {
@@ -144,7 +161,7 @@ retry:
 	}
 	if ((flags & FOLL_NUMA) && pte_numa(pte))
 		goto no_page;
-	if ((flags & FOLL_WRITE) && !pte_write(pte)) {
+	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) {
 		pte_unmap_unlock(ptep, ptl);
 		return NULL;
 	}
@@ -159,6 +176,13 @@ retry:
 
 #ifdef CONFIG_CMA_PINPAGE_MIGRATION
 	if (__need_migrate_cma_page(page, vma, address, flags)) {
+		if (__isolate_cma_pinpage(page)) {
+			pr_err("%s: Fail to migrate cma pinpage because it is"
+				"already migrated by compaction. This should"
+				"be migrated to nonmovable userpage\n",
+				__func__);
+			goto bad_page;
+		}
 		pte_unmap_unlock(ptep, ptl);
 		if (__migrate_cma_pinpage(page, vma)) {
 			ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
@@ -416,7 +440,7 @@ static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
 	 * reCOWed by userspace write).
 	 */
 	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
-		*flags &= ~FOLL_WRITE;
+		*flags |= FOLL_COW;
 	return 0;
 }
 

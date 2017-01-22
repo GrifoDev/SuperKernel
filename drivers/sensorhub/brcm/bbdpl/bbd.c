@@ -34,6 +34,7 @@
 #include <linux/suspend.h>
 #include <linux/notifier.h>
 #include <linux/of.h>
+#include <linux/string.h>
 #include "bbd.h"
 
 #ifdef CONFIG_SENSORS_SSP
@@ -74,6 +75,23 @@ struct bbd_cdev_priv {
 	wait_queue_head_t poll_wait;		/* for poll */
 };
 
+#define CONFIG_LHD_KILLER
+
+struct lhd_killer {
+	bool enabled;
+	long timeout_sec;
+
+	struct task_struct *lhd;
+	bool resetting;
+
+	bool timer_enabled;
+	struct timer_list timer;
+	struct work_struct work;
+	struct workqueue_struct *workq;
+    spinlock_t lock;
+
+};
+
 struct bbd_device {
 	struct kobject *kobj;			/* for sysfs register */
 	struct class *class;			/* for device_create */
@@ -86,6 +104,7 @@ struct bbd_device {
 	void *ssp_priv;				/* private data pointer */
 	bbd_callbacks *ssp_cb;			/* callbacks for SSP */
 
+	struct lhd_killer lk;
 };
 
 /*
@@ -114,8 +133,18 @@ static struct bbd_device bbd;
  */
 static unsigned char bbd_patch[] =
 {
-#if defined (CONFIG_SENSORS_SSP_LUCKY)
-#include "bbd_patch_file_lucky.h"
+#if defined (CONFIG_SENSORS_SSP_GRACE)
+	#if ANDROID_VERSION < 70000
+	#include "m_os/bbd_patch_file_grace.h"	
+	#else
+	#include "n_os/bbd_patch_file_grace.h"
+	#endif
+#elif defined (CONFIG_SENSORS_SSP_LUCKY)
+	#if ANDROID_VERSION < 70000
+	#include "m_os/bbd_patch_file_lucky.h"
+	#else
+	#include "n_os/bbd_patch_file_lucky.h"
+	#endif
 #endif
 };
 
@@ -227,6 +256,65 @@ void bbd_disable_stat(void)
 	stat1hz.enabled = false;
 }
 #endif /* DEBUG_1HZ_STAT */
+
+#ifdef CONFIG_LHD_KILLER
+
+static void bbd_lk_work(struct work_struct *work)
+{
+	if (bbd.lk.timer_enabled)
+		bbd_mcu_reset();
+}
+
+static void bbd_lk_timer_func(unsigned long p)
+{
+	if (bbd.lk.workq)
+		queue_work(bbd.lk.workq, &bbd.lk.work);
+}
+
+static void bbd_enable_lk(void)
+{
+	printk("%s timeout:%ld sec\n", __func__, bbd.lk.timeout_sec);
+	if (bbd.lk.timer_enabled) {
+		printk("%s() lhd kill timer aready enabled. reset timer\n", __func__);
+		del_timer_sync(&bbd.lk.timer);
+	}
+
+	INIT_WORK(&bbd.lk.work, bbd_lk_work);
+	setup_timer(&bbd.lk.timer, bbd_lk_timer_func, 0);
+	mod_timer(&bbd.lk.timer, jiffies + HZ*bbd.lk.timeout_sec);
+	bbd.lk.timer_enabled = true;
+}
+
+static void bbd_disable_lk(void)
+{
+	printk("%s \n", __func__);
+	if (!bbd.lk.timer_enabled) {
+		printk("%s() lhd killer already disabled. skipping.\n", __func__);
+		return;
+	}
+	del_timer_sync(&bbd.lk.timer);
+	bbd.lk.timer_enabled = false;
+}
+
+static void bbd_init_lk(void)
+{
+	memset(&bbd.lk, 0, sizeof(bbd.lk));
+	bbd.lk.enabled = true;
+	bbd.lk.timeout_sec = 10;
+	bbd.lk.workq = create_singlethread_workqueue("BBD_LHD_KILLER");
+    spin_lock_init(&bbd.lk.lock);
+}
+
+static void bbd_exit_lk(void)
+{
+	bbd_disable_lk();
+	if (bbd.lk.workq) {
+		flush_workqueue(bbd.lk.workq);
+		destroy_workqueue(bbd.lk.workq);
+		bbd.lk.workq = 0;
+	}
+}
+#endif
 //--------------------------------------------------------------
 //
 //               SHMD Interface Functions
@@ -337,7 +425,23 @@ int bbd_mcu_reset(void)
 	if (bbd.ssp_cb && bbd.ssp_cb->on_mcu_reset)
 		bbd.ssp_cb->on_mcu_reset(bbd.ssp_priv);
 
-	return bbd_on_read(BBD_MINOR_CONTROL, BBD_CTRL_RESET_REQ, strlen(BBD_CTRL_RESET_REQ)+1);
+	if (bbd.lk.enabled) {
+        int ret;
+		/* to fix lhd hang issue, we don't use lhd's control interface to reset mcu.  */
+        spin_lock(&bbd.lk.lock);
+		if (bbd.lk.lhd == NULL || bbd.lk.resetting)
+		{
+			pr_err("[SSP] lhd is NULL or resetting");
+			ret = -1;
+		}   
+        else {
+            bbd.lk.resetting = true;
+            ret = send_sig(SIGKILL, bbd.lk.lhd, 0);
+        }
+        spin_unlock(&bbd.lk.lock);
+        return ret;
+	} else
+		return bbd_on_read(BBD_MINOR_CONTROL, BBD_CTRL_RESET_REQ, strlen(BBD_CTRL_RESET_REQ)+1);
 }
 EXPORT_SYMBOL(bbd_mcu_reset);
 
@@ -404,6 +508,14 @@ ssize_t bbd_control(const char *buf, ssize_t len)
 	} else if (strstr(buf, SSI_DEBUG_OFF)) {
 		ssi_dbg = false;
 #endif
+#ifdef CONFIG_LHD_KILLER
+	} else if (strstr(buf, BBD_CTRL_PASSTHRU_ON)) {
+		printk("[SSPBBD] PatchTimer Start\n");
+		bbd_enable_lk();
+	} else if (strstr(buf, BBD_CTRL_PASSTHRU_OFF)) {
+		printk("[SSPBBD] Patch Done Timer Off\n");
+		bbd_disable_lk();
+#endif /* CONFIG_LHD_KILLER */
 	} else if (bbd.ssp_cb && bbd.ssp_cb->on_control) {
 		/* Tell SHMD about the unknown control string */
 		bbd.ssp_cb->on_control(bbd.ssp_priv, buf);
@@ -447,6 +559,12 @@ int bbd_common_open(struct inode *inode, struct file *filp)
 	filp->private_data = &bbd;
 
 	pr_info("%s--\n", __func__);
+    if (minor == BBD_MINOR_SENSOR) {
+        spin_lock(&bbd.lk.lock);
+        bbd.lk.lhd = current;
+        bbd.lk.resetting = false;
+        spin_unlock(&bbd.lk.lock);
+    }
 	return 0;
 }
 
@@ -461,6 +579,11 @@ static int bbd_common_release(struct inode *inode, struct file *filp)
 
 	pr_info("%s[%s]++\n", __func__, bbd.priv[minor].name);
 	bbd.priv[minor].busy = false;
+    if (minor == BBD_MINOR_SENSOR) {
+        spin_lock(&bbd.lk.lock);
+        bbd.lk.lhd = NULL;
+        spin_unlock(&bbd.lk.lock);
+    }
 	pr_info("%s[%s]--\n", __func__, bbd.priv[minor].name);
 	return 0;
 }
@@ -518,7 +641,9 @@ static ssize_t bbd_common_write(struct file *filp, const char __user *buf, size_
 	unsigned int minor = iminor(filp->f_path.dentry->d_inode);
 	//struct bbd_device *bbd = filp->private_data;
 
-	BUG_ON(size >= BBD_BUFF_SIZE);
+	//BUG_ON(size >= BBD_BUFF_SIZE);
+	 if (size >= BBD_BUFF_SIZE)
+	 	return -EINVAL;
 		
 	WARN_ON(copy_from_user(bbd.priv[minor].write_buf, buf, size));
 
@@ -564,25 +689,36 @@ static unsigned int bbd_common_poll(struct file *filp, poll_table *wait)
  * @buf: contains sensor packet coming from gpsd/lhd
  *
  */
+
+static struct timespec bbd_sensor_time;
 ssize_t bbd_sensor_write(const char *buf, size_t size)
 {
-	/* Copies into /dev/bbd_shmd. If SHMD was sleeping in poll_wait, bbd_on_read() wakes it up also */
-	bbd_on_read(BBD_MINOR_SHMD, buf, size);
+	bbd_sensor_time = ktime_to_timespec(ktime_get_boottime());
 
 #ifdef DEBUG_1HZ_STAT
 	bbd_update_stat(STAT_RX_SSP, size);
 #endif	
 	/* OK. Now call pre-registered SHMD callbacks */
 	if (bbd.ssp_cb->on_packet) 
-		bbd.ssp_cb->on_packet(bbd.ssp_priv, bbd.priv[BBD_MINOR_SHMD].write_buf, size);
-	else if (bbd.ssp_cb->on_packet_alarm)
+		bbd.ssp_cb->on_packet(bbd.ssp_priv, buf, size);
+	else if (bbd.ssp_cb->on_packet_alarm) {
+/* Copies into /dev/bbd_shmd. If SHMD was sleeping in poll_wait, bbd_on_read() wakes it up also */
+		bbd_on_read(BBD_MINOR_SHMD, buf, size);
 		bbd.ssp_cb->on_packet_alarm(bbd.ssp_priv);
-	else
+	} else
 		pr_err("%s no SSP on_packet callback registered. "
 				"Dropped %u bytes\n", __func__, (unsigned int)size);
 
 	return size;
 }
+
+s64 get_sensor_time_delta_us(void)
+{
+	struct timespec curr_ts = ktime_to_timespec(ktime_get_boottime());
+	struct timespec delta = timespec_sub(curr_ts, bbd_sensor_time);
+	return timespec_to_ns(&delta)/NSEC_PER_USEC;
+}
+
 
 /**
  * bbd_control_write - Write function for BBD control (/dev/bbd_control)
@@ -670,12 +806,39 @@ static ssize_t show_sysfs_bbd_pl(struct device *dev, struct device_attribute *at
 	return 0;
 }
 
-static DEVICE_ATTR(bbd,     0220, NULL,                store_sysfs_bbd_control);
-static DEVICE_ATTR(pl,      0440, show_sysfs_bbd_pl,       NULL);
+static ssize_t store_sysfs_lk_timeout(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
+{
+	int status = kstrtol(buf, 0, &bbd.lk.timeout_sec);
+    if(bbd.lk.timeout_sec < 10)
+        bbd.lk.timeout_sec = 10; //base timeout 10sec
+	return status ? : len;
+}
+static ssize_t show_sysfs_lk_timeout(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "timeout for lhd killer : %ld sec\n", bbd.lk.timeout_sec);
+}
+static ssize_t store_sysfs_lk_enable(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
+{
+	if (len)
+		bbd.lk.enabled = buf[0] == '0' ? false : true;
+
+	return len;
+}
+static ssize_t show_sysfs_lk_enable(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "lhd killer %s\n", bbd.lk.enabled ? "enabled" : "disabled");
+}
+
+static DEVICE_ATTR(bbd, 0220, NULL,                store_sysfs_bbd_control);
+static DEVICE_ATTR(pl, 0440, show_sysfs_bbd_pl,       NULL);
+static DEVICE_ATTR(lk_timeout, 0660, show_sysfs_lk_timeout, store_sysfs_lk_timeout);
+static DEVICE_ATTR(lk_enable, 0660, show_sysfs_lk_enable, store_sysfs_lk_enable);
 
 static struct attribute *bbd_attributes[] = {
 	&dev_attr_bbd.attr,
 	&dev_attr_pl.attr,
+	&dev_attr_lk_timeout.attr,
+	&dev_attr_lk_enable.attr,
 	NULL
 };
 
@@ -1002,7 +1165,11 @@ int bbd_init(struct device* dev)
 #ifdef DEBUG_1HZ_STAT
 	bbd_init_stat();
 #endif
-        return 0;
+
+#ifdef CONFIG_LHD_KILLER
+	bbd_init_lk();
+#endif
+	return 0;
 
 free_kobj:
 	kobject_put(bbd.kobj);
@@ -1050,6 +1217,10 @@ static void __exit bbd_exit(void)
 
 #ifdef DEBUG_1HZ_STAT
 	bbd_exit_stat();
+#endif
+
+#ifdef CONFIG_LHD_KILLER
+	bbd_exit_lk();
 #endif
 	/* Remove class */
 	class_destroy(bbd.class);	

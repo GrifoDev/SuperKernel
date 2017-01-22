@@ -31,6 +31,10 @@
 #include <net/netfilter/nf_log.h>
 #include "../../netfilter/xt_repldata.h"
 
+#ifdef CONFIG_ONESHOT_UID
+#include <net/netfilter/oneshot_uid.h>
+#endif
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Netfilter Core Team <coreteam@netfilter.org>");
 MODULE_DESCRIPTION("IPv4 packet filter");
@@ -168,11 +172,12 @@ get_entry(const void *base, unsigned int offset)
 
 /* All zeroes == unconditional rule. */
 /* Mildly perf critical (only if packet tracing is on) */
-static inline bool unconditional(const struct ipt_ip *ip)
+static inline bool unconditional(const struct ipt_entry *e)
 {
 	static const struct ipt_ip uncond;
 
-	return memcmp(ip, &uncond, sizeof(uncond)) == 0;
+	return e->target_offset == sizeof(struct ipt_entry) &&
+	       memcmp(&e->ip, &uncond, sizeof(uncond)) == 0;
 #undef FWINV
 }
 
@@ -229,11 +234,10 @@ get_chainname_rulenum(const struct ipt_entry *s, const struct ipt_entry *e,
 	} else if (s == e) {
 		(*rulenum)++;
 
-		if (s->target_offset == sizeof(struct ipt_entry) &&
+		if (unconditional(s) &&
 		    strcmp(t->target.u.kernel.target->name,
 			   XT_STANDARD_TARGET) == 0 &&
-		   t->verdict < 0 &&
-		   unconditional(&s->ip)) {
+		   t->verdict < 0) {
 			/* Tail of chains: STANDARD target (return/policy) */
 			*comment = *chainname == hookname
 				? comments[NF_IP_TRACE_COMMENT_POLICY]
@@ -384,6 +388,10 @@ ipt_do_table(struct sk_buff *skb,
 					verdict = (unsigned int)(-v) - 1;
 					break;
 				}
+#ifdef CONFIG_ONESHOT_UID
+stackpopup:
+#endif
+
 				if (*stackptr <= origptr) {
 					e = get_entry(table_base,
 					    private->underflow[hook]);
@@ -409,6 +417,22 @@ ipt_do_table(struct sk_buff *skb,
 			}
 
 			e = get_entry(table_base, v);
+#ifdef CONFIG_ONESHOT_UID
+			if (unlikely(e == table_base +
+				oneshot_uid_ipv4.myrule_offset))
+				if (table == oneshot_uid_ipv4.myfilter_table &&
+				    !atomic_read(&oneshot_uid_ipv4.replacing_table)) {
+					xt_ematch_foreach(ematch, e) {
+						acpar.match =
+							ematch->u.kernel.match;
+						acpar.matchinfo = ematch->data;
+						if (!oneshot_uid_checkmap(
+							&oneshot_uid_ipv4, skb,
+							&acpar))
+							goto stackpopup;
+					}
+				}
+#endif
 			continue;
 		}
 
@@ -472,11 +496,10 @@ mark_source_chains(const struct xt_table_info *newinfo,
 			e->comefrom |= ((1 << hook) | (1 << NF_INET_NUMHOOKS));
 
 			/* Unconditional return/END. */
-			if ((e->target_offset == sizeof(struct ipt_entry) &&
+			if ((unconditional(e) &&
 			     (strcmp(t->target.u.user.name,
 				     XT_STANDARD_TARGET) == 0) &&
-			     t->verdict < 0 && unconditional(&e->ip)) ||
-			    visited) {
+			     t->verdict < 0) || visited) {
 				unsigned int oldpos, size;
 
 				if ((strcmp(t->target.u.user.name,
@@ -709,7 +732,7 @@ static bool check_underflow(const struct ipt_entry *e)
 	const struct xt_entry_target *t;
 	unsigned int verdict;
 
-	if (!unconditional(&e->ip))
+	if (!unconditional(e))
 		return false;
 	t = ipt_get_target_c(e);
 	if (strcmp(t->u.user.name, XT_STANDARD_TARGET) != 0)
@@ -751,9 +774,9 @@ check_entry_size_and_hooks(struct ipt_entry *e,
 			newinfo->hook_entry[h] = hook_entries[h];
 		if ((unsigned char *)e - base == underflows[h]) {
 			if (!check_underflow(e)) {
-				pr_err("Underflows must be unconditional and "
-				       "use the STANDARD target with "
-				       "ACCEPT/DROP\n");
+				pr_debug("Underflows must be unconditional and "
+					 "use the STANDARD target with "
+					 "ACCEPT/DROP\n");
 				return -EINVAL;
 			}
 			newinfo->underflow[h] = underflows[h];
@@ -797,6 +820,13 @@ translate_table(struct net *net, struct xt_table_info *newinfo, void *entry0,
 	unsigned int i;
 	int ret = 0;
 
+#ifdef CONFIG_ONESHOT_UID
+	int ourchain = ONESHOT_UID_FIND_NONE;
+	unsigned int rulenum = 0;
+	const void *previous_ematch = NULL;
+	const struct xt_entry_match *ematch;
+#endif
+
 	newinfo->size = repl->size;
 	newinfo->number = repl->num_entries;
 
@@ -819,8 +849,41 @@ translate_table(struct net *net, struct xt_table_info *newinfo, void *entry0,
 			return ret;
 		++i;
 		if (strcmp(ipt_get_target(iter)->u.user.name,
-		    XT_ERROR_TARGET) == 0)
+		    XT_ERROR_TARGET) == 0) {
 			++newinfo->stacksize;
+#ifdef CONFIG_ONESHOT_UID
+			if (ourchain != ONESHOT_UID_FINE_END) {
+				struct xt_standard_target *xt_target =
+						(void *) ipt_get_target(iter);
+				if (ourchain == ONESHOT_UID_FIND_UIDCHAIN) {
+					oneshot_uid_cleanup_unusedmem(
+							&oneshot_uid_ipv4);
+					ourchain = ONESHOT_UID_FINE_END;
+				} else if (strcmp(xt_target->target.data,
+						RULE_STANDBY_UID) == 0) {
+					oneshot_uid_ipv4.myfilter_table =
+						net->ipv4.iptable_filter;
+					rulenum = 0;
+					ourchain = ONESHOT_UID_FIND_UIDCHAIN;
+					oneshot_uid_resetmap(&oneshot_uid_ipv4);
+				}
+			}
+		} else if (ourchain == ONESHOT_UID_FIND_UIDCHAIN) {
+			if (previous_ematch)
+				oneshot_uid_addrule_to_map(&oneshot_uid_ipv4,
+							     previous_ematch);
+
+			xt_ematch_foreach(ematch, iter) {
+				previous_ematch = ematch->data;
+			}
+
+			if (rulenum == 0)
+				oneshot_uid_ipv4.myrule_offset =
+						((void *)iter - entry0);
+
+			rulenum++;
+#endif
+		}
 	}
 
 	if (i != repl->num_entries) {
@@ -1276,17 +1339,29 @@ do_replace(struct net *net, const void __user *user, unsigned int len)
 		ret = -EFAULT;
 		goto free_newinfo;
 	}
-
+#ifdef CONFIG_ONESHOT_UID
+	atomic_inc(&oneshot_uid_ipv4.replacing_table);
+#endif
 	ret = translate_table(net, newinfo, loc_cpu_entry, &tmp);
-	if (ret != 0)
+	if (ret != 0) {
+#ifdef CONFIG_ONESHOT_UID
+		atomic_dec(&oneshot_uid_ipv4.replacing_table);
+#endif
 		goto free_newinfo;
+	}
 
 	duprintf("Translated table\n");
 
 	ret = __do_replace(net, tmp.name, tmp.valid_hooks, newinfo,
 			   tmp.num_counters, tmp.counters);
+
+#ifdef CONFIG_ONESHOT_UID
+	atomic_dec(&oneshot_uid_ipv4.replacing_table);
+#endif
+
 	if (ret)
 		goto free_newinfo_untrans;
+
 	return 0;
 
  free_newinfo_untrans:

@@ -35,6 +35,7 @@
 modules.builtin
 Module.symvers
 *.dwo
+build.log
 
 #
 # Top-level generic files
@@ -63,6 +64,8 @@ Module.symvers
 #
 include/config
 include/generated
+scripts/rkp_cfp/tmp
+arch/arm64/boot/dtb/
 arch/*/include/generated
 
 # stgit generated dirs
@@ -82,8 +85,13 @@ GRTAGS
 GSYMS
 GTAGS
 
+*.img
+*.zip
+*.log
 *.orig
 *~
+*.dts
+*.dtb
 \#*#
 
 #
