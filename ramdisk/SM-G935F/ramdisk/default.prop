@@ -53,6 +53,6 @@ ro.security.vaultkeeper.feature=0
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Fri Dec 30 20:24:49 KST 2016
-ro.bootimage.build.date.utc=1483097089
-ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:7.0/NRD90M/G935FXXU1DPLT:user/test-keys
+ro.bootimage.build.date=Mon Jan 16 19:19:32 KST 2017
+ro.bootimage.build.date.utc=1484561972
+ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:7.0/NRD90M/G935FXXU1DQAS:user/test-keys
