@@ -4,7 +4,7 @@
 export MODEL=herolte
 export VARIANT=eur
 export ARCH=arm64
-export VERSION=V2.0.1
+export VERSION=V2.0.2
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.3.0/bin/aarch64-cortex_a53-linux-gnueabi-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
@@ -80,12 +80,13 @@ FUNC_BUILD_DTIMAGE_TARGET()
 			DTSFILES="exynos8890-herolte_eur_open_00 exynos8890-herolte_eur_open_01
 					exynos8890-herolte_eur_open_02 exynos8890-herolte_eur_open_03
 					exynos8890-herolte_eur_open_04 exynos8890-herolte_eur_open_08
-					exynos8890-herolte_eur_open_09"
+					exynos8890-herolte_eur_open_09 exynos8890-herolte_eur_open_10"
 			;;
 		kor|ktt|lgt|skt)
 			DTSFILES="exynos8890-herolte_kor_all_00 exynos8890-herolte_kor_all_01
 					exynos8890-herolte_kor_all_02 exynos8890-herolte_kor_all_03
-					exynos8890-herolte_kor_all_04 exynos8890-herolte_kor_all_08"
+					exynos8890-herolte_kor_all_04 exynos8890-herolte_kor_all_08
+					exynos8890-herolte_kor_all_09"
 			;;
 		*)
 			echo "Unknown variant: $VARIANT"
@@ -103,7 +104,7 @@ FUNC_BUILD_DTIMAGE_TARGET()
 		kor|ktt|lgt|skt)
 			DTSFILES="exynos8890-hero2lte_kor_all_00 exynos8890-hero2lte_kor_all_01
 					exynos8890-hero2lte_kor_all_03 exynos8890-hero2lte_kor_all_04
-					exynos8890-hero2lte_kor_all_08"
+					exynos8890-hero2lte_kor_all_08 exynos8890-hero2lte_kor_all_09"
 			;;
 		*)
 			echo "Unknown variant: $VARIANT"
