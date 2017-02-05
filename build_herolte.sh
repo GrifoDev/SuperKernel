@@ -80,7 +80,7 @@ FUNC_BUILD_DTIMAGE_TARGET()
 			DTSFILES="exynos8890-herolte_eur_open_00 exynos8890-herolte_eur_open_01
 					exynos8890-herolte_eur_open_02 exynos8890-herolte_eur_open_03
 					exynos8890-herolte_eur_open_04 exynos8890-herolte_eur_open_08
-					exynos8890-herolte_eur_open_09 exynos8890-herolte_eur_open_10"
+					exynos8890-herolte_eur_open_09"
 			;;
 		kor|ktt|lgt|skt)
 			DTSFILES="exynos8890-herolte_kor_all_00 exynos8890-herolte_kor_all_01
