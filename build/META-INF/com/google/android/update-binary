@@ -14,6 +14,8 @@ mkdir tkkg1994
 cd tkkg1994
 unzip -o "$ZIP"
 
+getprop ro.boot.bootloader >> BLmodel
+
 ui_print " ";
 ui_print " - mounting system partition"
 mount /system
@@ -23,8 +25,17 @@ mount /data
 
 ui_print " - Installing SuperKernel"
 
-ui_print " - flashing boot.img"
-cat boot.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
+if grep -q G935 BLmodel; then
+	cat hero2lte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
+	ui_print " - Flashing G935X kernel"
+else if grep -q G930 BLmodel; then
+	cat herolte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
+	ui_print " - Flashing G930X kernel"
+else
+	echo "Not a supported model. Dont flash any kernel!"
+	ui_print " - Model not support, no kernel flashed"
+fi;
+fi;
 
 ui_print " - removing wrong build.prop entries"
 
