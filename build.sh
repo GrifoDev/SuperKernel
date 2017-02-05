@@ -1,7 +1,7 @@
 #!/bin/bash
 # kernel build script by Tkkg1994 v0.5 (optimized from apq8084 kernel source)
 
-export MODEL=hero2lte
+export MODEL=herolte
 export ARCH=arm64
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.3.0/bin/aarch64-cortex_a53-linux-gnueabi-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
@@ -51,7 +51,7 @@ FUNC_BUILD_DTIMAGE_TARGET()
 		DTSFILES="exynos8890-herolte_eur_open_00 exynos8890-herolte_eur_open_01
 				exynos8890-herolte_eur_open_02 exynos8890-herolte_eur_open_03
 				exynos8890-herolte_eur_open_04 exynos8890-herolte_eur_open_08
-				exynos8890-herolte_eur_open_09"
+				exynos8890-herolte_eur_open_09 exynos8890-herolte_eur_open_10"
 		;;
 	hero2lte)
 		DTSFILES="exynos8890-hero2lte_eur_open_00 exynos8890-hero2lte_eur_open_01
