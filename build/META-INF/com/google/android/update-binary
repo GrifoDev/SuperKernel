@@ -25,47 +25,15 @@ mount /data
 
 ui_print " - Installing SuperStock-Kernel"
 
-if grep -q G935F BLmodel; then
+if grep -q G935 BLmodel; then
 	cat hero2lte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G935F kernel"
-else if grep -q G930F BLmodel; then
+	ui_print " - Flashing G935X kernel"
+else if grep -q G930 BLmodel; then
 	cat herolte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G930F kernel"
-else if grep -q G930K BLmodel; then
-	cat herolte-ktt.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G930K kernel"
-else if grep -q G930L BLmodel; then
-	cat herolte-lgt.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G930L kernel"
-else if grep -q G930S BLmodel; then
-	cat herolte-skt.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G930S kernel"
-else if grep -q G930W8 BLmodel; then
-	cat herolte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G930W8 kernel"
-else if grep -q G935K BLmodel; then
-	cat hero2lte-ktt.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G935K kernel"
-else if grep -q G935L BLmodel; then
-	cat hero2lte-lgt.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G935L kernel"
-else if grep -q G935S BLmodel; then
-	cat hero2lte-skt.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G935S kernel"
-else if grep -q G935W8 BLmodel; then
-	cat hero2lte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
-	ui_print " - Flashing G935W8 kernel"
+	ui_print " - Flashing G930X kernel"
 else
 	echo "Not a supported model. Dont flash any kernel!"
 	ui_print " - Model not support, no kernel flashed"
-fi;
-fi;
-fi;
-fi;
-fi;
-fi;
-fi;
-fi;
 fi;
 fi;
 
