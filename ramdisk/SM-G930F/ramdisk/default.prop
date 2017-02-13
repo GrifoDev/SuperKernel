@@ -30,30 +30,24 @@ dalvik.vm.usejitprofiles=true
 dalvik.vm.appimageformat=lz4
 debug.atrace.tags.enableflags=0
 
-ro.config.knox=v30
 ro.security.mdpp.ux=Disabled
 ro.sec.fle.encryption=false
 security.mdpp=
 ro.security.mdpp.ver=
 ro.security.mdpp.release=
 security.mdpp.result=
-ro.hardware.keystore=default
 ro.security.vpnpp.ver=
 ro.security.vpnpp.release=
 ro.securestorage.support=false
-security.mdpp.mass=
 ro.config.tima=0
-ro.config.timaversion=3.0
 ro.config.dmverity=false
 ro.config.rkp=false
 ro.config.kap_default_on=false
 ro.config.kap=false
-ddk.set.afbc=
-ro.security.vaultkeeper.feature=0
 
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Mon Jan 30 16:21:30 KST 2017
-ro.bootimage.build.date.utc=1485760890
-ro.bootimage.build.fingerprint=samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQB3:user/test-keys
+ro.bootimage.build.date=Thu Feb 2 15:57:30 KST 2017
+ro.bootimage.build.date.utc=1486018650
+ro.bootimage.build.fingerprint=samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQB7:user/test-keys
