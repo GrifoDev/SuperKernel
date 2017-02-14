@@ -3,6 +3,9 @@
 mount -o remount,rw /;
 mount -o rw,remount /system
 
+/sbin/resetprop -v -n ro.boot.warranty_bit 0
+/sbin/resetprop -v -n ro.warranty_bit 0
+
 # init.d support
 if [ ! -e /system/etc/init.d ]; then
    mkdir /system/etc/init.d
