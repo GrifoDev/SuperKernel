@@ -37,36 +37,30 @@ else
 fi;
 fi;
 
-ui_print " - removing wrong build.prop entries"
-
-sed -i /timaversion/d /system/build.prop
-sed -i /security.mdpp.mass/d /system/build.prop
-sed -i /ro.hardware.keystore/d /system/build.prop
-
 ui_print " - setting right fingerprint files"
 
-rm -rf /system/app/TuiService /system/app/mcRegistry
+rm -rf /system/app/mcRegistry
 rm -f /system/vendor/lib/libsecure_storage.so
-rm -f /system/vendor/lib/libsecure_storage_jni.so
 rm -f /system/vendor/lib64/libsecure_storage.so
-rm -f /system/vendor/lib64/libsecure_storage_jni.so
+rm -f /system/lib/libbauthserver.so
+rm -f /system/lib64/libbauthserver.so
 mkdir /system/etc/init.d
 
 cd
 cd /tmp/tkkg1994
 mv -f mcRegistry /system/app
 mv -f vendor/lib/libsecure_storage.so /system/vendor/lib/libsecure_storage.so
-mv -f vendor/lib/libsecure_storage_jni.so /system/vendor/lib/libsecure_storage_jni.so
 mv -f vendor/lib64/libsecure_storage.so /system/vendor/lib64/libsecure_storage.so
-mv -f vendor/lib64/libsecure_storage_jni.so /system/vendor/lib64/libsecure_storage_jni.so
+mv -f lib/libbauthserver.so /system/lib/libbauthserver.so
+mv -f lib64/libbauthserver.so /system/lib64/libbauthserver.so
 mv -f files/wakelock /system/etc/init.d
 
 ui_print " - setting permissions"
 
 chmod 0644 /system/vendor/lib/libsecure_storage.so
-chmod 0644 /system/vendor/lib/libsecure_storage_jni.so
 chmod 0644 /system/vendor/lib64/libsecure_storage.so
-chmod 0644 /system/vendor/lib64/libsecure_storage_jni.so
+chmod 0644 /system/lib/libbauthserver.so
+chmod 0644 /system/lib64/libbauthserver.so
 chmod 0755 /system/app/mcRegistry
 chmod 0644 /system/app/mcRegistry/*.tlbin
 chmod 0755 /system/etc/init.d/wakelock
