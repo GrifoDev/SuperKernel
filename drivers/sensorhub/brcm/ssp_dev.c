@@ -299,11 +299,7 @@ out:
 
 static bbd_callbacks ssp_bbd_callbacks = {
 // on_packet call-back func is used after N OS, drivers devided workqueue merge as one 
-#if ANDROID_VERSION < 70000
-	.on_packet       = NULL,
-#else
 	.on_packet       = callback_bbd_on_packet,
-#endif
 	.on_packet_alarm = callback_bbd_on_packet_alarm,
 	.on_control      = callback_bbd_on_control,
 	.on_mcu_ready    = callback_bbd_on_mcu_ready,

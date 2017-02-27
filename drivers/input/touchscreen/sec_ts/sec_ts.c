@@ -1641,12 +1641,8 @@ static int sec_ts_parse_dt(struct i2c_client *client)
 	if (of_property_read_u32(np, "sec,mis_cal_check", &pdata->mis_cal_check) < 0)
 		pdata->mis_cal_check = 0;
 
-#if ANDROID_VERSION >= 70000  /* N OS */
 	if (of_property_read_u32(np, "sec,grip_concept", &pdata->grip_concept) < 0)
 		pdata->grip_concept = 1;	// default 1(set_tunning_data) for Hero.
-#else
-	pdata->grip_concept = 1;
-#endif
 
 	pdata->panel_revision = (lcdtype & 0xF000) >> 12;
 	pdata->i2c_burstmax = SEC_TS_FW_MAX_BURSTSIZE;

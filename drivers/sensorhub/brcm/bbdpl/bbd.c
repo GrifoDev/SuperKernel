@@ -134,17 +134,9 @@ static struct bbd_device bbd;
 static unsigned char bbd_patch[] =
 {
 #if defined (CONFIG_SENSORS_SSP_GRACE)
-	#if ANDROID_VERSION < 70000
-	#include "m_os/bbd_patch_file_grace.h"	
-	#else
 	#include "n_os/bbd_patch_file_grace.h"
-	#endif
 #elif defined (CONFIG_SENSORS_SSP_LUCKY)
-	#if ANDROID_VERSION < 70000
-	#include "m_os/bbd_patch_file_lucky.h"
-	#else
 	#include "n_os/bbd_patch_file_lucky.h"
-	#endif
 #endif
 };
 

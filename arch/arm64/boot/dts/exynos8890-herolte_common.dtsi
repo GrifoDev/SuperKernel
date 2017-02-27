@@ -3073,18 +3073,11 @@
 			net_boost,label="UFS";
 			net_boost,node="";
 			net_boost,sysnode="/sys/class/scsi_host/host0/transferred_cnt";
-#if ANDROID_VERSION >= 70000
 			net_boost,table_size = <2>;
 			net_boost,table= <
 				128 0 0 1274000 0 1144000 0 0 0 0
 				800 0 0 1482000 0 1539000 0 0 0 0
 				>;
-#else
-			net_boost,table_size = <1>;
-			net_boost,table= <
-				128 0 0 1274000 0 1144000 0 0 0 0
-				>;
-#endif
 		};
 		boot_device@3 {
 			net_boost,label="P2P";

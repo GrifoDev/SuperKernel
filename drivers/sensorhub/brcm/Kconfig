@@ -373,7 +373,7 @@ config SENSORS_SSP_PROX_FACTORYCAL
 
 config SENSORS_SSP_LIGHT_REPORT_LUX
 	tristate "Sensors ssp light sensor reporting lux"
-	default y if ANDROID_MAJOR_VERSION = "n"
+	default y
 	depends on SPI
 	help
 	  If you want to report lux, it should be set.

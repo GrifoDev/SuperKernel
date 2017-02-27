@@ -3602,6 +3602,17 @@ static bool fs_fully_visible(struct file_system_type *type, int *new_mnt_flags)
 		/* Verify the mount flags are equal to or more permissive
 		 * than the proposed new mount.
 		 */
+#ifdef CONFIG_RKP_NS_PROT
+		if ((mnt->mnt->mnt_flags & MNT_LOCK_READONLY) &&
+		    !(new_flags & MNT_READONLY))
+			continue;
+		if ((mnt->mnt->mnt_flags & MNT_LOCK_NODEV) &&
+		    !(new_flags & MNT_NODEV))
+			continue;
+		if ((mnt->mnt->mnt_flags & MNT_LOCK_ATIME) &&
+		    ((mnt->mnt->mnt_flags & MNT_ATIME_MASK) != (new_flags & MNT_ATIME_MASK)))
+			continue;
+#else
 		if ((mnt->mnt.mnt_flags & MNT_LOCK_READONLY) &&
 		    !(new_flags & MNT_READONLY))
 			continue;
@@ -3611,6 +3622,7 @@ static bool fs_fully_visible(struct file_system_type *type, int *new_mnt_flags)
 		if ((mnt->mnt.mnt_flags & MNT_LOCK_ATIME) &&
 		    ((mnt->mnt.mnt_flags & MNT_ATIME_MASK) != (new_flags & MNT_ATIME_MASK)))
 			continue;
+#endif
 
 		/* This mount is not fully visible if there are any
 		 * locked child mounts that cover anything except for
@@ -3619,17 +3631,28 @@ static bool fs_fully_visible(struct file_system_type *type, int *new_mnt_flags)
 		list_for_each_entry(child, &mnt->mnt_mounts, mnt_child) {
 			struct inode *inode = child->mnt_mountpoint->d_inode;
 			/* Only worry about locked mounts */
+#ifdef CONFIG_RKP_NS_PROT
+			if (!(child->mnt->mnt_flags & MNT_LOCKED))
+#else
 			if (!(child->mnt.mnt_flags & MNT_LOCKED))
+#endif
 				continue;
 			if (!S_ISDIR(inode->i_mode))
 				goto next;
 			if (inode->i_nlink > 2)
 				goto next;
 		}
+#ifdef CONFIG_RKP_NS_PROT
+		/* Preserve the locked attributes */
+		*new_mnt_flags |= mnt->mnt->mnt_flags & (MNT_LOCK_READONLY | \
+							MNT_LOCK_NODEV    | \
+							MNT_LOCK_ATIME);
+#else
 		/* Preserve the locked attributes */
 		*new_mnt_flags |= mnt->mnt.mnt_flags & (MNT_LOCK_READONLY | \
 							MNT_LOCK_NODEV    | \
 							MNT_LOCK_ATIME);
+#endif
 		visible = true;
 		goto found;
 	next:	;

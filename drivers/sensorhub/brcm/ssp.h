@@ -1141,9 +1141,7 @@ void ssp_temp_task(struct work_struct *work);
 
 int callback_bbd_on_control(void *ssh_data, const char *str_ctrl);
 int callback_bbd_on_mcu_ready(void *ssh_data, bool ready);
-#if ANDROID_VERSION >= 70000
 int callback_bbd_on_packet(void *ssh_data, const char *buf, size_t size);
-#endif
 int callback_bbd_on_packet_alarm(void *ssh_data);
 int callback_bbd_on_mcu_reset(void *ssh_data);
 void bbd_on_packet_work_func(struct work_struct *work);

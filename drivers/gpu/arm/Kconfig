@@ -10,7 +10,7 @@
 #
 config DDK_VERSION_OS
 	string "version"
-	default ANDROID_MAJOR_VERSION
+	default "n"
 	help
 		Android OS major version
 
