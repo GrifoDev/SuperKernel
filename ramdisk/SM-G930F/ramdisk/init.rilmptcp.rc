@@ -1,0 +1,6 @@
+# redsocks
+service redsocks /system/bin/redsocks -c /data/mptcp/redsocks.conf
+    class main
+    user system
+    group system net_raw net_admin
+    disabled
