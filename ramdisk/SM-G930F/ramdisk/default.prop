@@ -48,6 +48,6 @@ ro.config.kap=false
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Thu Feb 2 15:57:30 KST 2017
-ro.bootimage.build.date.utc=1486018650
-ro.bootimage.build.fingerprint=samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQB7:user/test-keys
+ro.bootimage.build.date=Mon Feb 13 15:54:23 KST 2017
+ro.bootimage.build.date.utc=1486968863
+ro.bootimage.build.fingerprint=samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQBO:user/test-keys
