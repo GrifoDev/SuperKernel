@@ -3,8 +3,12 @@
 mount -o remount,rw /;
 mount -o rw,remount /system
 
-/sbin/resetprop -v -n ro.boot.warranty_bit 0
-/sbin/resetprop -v -n ro.warranty_bit 0
+/sbin/resetprop -v -n ro.boot.warranty_bit "0"
+/sbin/resetprop -v -n ro.warranty_bit "0"
+/sbin/resetprop -n ro.boot.veritymode "enforcing"
+/sbin/resetprop -n ro.boot.verifiedbootstate "green"
+/sbin/resetprop -n ro.boot.flash.locked "1"
+/sbin/resetprop -n ro.boot.ddrinfo "00000001"
 
 # init.d support
 if [ ! -e /system/etc/init.d ]; then
