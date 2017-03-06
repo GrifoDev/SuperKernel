@@ -30,20 +30,7 @@ dalvik.vm.usejitprofiles=true
 dalvik.vm.appimageformat=lz4
 debug.atrace.tags.enableflags=0
 
-ro.security.mdpp.ux=Disabled
-ro.sec.fle.encryption=false
-security.mdpp=
-ro.security.mdpp.ver=
-ro.security.mdpp.release=
-security.mdpp.result=
-ro.security.vpnpp.ver=
-ro.security.vpnpp.release=
 ro.securestorage.support=false
-ro.config.tima=0
-ro.config.dmverity=false
-ro.config.rkp=false
-ro.config.kap_default_on=false
-ro.config.kap=false
 
 #
 # BOOTIMAGE_BUILD_PROPERTIES
