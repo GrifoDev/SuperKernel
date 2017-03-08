@@ -22,6 +22,7 @@
 /sbin/resetprop -n ro.boot.verifiedbootstate "green"
 /sbin/resetprop -n ro.boot.flash.locked "1"
 /sbin/resetprop -n ro.boot.ddrinfo "00000001"
+/sbin/resetprop -n ro.crypto.state "encrypted"
 
 # Deepsleep fix
 su -c 'echo "temporary none" >> /sys/class/scsi_disk/0:0:0:0/cache_type'
