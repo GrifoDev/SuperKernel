@@ -12,7 +12,7 @@ import /init.${ro.zygote}.rc
 import /init.rilcommon.rc
 import /init.container.rc
 import /init.fac.rc
-import /init.d_support.sh
+import /init.services.rc
 import /init.Super.rc
 
 on early-init
