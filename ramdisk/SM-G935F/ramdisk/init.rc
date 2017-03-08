@@ -12,7 +12,7 @@ import /init.${ro.zygote}.rc
 import /init.rilcommon.rc
 import /init.container.rc
 import /init.fac.rc
-import /init.d_support.sh
+import /init.services.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
