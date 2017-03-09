@@ -70,11 +70,7 @@ enum {
 #define OLED_CMD_AID_CNT		3
 #define OLED_CMD_GAMMA			0xCA
 
-#ifdef CONFIG_PANEL_SMART_DIMMING
-#define MAX_BR_INFO			55
-#else
-#define MAX_BR_INFO			82
-#endif
+#define MAX_BR_INFO				82
 
 #ifdef CONFIG_LCD_HMT
 #define HMT_MAX_BR_INFO			37
