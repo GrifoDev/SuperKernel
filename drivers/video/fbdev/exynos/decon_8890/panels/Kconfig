@@ -18,7 +18,7 @@ config PANEL_AID_DIMMING
 	default n
 
 config PANEL_SMART_DIMMING
-	depends on PANEL_AID_DIMMING && PANEL_S6E3HF4_WQHD
+	depends on PANEL_AID_DIMMING
 	tristate "Support SMART Dimming"
 	default n
 
