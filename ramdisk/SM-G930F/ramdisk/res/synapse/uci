@@ -13,14 +13,6 @@ fi;
 CONFIG_JSON=/res/synapse/config.json
 ACTION_SCRIPTS=/res/synapse/actions/
 
-if [ ! -e /data/.Super/invisible_cpuset ]; then
-	echo "0" > /data/.Super/invisible_cpuset;
-fi
-
-if [ ! -e /data/.Super/lazytime_mount ]; then
-	echo "0" > /data/.Super/lazytime_mount;
-fi
-
 if [ ! -f $CONFIG_JSON ]; then
 	source /res/synapse/json.generate > $CONFIG_JSON
 fi

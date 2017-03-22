@@ -174,31 +174,6 @@ cat << CTAG
 	{ SSpacer:{
 		height:2
 	}},
-	{ SPane:{
-		title:"Lazytime Mount",
-		description:"Reduce periodic journal writes on data & cache on EXT4 file systems (better battery life, flash lifespan and performance)."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SDescription:{ 
-		description:"NOTE: Enabling lazytime may affect running of scheduled Crontab tasks."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
-	{ SOptionList:{
-		title:"Lazytime",
-		description:"Enable to mount EXT4 file systems with lazytime. Changing this value requires REBOOT.\n",
-		default:$(cat /data/.Super/lazytime_mount),
-		action:"generic /data/.Super/lazytime_mount",
-		values:{
-			0:"Disabled", 1:"Enabled"
-		}
-	}},
-	{ SSpacer:{
-		height:1
-	}},
 	{ SOptionList:{
 		title:"FSync",
 		description:"Disabling fsync will increase I/O speed but decrease data integrity in the case of an app crash, freeze or reboot.\n",
