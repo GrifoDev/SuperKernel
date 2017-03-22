@@ -22,7 +22,7 @@ case $MODEL in
 herolte)
 	case $VARIANT in
 	can|duos|eur|xx)
-		KERNEL_DEFCONFIG=StockKernel-$MODEL-eur_defconfig
+		KERNEL_DEFCONFIG=SuperKernel-herolte_defconfig
 		;;
 	kor|ktt|lgt|skt)
 		KERNEL_DEFCONFIG=StockKernel-$MODEL-kor_defconfig
@@ -36,7 +36,7 @@ herolte)
 hero2lte)
 	case $VARIANT in
 	can|duos|eur|xx)
-		KERNEL_DEFCONFIG=StockKernel-$MODEL-eur_defconfig
+		KERNEL_DEFCONFIG=SuperKernel-hero2lte_defconfig
 		;;
 	kor|ktt|lgt|skt)
 		KERNEL_DEFCONFIG=StockKernel-$MODEL-kor_defconfig
@@ -80,7 +80,7 @@ FUNC_BUILD_DTIMAGE_TARGET()
 			DTSFILES="exynos8890-herolte_eur_open_00 exynos8890-herolte_eur_open_01
 					exynos8890-herolte_eur_open_02 exynos8890-herolte_eur_open_03
 					exynos8890-herolte_eur_open_04 exynos8890-herolte_eur_open_08
-					exynos8890-herolte_eur_open_09 exynos8890-herolte_eur_open_10"
+					exynos8890-herolte_eur_open_09"
 			;;
 		kor|ktt|lgt|skt)
 			DTSFILES="exynos8890-herolte_kor_all_00 exynos8890-herolte_kor_all_01

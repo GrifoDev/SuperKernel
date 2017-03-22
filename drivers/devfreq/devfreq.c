@@ -1096,7 +1096,7 @@ static ssize_t volt_table_store(struct device *d, struct device_attribute *attr,
 {
 	struct devfreq *df = to_devfreq(d);
 	struct device *dev = df->dev.parent;
-	struct device_opp *dev_opp = _find_device_opp(dev);
+	struct device_opp *dev_opp = find_device_opp(dev);
 	struct dev_pm_opp *temp_opp;
 	int u[15];
 	int rest, t, i = 0;
@@ -1137,7 +1137,7 @@ static ssize_t volt_table_show(struct device *d,
 {
 	struct devfreq *df = to_devfreq(d);
 	struct device *dev = df->dev.parent;
-	struct device_opp *dev_opp = _find_device_opp(dev);
+	struct device_opp *dev_opp = find_device_opp(dev);
 	struct dev_pm_opp *temp_opp;
 	int len = 0;
 

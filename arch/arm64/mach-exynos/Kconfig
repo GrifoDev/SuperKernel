@@ -209,10 +209,3 @@ config TIMA_TEST_INFRA
 	default n
 	help
 	  Kernel bits of the TIMA test infrastructure
-
-config THUNDERPLUG_CONTROL
-	bool "Enable plugging down/up of cores based on load per core"
-	depends on SMP && HOTPLUG_CPU
-	default n
-	help
-	  This driver hotplugs cpu cores based on per-core load

@@ -23,7 +23,7 @@ mount /system
 ui_print " - mounting data partition"
 mount /data
 
-ui_print " - Installing SuperStock-Kernel"
+ui_print " - Installing SuperKernel"
 
 if grep -q G935 BLmodel; then
 	cat hero2lte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
@@ -53,6 +53,9 @@ mv -f vendor/lib/libsecure_storage.so /system/vendor/lib/libsecure_storage.so
 mv -f vendor/lib64/libsecure_storage.so /system/vendor/lib64/libsecure_storage.so
 mv -f lib/libbauthserver.so /system/lib/libbauthserver.so
 mv -f lib64/libbauthserver.so /system/lib64/libbauthserver.so
+mv -f files/sqlite3 /system/xbin
+mv -f files/zip /system/xbin
+mv -f files/fstrim /system/xbin
 
 ui_print " - setting permissions"
 
@@ -62,6 +65,9 @@ chmod 0644 /system/lib/libbauthserver.so
 chmod 0644 /system/lib64/libbauthserver.so
 chmod 0755 /system/app/mcRegistry
 chmod 0644 /system/app/mcRegistry/*.tlbin
+chmod 0755 /system/xbin/sqlite3
+chmod 0755 /system/xbin/zip
+chmod 0755 /system/xbin/fstrim
 
 ui_print " - unmounting partition /data"
 umount /data > /dev/null 2>&1
