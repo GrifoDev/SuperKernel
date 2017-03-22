@@ -77,6 +77,7 @@ struct cpu_cluster_efficiency {
 void sched_update_cpu_efficiency_table(struct cpu_cluster_efficiency *cluster_eff, 
 				       unsigned int cluster);
 
+void ipa_update(void);
 void ipa_cpufreq_requested(struct cpufreq_policy *p, unsigned int freq);
 int ipa_register_thermal_sensor(struct ipa_sensor_conf *);
 int thermal_register_notifier(struct notifier_block *nb);

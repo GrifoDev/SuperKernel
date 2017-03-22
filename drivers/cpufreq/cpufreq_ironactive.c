@@ -32,7 +32,7 @@
 #include <linux/slab.h>
 
 #define CREATE_TRACE_POINTS
-#include <trace/events/cpufreq_ironctive.h>
+#include <trace/events/cpufreq_ironactive.h>
 
 struct cpufreq_ironactive_cpuinfo {
 	struct timer_list cpu_timer;
