@@ -1,0 +1,96 @@
+# By UpInTheAir for SkyHigh kernels
+# cron_log by dorimanx and modified from ExTweaks by UpInTheAir for SkyHigh kernels & Synapse
+
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+case $1 in
+master)
+  P=/res/synapse/Super/cron/master
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	pkill -f crond;
+	pkill -f "/res/crontab_service/service.sh";
+	if [ -d /data/crontab ]; then
+		rm -rf /data/crontab;
+	fi;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	$BB nohup $BB sh /res/crontab_service/service.sh 2> /dev/null;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+log)
+  if [ -d /data/crontab ]; then
+	if [ ! -e /data/crontab/cron-clear-file-cache ]; then
+		echo "no data" > /data/crontab/cron-clear-file-cache;
+	fi;
+	if [ ! -e /data/crontab/cron-clear-ram-cache ]; then
+		echo "no data" > /data/crontab/cron-clear-ram-cache;
+	fi;
+	if [ ! -e /data/crontab/cron-db-optimizing ]; then
+		echo "no data" > /data/crontab/cron-db-optimizing;
+	fi;
+	if [ ! -e /data/crontab/cron-fstrim ]; then
+		echo "no data" > /data/crontab/cron-fstrim;
+	fi;
+	if [ ! -e /data/crontab/cron-ram-release ]; then
+		echo "no data" > /data/crontab/cron-ram-release;
+	fi;
+	if [ ! -e /data/crontab/cron-reset_battery ]; then
+		echo "no data" > /data/crontab/cron-reset_battery;
+	fi;
+	if [ ! -e /data/crontab/cron-twrp_backup ]; then
+		echo "no data" > /data/crontab/cron-twrp_backup;
+	fi;
+
+	chmod 777 /data/crontab/*
+	cat /data/crontab/cron-clear-file-cache > /data/crontab/cron_log;
+	echo "---" >> /data/crontab/cron_log;
+	cat /data/crontab/cron-clear-ram-cache >> /data/crontab/cron_log;
+	echo "---" >> /data/crontab/cron_log;
+	cat /data/crontab/cron-db-optimizing >> /data/crontab/cron_log;
+	echo "---" >> /data/crontab/cron_log;
+	cat /data/crontab/cron-fstrim >> /data/crontab/cron_log;
+	echo "---" >> /data/crontab/cron_log;
+	cat /data/crontab/cron-ram-release >> /data/crontab/cron_log;
+	echo "---" >> /data/crontab/cron_log;
+	cat /data/crontab/cron-reset_battery >> /data/crontab/cron_log;
+	echo "---" >> /data/crontab/cron_log;
+	cat /data/crontab/cron-twrp_backup >> /data/crontab/cron_log;
+
+	# push all to one log.
+	CRON_LOG=$(cat /data/crontab/cron_log);
+	echo "$CRON_LOG";
+  else
+	echo "Please enable Crontab first !!";
+  fi;
+  ;;
+
+esac
+
+if [ -f "$1" ]; then
+	if [[ ! -z "$2" ]]; then
+		$BB echo "$2" > "$1"
+	fi;
+
+	$BB echo "$($BB cat "$1")";
+fi;

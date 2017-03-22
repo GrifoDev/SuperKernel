@@ -1,0 +1,69 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:SECURITY,
+    elements:[
+	{ SPane:{
+		title:"KNOX",
+		description:"Freezing will stop any KNOX related processes and prevent the annoying warning about modified device 'Unauthorized actions have been detected...' This allows some apps to run outside the secure container. More info: <a href='https://www.samsungknox.com/en/products/knox-workspace/technical'>KNOX Workspace </a>."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"NOTE: This process can take ~1 minute and device may be UNRESPONSIVE during this time, PLEASE WAIT for the process to finish !"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Freeze KNOX",
+		description:" ",
+		default:$(echo "$(/res/synapse/actions/security knox_security)"),
+		action:"security knox_security",
+		values:[NO_ACTION, Freeze, Enabled,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"SELinux (Security-Enhanced Linux)"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SLiveLabel:{
+		title:"Status",
+		description:" ",
+		refresh:3000,
+		action:"live selinux_status"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"SELinux Security Policy",
+		description:"Change your SELinux status from Enforcing (policy is enforced) to Permissive (prints warnings instead of enforcing).\n",
+		default:$(getenforce),
+		action:"devtools selinux",
+		values:[Enforcing, Permissive,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Force Audit",
+		description:"Enable for debugging SELinux driver.\n",
+		default:N,
+		action:"generic /sys/module/selinux/parameters/force_audit",
+		values:{
+			N:"Disabled", Y:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+    ]
+}
+CTAG

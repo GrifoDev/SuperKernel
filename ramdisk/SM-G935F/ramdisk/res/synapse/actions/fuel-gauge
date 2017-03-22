@@ -1,0 +1,33 @@
+# By UpInTheAir for SkyHigh kernels
+
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
+
+if [ -d "/sys/devices/battery" ]; then
+	P=/sys/devices/battery
+elif [ -d "/sys/devices/battery.54" ]; then
+	P=/sys/devices/battery.54
+elif [ -d "/sys/devices/battery.53" ]; then
+	P=/sys/devices/battery.53
+elif [ -d "/sys/devices/battery.52" ]; then
+	P=/sys/devices/battery.52
+elif [ -d "/sys/devices/battery.51" ]; then
+	P=/sys/devices/battery.51
+fi;
+
+case $1 in
+fuel-gauge)
+FG=$P/power_supply/battery/fg_reset_cap;
+$BB chmod 666 $P;
+  echo 1 > $FG
+  echo "The fuel gauge chip is reset. Give it some time to normalize the gauge."
+  sleep 2;
+  ;;
+esac

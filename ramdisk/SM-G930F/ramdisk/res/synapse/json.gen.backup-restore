@@ -1,0 +1,218 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:BACKUP RESTORE,
+    elements:[
+	{ SPane:{
+		title:"EFS Partition",
+		description:"WARNING: The EFS partition on your device stores critical information about your device — including the IMEI number. If this partition is corrupted, then IMEI of the device maybe lost, which results in permanent network disconnectivity to every carrier."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"This will delete any previous Super Synapse EFS backup (if already exists) and or create a new backup to /sdcard/Super/Synapse/EFS folder."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Backup EFS",
+		action:"devtools efs_backup"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SDescription:{
+		description:"Restore previous Super Synapse EFS backup & REBOOT !"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Restore EFS Backup",
+		action:"devtools efs_restore"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Profile"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SGeneric:{
+		title:"Profile Name",
+		description:"",
+		default:"None",
+		action:"backup /res/synapse/Super/bck_prof",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"First set a name above and [APPLY] your choice in Synapse before pressing the [Backup Current Profile] button below."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Backup Current Profile",
+		action:"sqlite ExportConfigSynapse",
+		notify:[
+			{
+				on:APPLY,
+				do:[ REFRESH, APPLY ],
+				to:"backup /res/synapse/Super/bck_prof"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Selected Profile",
+		description:"Choose the settings you want and [APPLY] your choice in Synapse before using the action buttons below.\n",
+		action:"restorebackup pickconfig",
+		default:"None",
+		values:[ "None",
+			`for BAK in \`/res/synapse/actions/restorebackup listconfig\`; do
+				echo "\"$BAK\","
+			done`
+		],
+		notify:[
+			{
+				on:APPLY,
+				do:[ REFRESH, APPLY ],
+				to:"backup /res/synapse/Super/bck_prof"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SDescription:{
+		description:"NOTE: After you restore a profile and press the [Restart Synapse] button, you MUST also press the [X] (Cancel) button on top to load the new settings!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Restore Selected Profile",
+		action:"sqlite ImportConfigSynapse",
+		notify:[
+			{
+				on:APPLY,
+				do:[ REFRESH, APPLY ],
+				to:"restorebackup pickconfig"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Delete Selected Profile",
+		action:"restorebackup delconfig",
+		notify:[
+			{
+				on:APPLY,
+				do:[ REFRESH, APPLY ],
+				to:"restorebackup pickconfig"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Kernel Image"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SGeneric:{
+		title:"Kernel Name",
+		description:"",
+		default:"None",
+		action:"backup /res/synapse/Super/bck_kernel",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"First set a name above and [APPLY] your choice in Synapse before pressing the [Backup Current Kernel] button below."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Backup Current Kernel",
+		action:"restorebackup keepboot /dev/block/platform/15570000.ufs/by-name/BOOT",
+		notify:[
+			{
+				on:APPLY,
+				do:[ REFRESH, APPLY ],
+				to:"backup /res/synapse/Super/bck_kernel"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Selected Image",
+		description:"Choose the settings you want and [APPLY] your choice in Synapse before using the action buttons below.\n",
+		action:"restorebackup pickboot",
+		default:"None",
+		values:[ "None",
+`
+			for IMG in \`/res/synapse/actions/restorebackup listboot\`; do
+			  echo "\"$IMG\","
+			done
+`
+		]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SButton:{
+		label:"Restore Selected Kernel",
+		action:"restorebackup flashboot /dev/block/platform/15570000.ufs/by-name/BOOT"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Delete Selected Kernel",
+		action:"restorebackup delboot",
+		notify:[
+			{
+				on:APPLY,
+				do:[ RESET, REFRESH, ],
+				to:"restorebackup pickboot"
+			}
+		]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"General Actions",
+		description:"To update/refresh lists, press the [Restart Synapse] button below."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Restart Synapse",
+		action:"restorebackup restart"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+    ]
+}
+CTAG

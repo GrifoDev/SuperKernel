@@ -1,0 +1,198 @@
+#!/system/bin/sh
+
+# Detect variant for sammobile.com firmware
+if [ "$(grep "G930F" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930F"
+elif [ "$(grep "G930FD" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930FD"
+elif [ "$(grep "G930K" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930K"
+elif [ "$(grep "G930L" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930L"
+elif [ "$(grep "G930S" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930S"
+elif [ "$(grep "G930W8" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G930W8"
+elif [ "$(grep "G935F" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935F"
+elif [ "$(grep "G935FD" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935FD"
+elif [ "$(grep "G935K" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935K"
+elif [ "$(grep "G935L" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935L"
+elif [ "$(grep "G935S" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935S"
+elif [ "$(grep "G935W8" /proc/cmdline)" != "" ]; then
+	VARIANT="SM-G935W8"
+else
+	# Unsupported variant
+	VARIANT=""
+fi;
+
+cat << CTAG
+{
+    name:INFO,
+    elements:[
+	{ SPane:{
+		title:"Kernel Build by",
+		description:"Tkkg1994"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	`if [ "$(grep "G930F" /proc/cmdline)" != "" ] || [ "$(grep "G930FD" /proc/cmdline)" != "" ] || [ "$(grep "G930W8" /proc/cmdline)" != "" ]; then
+		echo '{ SPane:{
+			title:"Kernel Thread",
+			description:"<a href='http://forum.xda-developers.com/galaxy-s7/development/kernel-superkernel-v1-0-t3389247/'>XDA forum</a>"
+		}},
+		{ SSpacer:{
+			height:1
+		}},'
+	elif [ "$(grep "G935F" /proc/cmdline)" != "" ] || [ "$(grep "G935FD" /proc/cmdline)" != "" ] || [ "$(grep "G935W8" /proc/cmdline)" != "" ]; then
+		echo '{ SPane:{
+			title:"Kernel Thread",
+			description:"<a href='http://forum.xda-developers.com/s7-edge/development/kernel-superkernel-v1-0-t3389255/'>XDA forum</a>"
+		}},
+		{ SSpacer:{
+		height:1
+		}},'
+	fi;`
+	{ SPane:{
+		title:"Source",
+		description:"<a href='https://github.com/Tkkg1994/SuperKernel/'>Github Source Code</a>"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Special Thanks to"
+	}},
+	{ SDescription:{
+		description:"UpInTheAir, AndreiLux, Jesec, Halaszk, Neobuddy and Dorimanx!"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"ASV Summary",
+		description:"Values: from 0 (Lowest) to 15 (Highest). The higher the ASV, the higher frequencies your device can run and lower voltages"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default asv"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Kernel Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default version"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Build"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default build"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Check Firmware Update",
+		action:"am start -a android.intent.action.VIEW -d http://www.sammobile.com/firmwares/database/$VARIANT > /dev/null;
+		echo Opening browser...;"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Android Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default android_version"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Build Date"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default date"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Baseband"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default baseband"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Bootloader"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default bootloader"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Ramdisk"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default ramdisk"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Busybox Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default busybox_version"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Superuser Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default su_version"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Serial"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default serial"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+    ]
+}
+CTAG

@@ -1,0 +1,62 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:HOTPLUG,
+    elements:[
+	{ SPane:{
+		title:"Hotplug Drivers"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		default:Stock,
+		description: "Stock is default recommended hotplug driver that let kernel and system together decide number of cores to be online based on CPU temperature, Battery level and Device status. It shuts down sibling cores when system is in sleep mode / suspended. While stock only disables 2 cores at max, thunderplug is able to hotplug any core. Playing around with below tunables can give you random reboots or BSOD. So if you just want to use it let it DEFAULT.",
+		action:"hotplug_select /res/synapse/Super/hotplug_prof",
+		values:[ ThunderPlug, Stock, Disabled
+		],
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Touch Boosted CPUs",
+		description:"This will decided no. of cores to be boosted when screen is touched. Higher the number of cores, higher the performance. This must be lesser than or equal to no. of Max CPUs online. When is is set to lesser or equal value of Min CPUs online, it is as good as disabled. This tunable works only for ThunderPlug.",
+		min:1, max:8, unit:" cores", step:1,
+		default:2,
+                action:"hotplug_action cpus_boosted"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Min CPUs Online",
+		description:"This will decide minimum number of cores that stays online when device is not suspended. Higher the number of cores, better the performance. This must be less than or equal to no. of Max CPUs online. This tunable works only for ThunderPlug.",
+		min:1, max:8, unit:" cores", step:1,
+		default:1,
+                action:"hotplug_action min_core_online"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Max CPUs Online",
+		description:"This will decide maximum number of cores that can go online at any given time. Higher the number of cores, better the performance. This must be greater than or equal to no. of Min CPUs online and Boosted CPUs. This tunable works only for ThunderPlug.",
+		min:1, max:8, unit:" cores", step:1,
+		default:8,
+                action:"hotplug_action max_core_online"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Min CPUs Online (Suspend)",
+		description:"This will decide minimum number of cores that will stay online when device is suspended. Higher the number of cores, better the performance. This should be less than or equal to no. of Max CPUs online. In case you are having trouble like music glitch on screen off, keep this value greater than unity. Please note when value is set to 1, you will have very good power saving since hotplug will be completely suspended when idle. This tunable works only for ThunderPlug.",
+		min:1, max:8, unit:" cores", step:1,
+		default:3,
+                action:"hotplug_action suspend_cpus"
+	}},
+    ]
+}
+CTAG

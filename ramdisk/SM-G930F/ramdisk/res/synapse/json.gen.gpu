@@ -1,0 +1,160 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:GPU,
+    elements:[
+	{ SLiveLabel:{
+		title:"GPU Live Frequency",
+		refresh:500,
+		action:"live gpu"
+	}},
+	{ SLiveLabel:{
+		title:"Live Frequency Utilization",
+		refresh:500,
+		action:"live gpu_load"
+	}},
+	{ SLiveLabel:{
+		title:"Time in States",
+		refresh:2500,
+		action:"live LiveGPUTime 0 12"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"Power Policy Control",
+		description:"COARSE DEMAND power policy is to control only external power (PMU for G3D). It is better at saving power and performance. COARSE DEMAND turns off GPU power in case of being no job for 100ms and turns it on in case of incomming first job on the state of GPU off. Default is coarse_demand."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"DEMAND power policy controls internal core power when processing a job, so it can be controlled frequently rendering one frame. This frequent control affect job utilization. So power consumption on DVFS with demand power policy is higher than coarse_demand."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Mali Power Policy",
+		description:" ",
+		default:$(echo "$(/res/synapse/actions/bracket-option /sys/devices/14ac0000.mali/power_policy)"),
+		action:"bracket-option /sys/devices/14ac0000.mali/power_policy",
+		values:[
+`
+			for POLICY in \`cat /sys/devices/14ac0000.mali/power_policy | sed -e 's/\]//;s/\[//'\`; do
+				echo "\"$POLICY\","
+			done
+`
+		]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"GPU Frequency Scaling",
+		description:"By editing the following configurables you can change the performance behaviour of the GPU. WARNING: Not all frequencies outside defaults may be stable for your device!"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Max Freq",
+		description:"Set the maximum frequency the GPU scales up to.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/max_clock),
+		action:"generic /sys/devices/14ac0000.mali/max_clock",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Min Freq",
+		description:"Set the minimum frequency the GPU scales down to.\n",
+		unit:" MHz",
+		default:$(cat /sys/devices/14ac0000.mali/min_clock),
+		action:"generic /sys/devices/14ac0000.mali/min_clock",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"DVFS Governor",
+		description:"Booster may give improved graphic & benchmark performance at the expense of battery."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Governor",
+		description:" ",
+		default:$(echo "$(/res/synapse/actions/gpu_governor gpu_gov)"),
+		action:"gpu_governor gpu_gov",
+		values:[Default, Interactive, Static, Booster]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Interactive Governor Tunables"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Highspeed Clock",
+		description:"Boost the minimum frequency the GPU scales up to.\n",
+		default:$(cat /sys/devices/14ac0000.mali/highspeed_clock),
+		unit:" MHz",
+		action:"generic /sys/devices/14ac0000.mali/highspeed_clock",
+		values:{
+`
+			while read -r FREQ VOLT; do
+				LABEL=$(($FREQ))
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/14ac0000.mali/volt_table
+`
+                }
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Highspeed Load",
+		description:"Jump the minimum frequency level to highspeed_clock when the GPU utilization over this value.\n",
+		default:$(cat /sys/devices/14ac0000.mali/highspeed_load),
+		max:100, min:1, unit:" %", step:1,
+		action:"generic /sys/devices/14ac0000.mali/highspeed_load",
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"Highspeed Delay",
+		description:"Jump the minimum frequency level to highspeed_clock when the GPU utilization over highspeed_load and over this delayed value.\n",
+		default:$(cat /sys/devices/14ac0000.mali/highspeed_delay),
+		max:5, min:0, unit:" ms", step:1,
+		action:"generic /sys/devices/14ac0000.mali/highspeed_delay",
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+    ]
+}
+CTAG

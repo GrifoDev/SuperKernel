@@ -1,0 +1,154 @@
+#!/system/bin/sh
+
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
+
+cat << CTAG
+{
+    name:CORTEX,
+    elements:[
+	{ SLiveLabel:{
+		title:"CortexBrain Status",
+		refresh:3000,
+		action:"live check_cortex"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Cortexbrain-Background-Process (Master Switch)",
+		description:"If you set this to Disabled, then all auto applied screen state (ON or OFF) functions will have no effect!\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_background_process)"),
+		action:"cortex cortexbrain_background_process",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"CortexBrain Functions",
+		description:"This script will manipulate many kernel settings, based on chosen Synapse settings and screen state (ON or OFF) - we call it CortexBrain."
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"WiFi Auto",
+		description:"Setting to 'Auto' will disable WiFi when the screen is OFF (if not in-call) & auto enable when the screen is ON (if no data connection). Disabling will allow full userspace control. 'Auto' will OVERRIDE the individual controls below.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_wifi_auto)"),
+		action:"cortex cortexbrain_wifi_auto",
+		values:[Disabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"WiFi Auto Control (Screen-ON)",
+		description:"Setting to 'Auto' will allow user set interval when WiFi is enabled & disabled whilst screen is ON (only if not in-call or without data connection).\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_wifi_auto_scron)"),
+		action:"cortex cortexbrain_wifi_auto_scron",
+		values:[Disabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SSeekBar:{
+		title:"WiFi Auto Interval ON (Screen-ON)",
+		description:"Duration WIFI is enabled.\n",
+		min:1, max:10, unit:" min", step:1,
+		default:$(cat /res/synapse/Super/cortexbrain_wifi_delay_scron_enable),
+		action:"hmp /res/synapse/Super/cortexbrain_wifi_delay_scron_enable"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"WiFi Auto Interval OFF (Screen-ON)",
+		description:"Duration WIFI is disabled.\n",
+		min:5, max:100, unit:" hr", step:5, weight:0.1,
+		default:$(cat /res/synapse/Super/cortexbrain_wifi_delay_scron_disable),
+		action:"hmp /res/synapse/Super/cortexbrain_wifi_delay_scron_disable"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"WiFi Auto Control (Screen-OFF)",
+		description:"Setting to 'Auto' will allow user set interval when WiFi is enabled & disabled whilst screen is OFF (only if not in-call or without data connection).\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_wifi_auto_scroff)"),
+		action:"cortex cortexbrain_wifi_auto_scroff",
+		values:[Disabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SSeekBar:{
+		title:"WiFi Auto Interval ON (Screen-OFF)",
+		description:"Duration WIFI is enabled.\n",
+		min:1, max:10, unit:" min", step:1,
+		default:$(cat /res/synapse/Super/cortexbrain_wifi_delay_scroff_enable),
+		action:"hmp /res/synapse/Super/cortexbrain_wifi_delay_scroff_enable"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		title:"WiFi Auto Interval OFF (Screen-OFF)",
+		description:"Duration WIFI is disabled.\n",
+		min:5, max:100, unit:" hr", step:5, weight:0.1,
+		default:$(cat /res/synapse/Super/cortexbrain_wifi_delay_scroff_disable),
+		action:"hmp /res/synapse/Super/cortexbrain_wifi_delay_scroff_disable"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Media Manager",
+		description:"Setting to 'Auto' will disable Media Manager service when the screen is OFF & auto enable when the screen is ON.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_media_manager)"),
+		action:"cortex cortexbrain_media_manager",
+		values:[Disabled, Enabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"System-Tweaks",
+		description:"Enable or Disable System-Tweaks. Possible increase in UI speed. Disabling requires REBOOT.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_system)"),
+		action:"cortex cortexbrain_system",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Kernel-Tweaks",
+		description:"Enable or Disable Kernel-Tweaks. Disabling requires REBOOT. WARNING: may cause instability on some devices if Enabled.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_kernel)"),
+		action:"cortex cortexbrain_kernel",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"NMI Watchdog",
+		description:"The NMI Watchdog is a debugging feature to catch hardware hangs that cause a kernel panic. On some systems it can generate a lot of interrupts, causing a noticeable increase in power usage. Setting to 'Auto' will disable nmi_watchdog when the screen is OFF & auto enable when the screen is ON. WARNING: may cause instability on some devices if set to anything other than Enabled.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_nmi_auto)"),
+		action:"cortex cortexbrain_nmi_auto",
+		values:[Disabled, Enabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+    ]
+}
+CTAG

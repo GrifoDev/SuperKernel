@@ -1,0 +1,372 @@
+#!/system/bin/sh
+
+cat << CTAG
+{
+    name:CRONTAB,
+    elements:[
+	{ SPane:{
+		title:"Cron Tasks",
+		description:"Here you can activate some scripts which will automatically run in the background at a specified time or interval."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{ 
+		description:"NOTE: Enabling the Lazytime Mount tweak may affect running of Crontab tasks and fail to run as scheduled."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Crontab (Master Switch)",
+		description:"Disabling will reset the Cron Task Logs & all tasks below and will have no effect!\n",
+		default:$(echo "$(/res/synapse/actions/crontab master)"),
+		action:"crontab master",
+		values:[Disabled, Enabled,]
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SDescription:{
+		description:"NOTE: FIRST 'Apply' your Synapse changes & then PRESS the 'Set Tasks' button !"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Set Tasks",
+		action:"sh /res/synapse/actions/crontab_set"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Clean RAM Cache",
+		description:"Clear RAM-cache every 1 hours, but only if CPU is resting (IDLE) and more than 50% of your memory is used! This will free RAM from unused buffers and cache."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Clean RAM Cache",
+		description:" ",
+		default:1,
+		action:"crontab /res/synapse/Super/cron/drop_cache",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SSeekBar:{
+		title:"Interval",
+		description:"Number of hours between running the task.\n",
+		unit:" hour", min:1, step:1, max:12,
+		default:1,
+		action:"crontab /res/synapse/Super/cron/intvl_hour_1"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Google Service Restart",
+		description:"Restart Google Services to release memory leak and CPU non-stop activity. This is one of the LP RAM leak BUGS where the Service can get stuck, drain RAM, and force CPU to work non-stop. Fix this by restarting the service every 3 hours."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Google Service Restart",
+		description:" ",
+		default:0,
+		action:"crontab /res/synapse/Super/cron/google",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SSeekBar:{
+		title:"Interval",
+		description:"Number of hours between running the task.\n",
+		unit:" hour", min:1, step:1, max:12,
+		default:3,
+		action:"crontab /res/synapse/Super/cron/intvl_hour_2"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"App-Cache",
+		description:"Clear app-cache every day at 4:30AM, only if CPU is resting (IDLE)! This can maintain free space on data partition, and clean all old junk folders (clipboard-cache, tombstones, anr logs, dropbox logs & lost+found)."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Clean App-Cache",
+		description:" ",
+		default:1,
+		action:"crontab /res/synapse/Super/cron/cache",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SLiveLabel:{
+		title:"Time of day to run task",
+		refresh:2000,
+		action:"live time_cache"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		description:"Hour (0 = midnight, 12 = midday)\n",
+		unit:" hour", min:0, step:1, max:23,
+		default:4,
+		action:"crontab /res/synapse/Super/cron/time_hour_3"
+	}},
+	{ SSeekBar:{
+		description:"Minutes\n",
+		unit:" min", min:0, step:1, max:59,
+		default:30,
+		action:"crontab /res/synapse/Super/cron/time_min_3"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Optimize Databases",
+		description:"Optimize all databases found in /data & /sdcard every day at 4:40AM, only if CPU is resting (IDLE)! This increases database read/write performance."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Optimize Databases",
+		description:" ",
+		default:1,
+		action:"crontab /res/synapse/Super/cron/sqlite",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SLiveLabel:{
+		title:"Time of day to run task",
+		refresh:2000,
+		action:"live time_sqlite"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		description:"Hour (0 = midnight, 12 = midday)\n",
+		unit:" hour", min:0, step:1, max:23,
+		default:4,
+		action:"crontab /res/synapse/Super/cron/time_hour_4"
+	}},
+	{ SSeekBar:{
+		description:"Minutes\n",
+		unit:" min", min:0, step:1, max:59,
+		default:40,
+		action:"crontab /res/synapse/Super/cron/time_min_4"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"File System Trim",
+		description:"Cron to trim System, Data and Cache EXT4 partitions every day at 4:50AM, only if CPU is resting (IDLE)! This will help retain consistant IO throughput."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"FSTrim",
+		description:" ",
+		default:1,
+		action:"crontab /res/synapse/Super/cron/fstrim",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SLiveLabel:{
+		title:"Time of day to run task",
+		refresh:2000,
+		action:"live time_fstrim"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		description:"Hour (0 = midnight, 12 = midday)\n",
+		unit:" hour", min:0, step:1, max:23,
+		default:4,
+		action:"crontab /res/synapse/Super/cron/time_hour_5"
+	}},
+	{ SSeekBar:{
+		description:"Minutes\n",
+		unit:" min", min:0, step:1, max:59,
+		default:50,
+		action:"crontab /res/synapse/Super/cron/time_min_5"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Battery Scaling Calibration",
+		description:"Calibrate battery every week at SUN 5:00AM. This will reset your device battery % to scale correctly to the approximate available mV."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"Calibration",
+		description:" ",
+		default:1,
+		action:"crontab /res/synapse/Super/cron/fg_reset",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Day to run task",
+		description:" ",
+		default:0,
+		action:"crontab /res/synapse/Super/cron/day_6",
+		values:{
+			0:"Sunday", 1:"Monday", 2:"Tuesday", 3:"Wednesday", 4:"Thursday", 5:"Friday", 6:"Saturday"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SLiveLabel:{
+		title:"Time of day to run task",
+		refresh:2000,
+		action:"live time_fg_reset"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		description:"Hour (0 = midnight, 12 = midday)\n",
+		unit:" hour", min:0, step:1, max:23,
+		default:5,
+		action:"crontab /res/synapse/Super/cron/time_hour_6"
+	}},
+	{ SSeekBar:{
+		description:"Minutes\n",
+		unit:" min", min:0, step:1, max:59,
+		default:0,
+		action:"crontab /res/synapse/Super/cron/time_min_6"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"TWRP Auto Backup",
+		description:"Cron to auto reboot and create a TWRP backup backup (system + data + boot partitions with compression & skip MD5 generation) every week at SUN 5:30AM, only if you have sufficient internal storage free space and CPU is resting (IDLE)! If there is insufficient free space, the task will abort."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SLiveLabel:{
+		title:"Internal Storage Free Space",
+		description:"Display (approx) free space for TWRP Auto Backups",
+		refresh:10000,
+		action:"live Live_storage"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		title:"TWRP Auto Backup",
+		description:" ",
+		default:0,
+		action:"crontab /res/synapse/Super/cron/twrp_backup",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Delete TWRP Auto Backup",
+		description:"If there is insufficient free space for a new CRON Backup, then enable here to auto DELETE the OLDEST CRON Backup. If there is still insufficient free space, the task will abort and ALL CRON Backups remain untouched !\n",
+		default:0,
+		action:"crontab /res/synapse/Super/cron/twrp_backup_del",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SOptionList:{
+		title:"Day to run task",
+		description:" ",
+		default:0,
+		action:"crontab /res/synapse/Super/cron/day_7",
+		values:{
+			0:"Sunday", 1:"Monday", 2:"Tuesday", 3:"Wednesday", 4:"Thursday", 5:"Friday", 6:"Saturday"
+		}
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SLiveLabel:{
+		title:"Time of day to run task",
+		refresh:2000,
+		action:"live time_twrp_backup"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SSeekBar:{
+		description:"Hour (0 = midnight, 12 = midday)\n",
+		unit:" hour", min:0, step:1, max:23,
+		default:5,
+		action:"crontab /res/synapse/Super/cron/time_hour_7"
+	}},
+	{ SSeekBar:{
+		description:"Minutes\n",
+		unit:" min", min:0, step:1, max:59,
+		default:30,
+		action:"crontab /res/synapse/Super/cron/time_min_7"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+	{ SPane:{
+		title:"Test Cron Task Jobs",
+		description:"Use this button to check if Cron Task Jobs are done as requested. This will show the log for all finished jobs."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SButton:{
+		label:"Check Jobs",
+		action:"crontab log"
+	}},
+	{ SSpacer:{
+		height:2
+	}},
+    ]
+}
+CTAG

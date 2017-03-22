@@ -181,6 +181,12 @@ on boot
     chown radio system /sys/devices/14ac0000.mali/dvfs_max_lock
     chmod 0664 /sys/devices/14ac0000.mali/dvfs_max_lock
 
+    chown system system /sys/devices/14ac0000.mali/max_clock
+    chmod 0660 /sys/devices/14ac0000.mali/max_clock
+    chown system system /sys/devices/14ac0000.mali/min_clock
+    chmod 0660 /sys/devices/14ac0000.mali/min_clock
+
+
     chown radio system /sys/devices/system/sec_os_ctrl/migrate_os
     chmod 664 /sys/devices/system/sec_os_ctrl/migrate_os
 
@@ -219,6 +225,10 @@ on boot
     # Assume HMP uses shared cpufreq policy for all LITTLE CPUs
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
     chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+
+    # Assume HMP uses shared cpufreq policy for all BIG CPUs
+    chown system system /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
 
     chown system system sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster0_max_freq
     chmod 0660 sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster0_max_freq
@@ -683,6 +693,16 @@ on property:persist.sys.storage_preload=0
 service watchdogd /sbin/watchdogd 10 20
     class core
     seclabel u:r:watchdogd:s0
+
+service lazy_mount /init.lazytime_mount.sh
+    user root
+    oneshot
+    disabled
+
+service bootsh /init.invisible_cpuset.sh
+    user root
+    oneshot
+    disabled
 
 # on userdebug and eng builds, enable kgdb on the serial console
 on property:ro.debuggable=1

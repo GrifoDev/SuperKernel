@@ -1,0 +1,308 @@
+# By UpInTheAir for SkyHigh kernels
+
+# Busybox 
+if [ -e /su/xbin/busybox ]; then
+	BB=/su/xbin/busybox;
+else if [ -e /sbin/busybox ]; then
+	BB=/sbin/busybox;
+else
+	BB=/system/xbin/busybox;
+fi;
+fi;
+
+if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
+case $1 in
+cortexbrain_background_process)
+  P=/res/synapse/Super/cortexbrain_background_process
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	pkill -f "/sbin/cortexbrain-tune.sh";
+	sed -i "s/cortexbrain_background_process=[0-1]*/cortexbrain_background_process=0/g" /sbin/cortexbrain-tune.sh;
+  elif [ "$2" == Enabled ]; then
+    echo 1 > $P
+	sed -i "s/cortexbrain_background_process=[0-1]*/cortexbrain_background_process=1/g" /sbin/cortexbrain-tune.sh;
+	if [ $(pgrep -f "cortexbrain-tune.sh" | wc -l) == 0 ]; then
+		$BB nohup $BB sh /sbin/cortexbrain-tune.sh > /dev/null 2>&1 &
+	fi;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+cortexbrain_alpm_auto)
+  P=/res/synapse/Super/cortexbrain_alpm_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	echo "0" > /sys/class/lcd/panel/alpm;
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+	echo "1" > /sys/class/lcd/panel/alpm;
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_doze_auto)
+  P=/res/synapse/Super/cortexbrain_doze_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Stock ]; then
+    echo 0 > $P
+	$BB sync;
+	dumpsys deviceidle step
+  elif [ $2 == Aggressive ]; then
+    echo 1 > $P
+	$BB sync;
+	dumpsys deviceidle force-idle
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Stock
+  elif [ "$copy" == 1 ]; then
+    echo Aggressive
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_wifi_auto)
+  P=/res/synapse/Super/cortexbrain_wifi_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Auto ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_wifi_auto_scron)
+  P=/res/synapse/Super/cortexbrain_wifi_auto_scron
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Auto ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_wifi_auto_scroff)
+  P=/res/synapse/Super/cortexbrain_wifi_auto_scroff
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Auto ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_media_manager)
+  P=/res/synapse/Super/cortexbrain_media_manager
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	pm disable com.android.providers.media/com.android.providers.media.MediaScannerReceiver;
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+	pm enable com.android.providers.media/com.android.providers.media.MediaScannerReceiver;
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_system)
+  P=/res/synapse/Super/cortexbrain_system
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+cortexbrain_kernel)
+  P=/res/synapse/Super/cortexbrain_kernel
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+cortexbrain_nmi_auto)
+  P=/res/synapse/Super/cortexbrain_nmi_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+    echo 0 > $P
+	echo "0" > /proc/sys/kernel/nmi_watchdog;
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+	echo "1" > /proc/sys/kernel/nmi_watchdog;
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_power_aware_sched)
+  P=/res/synapse/Super/cortexbrain_power_aware_sched;
+
+  # Check State
+  HOTPLUG_STATE=$(cat /res/synapse/Super/hotplug);
+  TURBO_STATE=$(cat /res/synapse/Super/tuning_interactive_turbo);
+
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+	echo "0" > $P;
+	echo "0" > /sys/kernel/hmp/power_migration;
+  elif [ $2 == Enabled ]; then
+	if [ "$HOTPLUG_STATE" == "0" ] && [ "$TURBO_STATE" == "0" ]; then
+		echo "1" > $P;
+		echo "1" > /sys/kernel/hmp/power_migration;
+	else
+		echo "0" > $P;
+		echo "0" > /sys/kernel/hmp/power_migration;
+	fi;
+  elif [ $2 == Auto ]; then
+	if [ "$HOTPLUG_STATE" == "0" ] && [ "$TURBO_STATE" == "0" ]; then
+		echo "2" > $P;
+	else
+		echo "0" > $P;
+		echo "0" > /sys/kernel/hmp/power_migration;
+	fi;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_hmp_little_pack)
+  P=/res/synapse/Super/cortexbrain_hmp_little_pack;
+
+  # Check State
+  HOTPLUG_STATE=$(cat /res/synapse/Super/hotplug);
+  TURBO_STATE=$(cat /res/synapse/Super/tuning_interactive_turbo);
+
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+	echo "0" > $P;
+	echo "0" > /sys/kernel/hmp/packing_enable;
+  elif [ $2 == Enabled ]; then
+	if [ "$HOTPLUG_STATE" == "0" ] && [ "$TURBO_STATE" == "0" ]; then
+		echo "1" > $P;
+		echo "1" > /sys/kernel/hmp/packing_enable;
+	else
+		echo "0" > $P;
+		echo "0" > /sys/kernel/hmp/packing_enable;
+	fi;
+  elif [ $2 == Auto ]; then
+	if [ "$HOTPLUG_STATE" == "0" ] && [ "$TURBO_STATE" == "0" ]; then
+		echo "2" > $P;
+	else
+		echo "0" > $P;
+		echo "0" > /sys/kernel/hmp/packing_enable;
+	fi;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+cortexbrain_pewq)
+  P=/res/synapse/Super/cortexbrain_pewq;
+
+  # Check State
+  HOTPLUG_STATE=$(cat /res/synapse/Super/hotplug);
+  TURBO_STATE=$(cat /res/synapse/Super/tuning_interactive_turbo);
+
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Disabled ]; then
+	echo "0" > $P;
+	echo "N" > /sys/module/workqueue/parameters/power_efficient;
+  elif [ $2 == Enabled ]; then
+	if [ "$HOTPLUG_STATE" == "0" ] && [ "$TURBO_STATE" == "0" ]; then
+		echo "1" > $P;
+		echo "Y" > /sys/module/workqueue/parameters/power_efficient;
+	else
+		echo "0" > $P;
+		echo "N" > /sys/module/workqueue/parameters/power_efficient;
+	fi;
+  elif [ $2 == Auto ]; then
+	if [ "$HOTPLUG_STATE" == "0" ] && [ "$TURBO_STATE" == "0" ]; then
+		echo "2" > $P;
+	else
+		echo "0" > $P;
+		echo "N" > /sys/module/workqueue/parameters/power_efficient;
+	fi;
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Disabled
+  elif [ "$copy" == 1 ]; then
+    echo Enabled
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
+esac
