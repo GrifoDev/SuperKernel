@@ -13,7 +13,6 @@ import /init.rilcommon.rc
 import /init.container.rc
 import /init.fac.rc
 import /init.services.rc
-import /init.Super.rc
 
 on early-init
     # Set init and its forked children's oom_adj.

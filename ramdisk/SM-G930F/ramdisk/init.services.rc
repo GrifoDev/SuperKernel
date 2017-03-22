@@ -5,15 +5,20 @@
 #
 
 on boot
-    start kernelinit
+    # Set stock CPU frequencies
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2496000
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 728000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1586000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 442000
 
 on property:sys.boot_completed=1
+    start kernelinit
     start sysinit
     start wakelock
 
 service kernelinit /sbin/kernelinit.sh
     user root
-    seclabel u:r:su:s0
+    seclabel u:r:init:s0
     oneshot
     disabled
     
