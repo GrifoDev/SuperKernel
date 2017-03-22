@@ -5,15 +5,15 @@
 #
 
 on boot
-    start kernelinit
 
 on property:sys.boot_completed=1
+    start kernelinit
     start sysinit
     start wakelock
 
 service kernelinit /sbin/kernelinit.sh
     user root
-    seclabel u:r:su:s0
+    seclabel u:r:init:s0
     oneshot
     disabled
     
