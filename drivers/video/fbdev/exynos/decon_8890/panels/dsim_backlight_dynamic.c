@@ -330,7 +330,6 @@ static void dsim_panel_irc_ctrl(struct dsim_device *dsim)
 }
 
 
-#ifndef CONFIG_PANEL_SMART_DIMMING
 static int dsim_panel_set_vint(struct dsim_device *dsim, int force)
 {
 	int ret = 0;
@@ -372,7 +371,6 @@ set_vint:
 	}
 	return ret;
 }
-#endif
 
 static int low_level_set_brightness(struct dsim_device *dsim ,int force)
 {
