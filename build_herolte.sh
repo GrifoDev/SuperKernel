@@ -4,7 +4,7 @@
 export MODEL=herolte
 export VARIANT=eur
 export ARCH=arm64
-export VERSION=V2.4.1
+export VERSION=V2.4.2
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.3.0/bin/aarch64-cortex_a53-linux-gnueabi-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
@@ -25,7 +25,7 @@ herolte)
 		KERNEL_DEFCONFIG=SuperKernel-herolte_defconfig
 		;;
 	kor|ktt|lgt|skt)
-		KERNEL_DEFCONFIG=StockKernel-$MODEL-kor_defconfig
+		KERNEL_DEFCONFIG=SuperKernel-$MODEL-kor_defconfig
 		;;
 	*)
 		echo "Unknown variant: $VARIANT"
@@ -39,7 +39,7 @@ hero2lte)
 		KERNEL_DEFCONFIG=SuperKernel-hero2lte_defconfig
 		;;
 	kor|ktt|lgt|skt)
-		KERNEL_DEFCONFIG=StockKernel-$MODEL-kor_defconfig
+		KERNEL_DEFCONFIG=SuperKernel-$MODEL-kor_defconfig
 		;;
 	*)
 		echo "Unknown variant: $VARIANT"
