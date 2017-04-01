@@ -42,8 +42,6 @@ ui_print " - setting right fingerprint files"
 rm -rf /system/app/mcRegistry
 rm -f /system/vendor/lib/libsecure_storage.so
 rm -f /system/vendor/lib64/libsecure_storage.so
-rm -f /system/lib/libbauthserver.so
-rm -f /system/lib64/libbauthserver.so
 mkdir /system/etc/init.d
 
 cd
@@ -51,15 +49,11 @@ cd /tmp/tkkg1994
 mv -f mcRegistry /system/app
 mv -f vendor/lib/libsecure_storage.so /system/vendor/lib/libsecure_storage.so
 mv -f vendor/lib64/libsecure_storage.so /system/vendor/lib64/libsecure_storage.so
-mv -f lib/libbauthserver.so /system/lib/libbauthserver.so
-mv -f lib64/libbauthserver.so /system/lib64/libbauthserver.so
 
 ui_print " - setting permissions"
 
 chmod 0644 /system/vendor/lib/libsecure_storage.so
 chmod 0644 /system/vendor/lib64/libsecure_storage.so
-chmod 0644 /system/lib/libbauthserver.so
-chmod 0644 /system/lib64/libbauthserver.so
 chmod 0755 /system/app/mcRegistry
 chmod 0644 /system/app/mcRegistry/*.tlbin
 
