@@ -923,7 +923,7 @@ struct SmtDimInfo dimming_info_HA3_da[MAX_BR_INFO] = { // add hbm array
 };
 
 
-struct SmtDimInfo dimming_info_HF4[] = {
+struct SmtDimInfo dimming_info_HF4[MAX_BR_INFO] = {
 	{ .br = 2, .refBr = 116, .cGma = gma2p15, .rTbl = rtbl2nit, .cTbl = ctbl2nit, .aid = aid9795, .elvCaps = elvCaps1, .elv = elv1, .way = W1, .elvss_offset = elvss_offset1 },
 	{ .br = 3, .refBr = 116, .cGma = gma2p15, .rTbl = rtbl3nit, .cTbl = ctbl3nit, .aid = aid9710, .elvCaps = elvCaps1, .elv = elv1, .way = W1, .elvss_offset = elvss_offset2 },
 	{ .br = 4, .refBr = 116, .cGma = gma2p15, .rTbl = rtbl4nit, .cTbl = ctbl4nit, .aid = aid9598, .elvCaps = elvCaps1, .elv = elv1, .way = W1, .elvss_offset = elvss_offset3 },
@@ -1273,129 +1273,7 @@ struct SmtDimInfo dimming_info_HF4_A2_da_final[MAX_BR_INFO] = {
 	{ .br = 600, .refBr = 600, .cGma = gma2p20, .rTbl = a2_final_rtbl420nit, .cTbl = a2_final_ctbl420nit, .aid = aid46, .elvCaps = elvCaps20, .elv = elv20, .way = W4, .elvss_offset = elvss_offset5},
 };
 
-#ifdef CONFIG_PANEL_SMART_DIMMING
-static signed char aid0[] = {0xB1, 0x00, 0x0A};
 
-// gradation_offset
-// V255 V203 V151 V87 V51 V35 V23 V11 V7 V1
-static signed char rtbl0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-// rgb_offset
-// R255 G255 B255 R203 G203 B203 R151 G151 B151 R87 G87 B87 R51 G51 B51 R35 G35 B35 R23 G23 B23 R11 G11 B11 R7 G7 B7 R1 G1 B1
-static signed char ctbl0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-unsigned int br_tbl_smart[EXTEND_BRIGHTNESS + 1] = {
-	2,   3,   3,   3,   3,   3,   3,   4,   4,   4,   4,   4,   4,   4,   5,   5,
-	5,   5,   5,   5,   6,   6,   6,   6,   6,   6,   6,   6,   7,   7,   7,   7,
-	7,   7,   7,   8,   8,   9,   9,   10,  10,  11,  11,  12,  12,  13,  13,  14,
-	14,  15,  15,  16,  16,  17,  17,  19,  19,  20,  21,  21,  22,  22,  24,  24,
-	25,  25,  27,  27,  29,  29,  30,  32,  32,  34,  34,  37,  37,  39,  39,  41,
-	41,  44,  44,  47,  47,  50,  50,  53,  53,  56,  56,  60,  60,  64,  64,  68,
-	68,  72,  72,  77,  77,  82,  82,  87,  87,  93,  93,  98,  98,  105, 105, 111,
-	111, 119, 119, 126, 126, 134, 134, 143, 143, 152, 152, 162, 162, 172, 172, 183,
-	183, 195, 195, 195, 195, 195, 195, 195, 207, 207, 207, 207, 207, 207, 207, 220,
-	220, 220, 220, 220, 220, 220, 234, 234, 234, 234, 234, 234, 234, 234, 249, 249,
-	249, 249, 249, 249, 249, 249, 265, 265, 265, 265, 265, 265, 265, 265, 265, 282,
-	282, 282, 282, 282, 282, 282, 282, 282, 300, 300, 300, 300, 300, 300, 300, 300,
-	300, 300, 316, 316, 316, 316, 316, 316, 316, 316, 333, 333, 333, 333, 333, 333,
-	333, 333, 333, 350, 350, 350, 350, 350, 350, 350, 350, 350, 357, 357, 357, 357,
-	365, 365, 365, 365, 372, 372, 372, 380, 380, 380, 380, 387, 387, 387, 387, 395,
-	395, 395, 395, 403, 403, 403, 403, 412, 412, 412, 412, 420, 420, 420, 420, 420,
-	[256 ... 281] = 443,
-	[282 ... 295] = 465,
-	[296 ... 309] = 488,
-	[310 ... 323] = 510,
-	[324 ... 336] = 533,
-	[337 ... 350] = 555,
-	[351 ... 364] = 578,
-	[365 ... 365] = 600
-};
-
-struct SmtDimInfo dimming_info_smart[] = {
-	{ .br = 2,   .refBr = 7,   .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 3,   .refBr = 8,   .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 4,   .refBr = 9,   .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 5,   .refBr = 10,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 6,   .refBr = 11,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 7,   .refBr = 12,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 8,   .refBr = 13,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 9,   .refBr = 14,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 10,  .refBr = 15,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 11,  .refBr = 16,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 12,  .refBr = 17,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 13,  .refBr = 18,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 14,  .refBr = 19,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 15,  .refBr = 20,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 16,  .refBr = 21,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 17,  .refBr = 22,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 19,  .refBr = 23,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 20,  .refBr = 24,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 21,  .refBr = 25,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 22,  .refBr = 26,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 24,  .refBr = 27,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 25,  .refBr = 28,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 27,  .refBr = 29,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 29,  .refBr = 30,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 30,  .refBr = 31,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 32,  .refBr = 32,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 34,  .refBr = 34,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps9,  .elv = elv9,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 37,  .refBr = 37,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps9,  .elv = elv9,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 39,  .refBr = 39,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 41,  .refBr = 41,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps8,  .elv = elv8,  .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 44,  .refBr = 44,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 47,  .refBr = 47,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 50,  .refBr = 50,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 53,  .refBr = 53,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 56,  .refBr = 56,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 60,  .refBr = 60,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 64,  .refBr = 64,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 68,  .refBr = 68,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 72,  .refBr = 72,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 77,  .refBr = 77,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 82,  .refBr = 82,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 87,  .refBr = 87,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 93,  .refBr = 93,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 98,  .refBr = 98,  .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 105, .refBr = 105, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 111, .refBr = 111, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 119, .refBr = 119, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 126, .refBr = 126, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 134, .refBr = 134, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 143, .refBr = 143, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 152, .refBr = 152, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps10, .elv = elv10, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 162, .refBr = 162, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 172, .refBr = 172, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 183, .refBr = 183, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 195, .refBr = 195, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 207, .refBr = 207, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 220, .refBr = 220, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 234, .refBr = 234, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 249, .refBr = 249, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 265, .refBr = 265, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 282, .refBr = 282, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 300, .refBr = 300, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 316, .refBr = 316, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 333, .refBr = 333, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 350, .refBr = 350, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 357, .refBr = 357, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 365, .refBr = 365, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 372, .refBr = 372, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 380, .refBr = 380, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 387, .refBr = 387, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 395, .refBr = 395, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 403, .refBr = 403, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 412, .refBr = 412, .cGma = gma2p15, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W1, .elvss_offset = elvss_offset5},
-	{ .br = 420, .refBr = 420, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps11, .elv = elv11, .way = W2, .elvss_offset = elvss_offset5},
-	{ .br = 443, .refBr = 443, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps12, .elv = elv12, .way = W3, .elvss_offset = elvss_offset5},
-	{ .br = 465, .refBr = 465, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps21, .elv = elv21, .way = W3, .elvss_offset = elvss_offset5},
-	{ .br = 488, .refBr = 488, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps14, .elv = elv14, .way = W3, .elvss_offset = elvss_offset5},
-	{ .br = 510, .refBr = 510, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps15, .elv = elv15, .way = W3, .elvss_offset = elvss_offset5},
-	{ .br = 533, .refBr = 533, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps16, .elv = elv16, .way = W3, .elvss_offset = elvss_offset5},
-	{ .br = 555, .refBr = 555, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps18, .elv = elv18, .way = W3, .elvss_offset = elvss_offset5},
-	{ .br = 578, .refBr = 578, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps19, .elv = elv19, .way = W3, .elvss_offset = elvss_offset5},
-	{ .br = 600, .refBr = 600, .cGma = gma2p20, .rTbl = rtbl0, .cTbl = ctbl0, .aid = aid0, .elvCaps = elvCaps20, .elv = elv20, .way = W4, .elvss_offset = elvss_offset5},
-};
-#endif
 
 static int set_gamma_to_center(struct SmtDimInfo *brInfo)
 {
@@ -1592,12 +1470,6 @@ static int init_dimming(struct dsim_device *dsim, u8 * mtp, u8 * hbm)
 		panel->br_tbl = (unsigned int *)br_tbl_360;
 		break;
 	}
-
-#ifdef CONFIG_PANEL_SMART_DIMMING
-	dsim_info("%s init smart dimming table\n", __func__);
-	diminfo = (void *)dimming_info_smart;
-	panel->br_tbl = (unsigned int *)br_tbl_smart;
-#endif
 
 	panel->dim_data= (void *)dimming;
 	panel->dim_info = (void *)diminfo;
