@@ -13,9 +13,13 @@
 # limitations under the License.
 #
 
-# Knox set to 0 on working system
+# Fake Knox to 0 on working system
 /sbin/resetprop -n ro.boot.warranty_bit "0"
 /sbin/resetprop -n ro.warranty_bit "0"
+
+# Fake encryption flags
+/sbin/resetprop -n sec.fle.encryption.status "encrypted"
+/sbin/resetprop -n ro.crypto.state "encrypted"
 
 # Fix some safetynet flags
 /sbin/resetprop -n ro.boot.veritymode "enforcing"
