@@ -2745,13 +2745,10 @@ static unsigned int hmp_up_perf_threshold = 597;
 static unsigned int hmp_up_power_threshold = 341;
 
 /*
- * Maximum total capacity difference in load scale percentage to enact scheduler power migration.
- * 
+ * Maximum total capacity difference in percentage to enact scheduler power migration.
  */
-#define UP_PERF_HYS_DEF		SCHED_LOAD_SCALE * 0.05
-#define DOWN_PERF_HYS_DEF	SCHED_LOAD_SCALE * 0.10
-static unsigned int hmp_up_perf_hysteresis = UP_PERF_HYS_DEF;
-static unsigned int hmp_down_perf_hysteresis = DOWN_PERF_HYS_DEF;
+static unsigned int hmp_up_perf_hysteresis = 5;
+static unsigned int hmp_down_perf_hysteresis = 10;
 
 #define NUM_CLUSTERS	2
 
@@ -2865,7 +2862,7 @@ void sched_update_cpu_efficiency_table(struct cpu_cluster_efficiency *ceff,
 static inline unsigned int is_efficient_up(unsigned int load_ratio)
 {
 	if (fast.efficiency > slow.efficiency)
-		if (((slow.capacity * (SCHED_LOAD_SCALE + hmp_up_perf_hysteresis)) >> SCHED_LOAD_SHIFT) < fast.capacity)
+		if (((slow.capacity * (100 + hmp_up_perf_hysteresis)) / 100) < fast.capacity)
 			return 1;
 	
 	return 0;
@@ -2880,7 +2877,7 @@ static inline unsigned int is_efficient_down(unsigned int load_ratio)
 	cap_ratio = (cap_ratio * fast_cap_max) / fast_cap_range;
 	
 	if (slow.efficiency > fast.efficiency)
-		if (slow.capacity > ((cap_ratio * (SCHED_LOAD_SCALE + hmp_down_perf_hysteresis)) >> SCHED_LOAD_SHIFT))
+		if (slow.capacity > ((cap_ratio * (100 + hmp_down_perf_hysteresis)) / 100))
 			return 1;
 	
 	return 0;
