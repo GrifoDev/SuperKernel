@@ -711,12 +711,12 @@ static struct kobj_attribute thunderplug_load_attribute =
 
 static struct kobj_attribute thunderplug_boost_lock_duration_attribute =
 	__ATTR(boost_lock_duration,
-		0666, thunderplug_boost_lock_duration_show,
+		0644, thunderplug_boost_lock_duration_show,
 		thunderplug_boost_lock_duration_store);
 
 static struct kobj_attribute thunderplug_cpus_boosted_attribute =
 	__ATTR(cpus_boosted,
-		0666, thunderplug_cpus_boosted_show,
+		0644, thunderplug_cpus_boosted_show,
 		thunderplug_cpus_boosted_store);
 
 static struct attribute *thunderplug_attrs[] = {
