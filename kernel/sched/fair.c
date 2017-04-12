@@ -2342,15 +2342,15 @@ struct hmp_global_attr {
 
 #ifdef CONFIG_HMP_FREQUENCY_INVARIANT_SCALE
 #ifdef CONFIG_SCHED_HMP_DOWN_MIGRATION_COMPENSATION
-#define HMP_DATA_SYSFS_MAX 26
+#define HMP_DATA_SYSFS_MAX 25
 #else
-#define HMP_DATA_SYSFS_MAX 21
+#define HMP_DATA_SYSFS_MAX 19
 #endif
 #else
 #ifdef CONFIG_SCHED_HMP_DOWN_MIGRATION_COMPENSATION
-#define HMP_DATA_SYSFS_MAX 25
+#define HMP_DATA_SYSFS_MAX 24
 #else
-#define HMP_DATA_SYSFS_MAX 20
+#define HMP_DATA_SYSFS_MAX 19
 #endif
 #endif
 
@@ -5317,7 +5317,7 @@ static inline unsigned int hmp_best_little_cpu(struct task_struct *tsk,
 	struct sched_avg *avg;
 	struct cpumask allowed_hmp_cpus;
 
-	if (!hmp_packing_enabled ||
+	if(!hmp_packing_enabled ||
 			tsk->se.avg.load_avg_ratio > ((NICE_0_LOAD * 90)/100))
 		return hmp_select_slower_cpu(tsk, cpu);
 
@@ -5899,21 +5899,11 @@ static int hmp_freqinvar_from_sysfs(int value)
 #endif
 #ifdef CONFIG_SCHED_HMP_LITTLE_PACKING
 /* packing value must be non-negative */
-static int hmp_packing_limit_from_sysfs(int value)
+static int hmp_packing_from_sysfs(int value)
 {
 	if (value < 0)
 		return -1;
-	
-	hmp_full_threshold = value;
-	
-	return 0;
-}
-
-static int hmp_packing_from_sysfs(int value)
-{
-	hmp_packing_enabled = !!value;
-	
-	return 0;
+	return value;
 }
 #endif
 static void hmp_attr_add(
@@ -6064,11 +6054,11 @@ static int hmp_attr_init(void)
 	hmp_attr_add("packing_enable",
 		&hmp_packing_enabled,
 		NULL,
-		hmp_packing_from_sysfs);
+		hmp_freqinvar_from_sysfs);
 	hmp_attr_add("packing_limit",
 		&hmp_full_threshold,
 		NULL,
-		hmp_packing_limit_from_sysfs);
+		hmp_packing_from_sysfs);
 #endif
 	hmp_data.attr_group.name = "hmp";
 	hmp_data.attr_group.attrs = hmp_data.attributes;
