@@ -167,8 +167,8 @@ cat << CTAG
 	{ SSeekBar:{
 		title:"NR Requests Internal",
 		description:"Maximum number of read (or write) requests that can be queued to the scheduler in the block layer.\n",
-		step:128,
-		min:128,
+		step:16,
+		min:16,
 		max:2048,
 		default:$(cat /sys/block/sda/queue/nr_requests),
 		action:"ioset queue nr_requests"
@@ -179,8 +179,8 @@ cat << CTAG
 	{ SSeekBar:{
 		title:"NR Requests SD Card",
 		description:"Maximum number of read (or write) requests that can be queued to the scheduler in the block layer.\n",
-		step:128,
-		min:128,
+		step:16,
+		min:16,
 		max:2048,
 		default:$(cat /sys/block/mmcblk0/queue/nr_requests),
 		action:"ioset queue_ext nr_requests"

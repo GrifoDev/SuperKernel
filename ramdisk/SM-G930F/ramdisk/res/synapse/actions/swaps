@@ -17,30 +17,35 @@ if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 fi;
 
 case $1 in
+
 vnswap0)
-  P=/res/synapse/Super/vnswap0
+  P=/res/synapse/Super/vnswap0;
+
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-    echo 0 > $P
-	if [ "$(grep "vnswap0" /proc/swaps)" != "" ]; then
-		$BB swapoff $SWAP > /dev/null 2>&1
-		$BB sync;
-		echo "0" > /proc/sys/vm/swappiness;
+	if [ "$2" == Disabled ]; then
+		echo "0" > $P;
+		if [ "$(grep "vnswap0" /proc/swaps)" != "" ]; then
+			$BB swapoff $SWAP > /dev/null 2>&1
+			$BB sync;
+			echo "0" > /proc/sys/vm/swappiness;
 	fi;
-  elif [ "$2" == Enabled ]; then
-    echo 1 > $P
-	if [ "$(grep "vnswap0" /proc/swaps)" == "" ]; then
-		$BB mkswap $SWAP > /dev/null 2>&1
-		$BB swapon $SWAP > /dev/null 2>&1
-		$BB sync;
-		echo "190" > /proc/sys/vm/swappiness;
+	elif [ "$2" == Enabled ]; then
+		echo "1" > $P;
+		if [ "$(grep "vnswap0" /proc/swaps)" == "" ]; then
+			$BB mkswap $SWAP > /dev/null 2>&1
+			$BB swapon $SWAP > /dev/null 2>&1
+			$BB sync;
+			echo "190" > /proc/sys/vm/swappiness;
+		fi;
 	fi;
-  fi; fi
-  copy=$(cat $P)
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
 	echo Disabled
   elif [ "$copy" == 1 ]; then
 	echo Enabled
-  fi
+  fi;
   ;;
-esac
+
+esac;

@@ -5,7 +5,10 @@ cat << CTAG
     name:"A72 VOLT",
     elements:[
 	{ SPane:{
-		title:"HPM Voltage Control",
+		title:"HPM Voltage Control"
+	}},
+	{ SSpacer:{
+		height:1
 	}},
 	{ SSeekBar:{
 		title:"MNGS HPM voltage margin",
@@ -15,7 +18,7 @@ cat << CTAG
 		unit:" µV", weight:6250.0, min:0, step:1, max:10
 	}},
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
 	{ SPane:{
 		title:"A72 big Cores Voltage Control",
@@ -25,13 +28,15 @@ cat << CTAG
 		height:1
 	}},
 `
-while read -r FREQ VOLT; do
-	echo '{ SSeekBar:{ default:'"$VOLT"', title:"'$(($FREQ / 1000))' MHz"'
-	echo ', action:"c1volt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, step:6250, max:1575000 }},'
-done < /sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster1_volt_table
+	while read -r FREQ VOLT; do
+		echo '{ SSeekBar:{'
+			echo 'title:"'$(($FREQ / 1000))' MHz", description:'" "', default:'"$VOLT"', '
+			echo ', action:"c1volt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, step:6250, max:1225000 }},'
+		echo '{ SSpacer:{ height:1 }},'
+	done < /sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster1_volt_table
 `
 	{ SSpacer:{
-		height:1
+		height:2
 	}},
     ]
 }

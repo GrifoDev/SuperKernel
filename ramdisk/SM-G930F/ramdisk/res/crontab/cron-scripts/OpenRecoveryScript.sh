@@ -12,6 +12,7 @@ else
 	BB=/system/xbin/busybox;
 fi;
 fi;
+
 TWRP=$(cat /res/synapse/Super/cron/twrp_backup);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
@@ -54,7 +55,7 @@ if [ "$TWRP" == 1 ]; then
 	OLDEST_BACKUP=$(du -hs $OLDEST_BACKUP_DIR);
 	OLDEST_BACKUP=$(echo "${OLDEST_BACKUP%G*} $KB" | awk '{printf "%.0f \n", $1*$2}');
 
-	# boot size in KB for N920* G928* (28MB)
+	# boot size in KB for N920* (28MB)
 	BOOT=28672;
 
 	# total backup size (approx)

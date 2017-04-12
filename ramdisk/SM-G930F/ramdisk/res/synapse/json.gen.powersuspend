@@ -49,7 +49,7 @@ cat << CTAG
 	}},
 	{ SButton:{
 		label:"PowerSuspend version",
-		action:"show susp"
+		action:"live susp"
 	}},
 	{ SSpacer:{
 		height:2

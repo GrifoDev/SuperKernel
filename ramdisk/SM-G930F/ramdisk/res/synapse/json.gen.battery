@@ -297,7 +297,7 @@ cat << CTAG
 		height:2
 	}},
 	{ SPane:{ 
-		title:"Car Dock power",
+		title:"Car Dock Power",
 		description:"Car Dock power sources."
 	}},
 	{ SSpacer:{

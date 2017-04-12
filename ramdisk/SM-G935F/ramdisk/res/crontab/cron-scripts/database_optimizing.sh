@@ -13,6 +13,7 @@ else
 	BB=/system/xbin/busybox;
 fi;
 fi;
+
 SQLITE=$(cat /res/synapse/Super/cron/sqlite);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
@@ -36,7 +37,7 @@ if [ "$SQLITE" == 1 ]; then
 		/system/xbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
 		/system/xbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
 	done;
-	sync;
+	$BB sync;
 
 	date +%R-%F > /data/crontab/cron-db-optimizing;
 	echo " DB Optimized" >> /data/crontab/cron-db-optimizing;

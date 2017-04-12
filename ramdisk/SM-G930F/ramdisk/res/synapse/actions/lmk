@@ -21,6 +21,7 @@ $BB test "$PERM" -lt "664" && $BB chmod 664 $P 2> /dev/null;
 read() {
 	VALUE=0;
 	NOW=$($BB cat $P);
+
 	for LMK in ${NOW//,/ }; do
 		VALUE=$(($VALUE+1));
 		if [ "$VALUE" == "$1" ]; then
@@ -35,6 +36,7 @@ write() {
 	LMKARR="";
 	VALUE=0;
 	NOW=$($BB cat $P);
+
 	for LMK in ${NOW//,/ }; do
 		VALUE=$(($VALUE+1));
 		if [ "$VALUE" == "$1" ]; then
@@ -51,6 +53,7 @@ write() {
 			fi;
 		fi;
 	done;
+
 	$BB echo "${LMKARR// /,}" > $P 2> /dev/null;
 }
 

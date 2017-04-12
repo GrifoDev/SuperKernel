@@ -15,6 +15,7 @@ if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
 fi;
 
 case $1 in
+
 hotplug)
   P=/res/synapse/Super/hotplug;
 
@@ -25,32 +26,35 @@ hotplug)
   PEWQ_STATE=$(cat /res/synapse/Super/cortexbrain_pewq);
 
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-	echo "0" > $P;
-	echo "0" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
-  elif [ $2 == Enabled ]; then
-	if [ "$TURBO_STATE" == "0" ] && [ "$POWER_AWARE_SCHED_STATE" == "0" ] && [ "$HMP_LITTLE_PACK_STATE" == "0" ] && [ "$PEWQ_STATE" == "0" ]; then
-		echo "1" > $P;
-		echo "1" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
-	else
+	if [ "$2" == Disabled ]; then
 		echo "0" > $P;
 		echo "0" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
+	elif [ $2 == Enabled ]; then
+		if [ "$TURBO_STATE" == "0" ] && [ "$POWER_AWARE_SCHED_STATE" == "0" ] && [ "$HMP_LITTLE_PACK_STATE" == "0" ] && [ "$PEWQ_STATE" == "0" ]; then
+			echo "1" > $P;
+			echo "1" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
+		else
+			echo "0" > $P;
+			echo "0" > /sys/module/dm_cpu_hotplug/parameters/enable_hotplug_hack;
+		fi;
 	fi;
-  fi; fi
-  copy=$(cat $P)
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
-    echo Disabled
+	echo Disabled
   elif [ "$copy" == 1 ]; then
-    echo Enabled
-  fi
+	echo Enabled
+  fi;
   ;;
-esac
+
+esac;
 
 if [ -f "$1" ]; then
 	if [[ ! -z "$2" ]]; then
 		chmod 0644 /sys/kernel/hmp/up_threshold;
 		chmod 0644 /sys/kernel/hmp/down_threshold;
-		$BB echo "$2" > "$1"
+		$BB echo "$2" > "$1";
 	fi;
 
 	$BB echo "$($BB cat "$1")";

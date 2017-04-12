@@ -28,11 +28,12 @@ cat << CTAG
 		height:1
 	}},
 `
-while read -r FREQ VOLT; do
-	echo '{ SSeekBar:{'
-		echo 'title:"'$(($FREQ / 1000))' MHz", default:'"$VOLT"', '
-		echo 'action:"mifvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
-done < /sys/class/devfreq/17000010.devfreq_mif/volt_table
+	while read -r FREQ VOLT; do
+		echo '{ SSeekBar:{'
+			echo 'title:"'$(($FREQ / 1000))' MHz", description:'" "', default:'"$VOLT"', '
+			echo 'action:"mifvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
+		echo '{ SSpacer:{ height:1 }},'
+	done < /sys/class/devfreq/17000010.devfreq_mif/volt_table
 `
 	{ SSpacer:{
 		height:2
@@ -45,11 +46,12 @@ done < /sys/class/devfreq/17000010.devfreq_mif/volt_table
 		height:1
 	}},
 `
-while read -r FREQ VOLT; do
-	echo '{ SSeekBar:{'
-		echo 'title:"'$(($FREQ / 1000))' MHz", default:'"$VOLT"', '
-		echo 'action:"intvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
-done < /sys/class/devfreq/17000020.devfreq_int/volt_table
+	while read -r FREQ VOLT; do
+		echo '{ SSeekBar:{'
+			echo 'title:"'$(($FREQ / 1000))' MHz", description:'" "', default:'"$VOLT"', '
+			echo 'action:"intvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
+		echo '{ SSpacer:{ height:1 }},'
+	done < /sys/class/devfreq/17000020.devfreq_int/volt_table
 `
 	{ SSpacer:{
 		height:2
@@ -59,11 +61,12 @@ done < /sys/class/devfreq/17000020.devfreq_int/volt_table
 		description:"Voltage supplied to the ISP power plane."
 	}},
 `
-while read -r FREQ VOLT; do
-	echo '{ SSeekBar:{'
-		echo 'title:"'$(($FREQ / 1000))' MHz", default:'"$VOLT"', '
-		echo 'action:"ispvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
-done < /sys/class/devfreq/17000030.devfreq_disp/volt_table
+	while read -r FREQ VOLT; do
+		echo '{ SSeekBar:{'
+			echo 'title:"'$(($FREQ / 1000))' MHz", description:'" "', default:'"$VOLT"', '
+			echo 'action:"ispvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
+		echo '{ SSpacer:{ height:1 }},'
+	done < /sys/class/devfreq/17000030.devfreq_disp/volt_table
 `
 	{ SSpacer:{
 		height:1
@@ -71,11 +74,12 @@ done < /sys/class/devfreq/17000030.devfreq_disp/volt_table
 	{ SPane:{ title:"Camera Bus",
 		description:"Voltage supplied to the Cam power plane.\n" }},
 `
-while read -r FREQ VOLT; do
-	echo '{ SSeekBar:{'
-		echo 'title:"'$(($FREQ / 1000))' MHz", default:'"$VOLT"', '
-		echo 'action:"camvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
-done < /sys/class/devfreq/17000040.devfreq_cam/volt_table
+	while read -r FREQ VOLT; do
+		echo '{ SSeekBar:{'
+			echo 'title:"'$(($FREQ / 1000))' MHz", description:'" "', default:'"$VOLT"', '
+			echo 'action:"camvolt '"${FREQ}"'", unit:" mV", weight:0.001, min:500000, max:900000, step:6250 }}, '
+		echo '{ SSpacer:{ height:1 }},'
+	done < /sys/class/devfreq/17000040.devfreq_cam/volt_table
 `
 	{ SSpacer:{
 		height:2

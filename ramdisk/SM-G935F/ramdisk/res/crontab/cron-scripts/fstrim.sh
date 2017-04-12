@@ -12,6 +12,7 @@ else
 	BB=/system/xbin/busybox;
 fi;
 fi;
+
 FSTRIM=$(cat /res/synapse/Super/cron/fstrim);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then

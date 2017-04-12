@@ -135,6 +135,5 @@ echo "excecuted on $(date +"%d-%m-%Y %r" )" >> /data/.Super.log
 
 fi;
 
-$BB mount -t rootfs -o remount,ro rootfs
-$BB mount -o remount,ro /system
+
 $BB mount -o remount,rw /data

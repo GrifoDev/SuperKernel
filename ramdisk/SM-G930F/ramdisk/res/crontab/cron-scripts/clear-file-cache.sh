@@ -13,6 +13,7 @@ else
 	BB=/system/xbin/busybox;
 fi;
 fi;
+
 CACHE=$(cat /res/synapse/Super/cron/cache);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
@@ -43,7 +44,7 @@ if [ "$CACHE" == 1 ]; then
 
 	date +%R-%F > /data/crontab/cron-clear-file-cache;
 	echo " Cleaned Apps Cache" >> /data/crontab/cron-clear-file-cache;
-	sync;
+	$BB sync;
 
 elif [ "$CACHE" == 0 ]; then
 

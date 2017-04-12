@@ -34,83 +34,85 @@ reset_uci() {
 }
 
 case "$1" in
-	listboot)
-		$BB echo "$($BB ls "$SYNAPSE_BOOT_DIR")";
-	;;
 
-	pickboot)
-		if [ -f "$SYNAPSE_BOOT_DIR/$2" -o "$2" == "None" ]; then
-			$BB echo "$2" > "$SYNAPSE_BOOT_DIR/.selected_boot_img";
-		fi;
-		$BB echo "$($BB cat "$SYNAPSE_BOOT_DIR/.selected_boot_img")";
-	;;
+listboot)
+  $BB echo "$($BB ls "$SYNAPSE_BOOT_DIR")";
+  ;;
 
-	flashboot)
-		if [ -f "$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG" ]; then
-			$BB dd if="$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG" of="$2" 2> /dev/null;
-			echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
-			$BB sync;
-			$BB sleep 1;
-			reboot;
-		elif [ "$SYNAPSE_BOOT_IMG" == "None" ]; then
-			$BB echo "None selected.";
-		else
-			$BB echo "File not found.";
-		fi;
-	;;
+pickboot)
+  if [ -f "$SYNAPSE_BOOT_DIR/$2" -o "$2" == "None" ]; then
+	$BB echo "$2" > "$SYNAPSE_BOOT_DIR/.selected_boot_img";
+  fi;
+  $BB echo "$($BB cat "$SYNAPSE_BOOT_DIR/.selected_boot_img")";
+  ;;
 
-	keepboot)
-		BCK_PROF=$($BB cat /res/synapse/Super/bck_kernel);
-		BCK_PROF=$($BB echo "${BCK_PROF// /_}");
+flashboot)
+  if [ -f "$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG" ]; then
+	$BB dd if="$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG" of="$2" 2> /dev/null;
+	echo "0" > /sys/kernel/dyn_fsync/Dyn_fsync_active;
+	$BB sync;
+	$BB sleep 1;
+	reboot;
+  elif [ "$SYNAPSE_BOOT_IMG" == "None" ]; then
+	$BB echo "None selected.";
+  else
+	$BB echo "File not found.";
+  fi;
+  ;;
+
+keepboot)
+  BCK_PROF=$($BB cat /res/synapse/Super/bck_kernel);
+  BCK_PROF=$($BB echo "${BCK_PROF// /_}");
 	
-		if [ "$BCK_PROF" == "None" ]; then
-			$BB echo "Enter a kernel name first and then apply.";
-		else
-			$BB dd if="$2" of="$SYNAPSE_BOOT_DIR/$BCK_PROF.img" 2> /dev/null;
-			$BB echo "None" > /res/synapse/Super/bck_prof;
-			$BB echo "$BCK_PROF.img saved to /data/media/0/Super. Press the [Restart Synapse] button below to see updated list.";
-		fi;
-	;;
+  if [ "$BCK_PROF" == "None" ]; then
+	$BB echo "Enter a kernel name first and then apply.";
+  else
+	$BB dd if="$2" of="$SYNAPSE_BOOT_DIR/$BCK_PROF.img" 2> /dev/null;
+	$BB echo "None" > /res/synapse/Super/bck_prof;
+	$BB echo "$BCK_PROF.img saved to /sdcard/Super. Press the [Restart Synapse] button below to see updated list.";
+  fi;
+  ;;
 
-	delboot)
-		if [ -f "$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG" ]; then
-			$BB rm -f "$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG";
-			$BB echo "$SYNAPSE_BOOT_IMG removed. Press the [Restart Synapse] button below to see updated list.";
-		elif [ "$SYNAPSE_BOOT_IMG" == "None" ]; then
-			$BB echo "None selected.";
-		else
-			$BB echo "File not found.";
-		fi;
-	;;
+delboot)
+  if [ -f "$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG" ]; then
+	$BB rm -f "$SYNAPSE_BOOT_DIR/$SYNAPSE_BOOT_IMG";
+	$BB echo "$SYNAPSE_BOOT_IMG removed. Press the [Restart Synapse] button below to see updated list.";
+  elif [ "$SYNAPSE_BOOT_IMG" == "None" ]; then
+	$BB echo "None selected.";
+  else
+	$BB echo "File not found.";
+  fi;
+  ;;
 
-	listconfig)
-		$BB echo "$($BB ls "$SYNAPSE_CONFIG_DIR")";
-	;;
+listconfig)
+  $BB echo "$($BB ls "$SYNAPSE_CONFIG_DIR")";
+  ;;
 	
-	pickconfig)
-		if [ -f "$SYNAPSE_CONFIG_DIR/$2" -o "$2" == "None" ]; then
-			$BB echo "$2" > "$SYNAPSE_CONFIG_DIR/.selected_config_profile";
-		fi;
-		$BB echo "$($BB cat "$SYNAPSE_CONFIG_DIR/.selected_config_profile")";
-	;;
+pickconfig)
+  if [ -f "$SYNAPSE_CONFIG_DIR/$2" -o "$2" == "None" ]; then
+	$BB echo "$2" > "$SYNAPSE_CONFIG_DIR/.selected_config_profile";
+  fi;
+  $BB echo "$($BB cat "$SYNAPSE_CONFIG_DIR/.selected_config_profile")";
+  ;;
 	
-	delconfig)
-		if [ -f "$SYNAPSE_CONFIG_DIR/$SYNAPSE_CONFIG" ]; then
-			$BB rm -f "$SYNAPSE_CONFIG_DIR/$SYNAPSE_CONFIG";
-			$BB echo "None" > $SYNAPSE_CONFIG_DIR/.selected_config_profile;
-			$BB echo "$SYNAPSE_CONFIG removed. Press the [Restart Synapse] button below to see updated list.";
-		elif [ "$SYNAPSE_CONFIG" == "None" ]; then
-			$BB echo "None selected.";
-		else
-			$BB echo "File not found.";
-		fi;
-	;;
+delconfig)
+  if [ -f "$SYNAPSE_CONFIG_DIR/$SYNAPSE_CONFIG" ]; then
+	$BB rm -f "$SYNAPSE_CONFIG_DIR/$SYNAPSE_CONFIG";
+	$BB echo "None" > $SYNAPSE_CONFIG_DIR/.selected_config_profile;
+	$BB echo "$SYNAPSE_CONFIG removed. Press the [Restart Synapse] button below to see updated list.";
+  elif [ "$SYNAPSE_CONFIG" == "None" ]; then
+	$BB echo "None selected.";
+  else
+	$BB echo "File not found.";
+  fi;
+  ;;
 	
-	restart)
-		am force-stop com.af.synapse 2> /dev/null;
-		reset_uci;
-		$BB sync;
-		$BB sleep 1;
-		am start -a android.intent.action.MAIN -n com.af.synapse/.MainActivity 2> /dev/null;
-	;;
+restart)
+  am force-stop com.af.synapse 2> /dev/null;
+  reset_uci;
+  $BB sync;
+  $BB sleep 1;
+  am start -a android.intent.action.MAIN -n com.af.synapse/.MainActivity 2> /dev/null;
+  ;;
+
 esac;

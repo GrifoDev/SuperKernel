@@ -11,12 +11,6 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-	{ SDescription:{ 
-		description:"NOTE: Enabling the Lazytime Mount tweak may affect running of Crontab tasks and fail to run as scheduled."
-	}},
-	{ SSpacer:{
-		height:1
-	}},
 	{ SOptionList:{
 		title:"Crontab (Master Switch)",
 		description:"Disabling will reset the Cron Task Logs & all tasks below and will have no effect!\n",

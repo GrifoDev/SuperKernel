@@ -10,22 +10,31 @@ else
 fi;
 fi;
 
-CONFIG_JSON=/res/synapse/config.json
-ACTION_SCRIPTS=/res/synapse/actions/
+CONFIG_JSON=/res/synapse/config.json;
+ACTION_SCRIPTS=/res/synapse/actions/;
 
 if [ ! -f $CONFIG_JSON ]; then
-	source /res/synapse/json.generate > $CONFIG_JSON
+	source /res/synapse/json.generate > $CONFIG_JSON;
 fi
 
 case "${1}" in
+
   config)
-	cat $CONFIG_JSON;;
+	cat $CONFIG_JSON;
+  ;;
+
   configpath)
-	echo $CONFIG_JSON;;
+	echo $CONFIG_JSON;
+  ;;
+
   actionpath)
-	echo $ACTION_SCRIPTS:/sbin;;
+	echo $ACTION_SCRIPTS:/sbin;
+  ;;
+
   reset)
 	$BB mount -t rootfs -o rw,remount rootfs;
 	$BB rm -f $CONFIG_JSON;
-	$BB mount -t rootfs -o rw,remount rootfs;;
+	$BB mount -t rootfs -o rw,remount rootfs;
+  ;;
+
 esac;

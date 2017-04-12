@@ -18,124 +18,145 @@ if [ "$($BB mount | grep system | grep -c ro)" -eq "1" ]; then
 fi;
 
 case $1 in
+
 cifs)
-  P=/res/synapse/Super/cifs
+  P=/res/synapse/Super/cifs;
+
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-    echo 0 > $P
-	rmmod /system/lib/modules/cifs.ko;
-  elif [ "$2" == Enabled ]; then
-    echo 1 > $P
-	insmod /system/lib/modules/cifs.ko;
-  fi; fi
-  copy=$(cat $P)
+	if [ "$2" == Disabled ]; then
+		echo "0" > $P;
+		rmmod /system/lib/modules/cifs.ko;
+	elif [ "$2" == Enabled ]; then
+		echo "1" > $P;
+		insmod /system/lib/modules/cifs.ko;
+	fi;
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
-    echo Disabled
+	echo Disabled
   elif [ "$copy" == 1 ]; then
-    echo Enabled
-  fi
+	echo Enabled
+  fi;
   ;;
 
 nfs)
-  P=/res/synapse/Super/nfs
+  P=/res/synapse/Super/nfs;
+
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-    echo 0 > $P
-	rmmod /system/lib/modules/rpcsec_gss_krb5.ko
-	rmmod /system/lib/modules/auth_rpcgss.ko
-	rmmod /system/lib/modules/oid_registry.ko
-	rmmod /system/lib/modules/nfsv3.ko
-	rmmod /system/lib/modules/nfsv2.ko
-	rmmod /system/lib/modules/nfs.ko
-	rmmod /system/lib/modules/lockd.ko
-	rmmod /system/lib/modules/sunrpc.ko
-  elif [ "$2" == Enabled ]; then
-    echo 1 > $P
-	insmod /system/lib/modules/sunrpc.ko
-	insmod /system/lib/modules/lockd.ko
-	insmod /system/lib/modules/nfs.ko
-	insmod /system/lib/modules/nfsv2.ko
-	insmod /system/lib/modules/nfsv3.ko
-	insmod /system/lib/modules/oid_registry.ko
-	insmod /system/lib/modules/auth_rpcgss.ko
-	insmod /system/lib/modules/rpcsec_gss_krb5.ko
-  fi; fi
-  copy=$(cat $P)
+	if [ "$2" == Disabled ]; then
+		echo "0" > $P;
+		rmmod /system/lib/modules/rpcsec_gss_krb5.ko
+		rmmod /system/lib/modules/auth_rpcgss.ko
+		rmmod /system/lib/modules/oid_registry.ko
+		rmmod /system/lib/modules/nfsv3.ko
+		rmmod /system/lib/modules/nfsv2.ko
+		rmmod /system/lib/modules/nfs.ko
+		rmmod /system/lib/modules/lockd.ko
+		rmmod /system/lib/modules/sunrpc.ko
+	elif [ "$2" == Enabled ]; then
+		echo "1" > $P;
+		insmod /system/lib/modules/sunrpc.ko
+		insmod /system/lib/modules/lockd.ko
+		insmod /system/lib/modules/nfs.ko
+		insmod /system/lib/modules/nfsv2.ko
+		insmod /system/lib/modules/nfsv3.ko
+		insmod /system/lib/modules/oid_registry.ko
+		insmod /system/lib/modules/auth_rpcgss.ko
+		insmod /system/lib/modules/rpcsec_gss_krb5.ko
+	fi;
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
-    echo Disabled
+	echo Disabled
   elif [ "$copy" == 1 ]; then
-    echo Enabled
-  fi
+	echo Enabled
+  fi;
   ;;
 
 ntfs)
-  P=/res/synapse/Super/ntfs
+  P=/res/synapse/Super/ntfs;
+
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-    echo 0 > $P
-	rmmod /system/lib/modules/ntfs.ko;
-  elif [ "$2" == Enabled ]; then
-    echo 1 > $P
-	insmod /system/lib/modules/ntfs.ko;
-  fi; fi
-  copy=$(cat $P)
+	if [ "$2" == Disabled ]; then
+		echo "0" > $P;
+		rmmod /system/lib/modules/ntfs.ko;
+	elif [ "$2" == Enabled ]; then
+		echo "1" > $P;
+		insmod /system/lib/modules/ntfs.ko;
+	fi;
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
-    echo Disabled
+	echo Disabled
   elif [ "$copy" == 1 ]; then
-    echo Enabled
-  fi
+	echo Enabled
+  fi;
   ;;
 
 isofs)
-  P=/res/synapse/Super/isofs
+  P=/res/synapse/Super/isofs;
+
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-    echo 0 > $P
-	rmmod /system/lib/modules/isofs.ko;
-  elif [ "$2" == Enabled ]; then
-    echo 1 > $P
-	insmod /system/lib/modules/isofs.ko;
-  fi; fi
-  copy=$(cat $P)
+	if [ "$2" == Disabled ]; then
+		echo "0" > $P;
+		rmmod /system/lib/modules/isofs.ko;
+	elif [ "$2" == Enabled ]; then
+		echo "1" > $P;
+		insmod /system/lib/modules/isofs.ko;
+	fi;
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
-    echo Disabled
+	echo Disabled
   elif [ "$copy" == 1 ]; then
-    echo Enabled
-  fi
+	echo Enabled
+  fi;
   ;;
+
 udf)
-  P=/res/synapse/Super/udf
+  P=/res/synapse/Super/udf;
+
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-    echo 0 > $P
-	rmmod /system/lib/modules/udf.ko;
-  elif [ "$2" == Enabled ]; then
-    echo 1 > $P
-	insmod /system/lib/modules/udf.ko;
-  fi; fi
-  copy=$(cat $P)
+	if [ "$2" == Disabled ]; then
+		echo "0" > $P;
+		rmmod /system/lib/modules/udf.ko;
+	elif [ "$2" == Enabled ]; then
+		echo "1" > $P;
+		insmod /system/lib/modules/udf.ko;
+	fi;
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
-    echo Disabled
+	echo Disabled
   elif [ "$copy" == 1 ]; then
-    echo Enabled
-  fi
+	echo Enabled
+  fi;
   ;;
 
 xpad)
-  P=/res/synapse/Super/xpad
+  P=/res/synapse/Super/xpad;
+
   if [ ! -z "$2" ]; then
-  if [ "$2" == Disabled ]; then
-    echo 0 > $P
-	rmmod /system/lib/modules/xpad.ko;
-  elif [ "$2" == Enabled ]; then
-    echo 1 > $P
-	insmod /system/lib/modules/xpad.ko;
-  fi; fi
-  copy=$(cat $P)
+	if [ "$2" == Disabled ]; then
+		echo "0" > $P;
+		rmmod /system/lib/modules/xpad.ko;
+	elif [ "$2" == Enabled ]; then
+		echo "1" > $P;
+		insmod /system/lib/modules/xpad.ko;
+	fi;
+  fi;
+
+  copy=$(cat $P);
   if [ "$copy" == 0 ]; then
-    echo Disabled
+	echo Disabled
   elif [ "$copy" == 1 ]; then
-    echo Enabled
-  fi
+	echo Enabled
+  fi;
   ;;
-esac
+
+esac;

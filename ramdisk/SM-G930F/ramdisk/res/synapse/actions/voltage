@@ -30,15 +30,15 @@ ispvolt)
 camvolt)
 	P=/sys/class/devfreq/17000040.devfreq_cam/volt_table
 	;;
-esac
+esac;
 
 readValue() {
 	while read -r FREQ UVOLT; do
 		if [ "$FREQ" == "$1" ]; then
-			echo "$UVOLT"
-			return
-		fi
-	done < $P
+			echo "$UVOLT";
+			return;
+		fi;
+	done < $P;
 }
 
 writeValue() {
@@ -50,13 +50,13 @@ writeValue() {
 	c0volt)		;&
 	ispvolt)	;&
 	camvolt)
-		echo "$1" "$2" > $P
-		return
-	esac
+		echo "$1" "$2" > $P;
+		return;
+	esac;
 }
 
 if [[ ! -z $2 ]]; then
-	writeValue "$1" "$2"
-fi
+	writeValue "$1" "$2";
+fi;
 
-$BB echo "$(readValue "$1")"
+readValue "$1";

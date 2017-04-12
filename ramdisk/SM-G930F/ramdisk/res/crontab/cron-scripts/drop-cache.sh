@@ -13,6 +13,7 @@ else
 	BB=/system/xbin/busybox;
 fi;
 fi;
+
 DROP_CACHE=$(cat /res/synapse/Super/cron/drop_cache);
 
 if [ "$($BB mount | grep rootfs | cut -c 26-27 | grep -c ro)" -eq "1" ]; then
@@ -44,9 +45,9 @@ if [ "$DROP_CACHE" == 1 ]; then
 			sleep 30;
 		done;
 
-		sync;
+		$BB sync;
 		sysctl -w vm.drop_caches=3;
-		sync;
+		$BB sync;
 
 		date +%R-%F > /data/crontab/cron-clear-ram-cache;
 		echo " Cache above 50%! Cleaned RAM Cache" >> /data/crontab/cron-clear-ram-cache;

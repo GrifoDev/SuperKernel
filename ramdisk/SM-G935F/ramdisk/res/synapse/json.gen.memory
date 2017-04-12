@@ -30,7 +30,7 @@ cat << CTAG
 			`if [ -f "/sys/module/lowmemorykiller/parameters/minfree" ]; then
 				$BB echo '{ SPane:{
 					title:"Low Memory Killer",
-					description:"LMK Minfree controls how much memory each app type can hold, and is responsible for memory management for multitasking. All values are multiplied by 256 pages."
+					description:"LMK Minfree controls how much memory each app type can hold, and is responsible for memory management for multi-tasking. All values are multiplied by 256 pages."
 				}},
 				{ SSpacer:{
 					height:1
@@ -78,6 +78,7 @@ cat << CTAG
 							esac
 						$BB echo ', action:"lmk '${LMK}'",
 						unit:" MB", min:1, max:350 }},'
+						echo '{ SSpacer:{ height:1 }},'
 					done
 			fi`
 	{ SSpacer:{
