@@ -40,7 +40,7 @@ struct blk_flush_queue;
 
 #define BLKDEV_MIN_RQ	4
 #if defined (CONFIG_ZEN_INTERACTIVE)
-#define BLKDEV_MAX_RQ	16
+#define BLKDEV_MAX_RQ	512
 #elif definded (CONFIG_LARGE_DIRTY_BUFFER)
 #define BLKDEV_MAX_RQ	256
 #else
