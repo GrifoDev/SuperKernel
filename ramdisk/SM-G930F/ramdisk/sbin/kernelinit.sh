@@ -17,10 +17,6 @@
 /sbin/resetprop -n ro.boot.warranty_bit "0"
 /sbin/resetprop -n ro.warranty_bit "0"
 
-# Fake encryption flags
-/sbin/resetprop -n sec.fle.encryption.status "encrypted"
-/sbin/resetprop -n ro.crypto.state "encrypted"
-
 # Fix some safetynet flags
 /sbin/resetprop -n ro.boot.veritymode "enforcing"
 /sbin/resetprop -n ro.boot.verifiedbootstate "green"
