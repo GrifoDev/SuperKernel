@@ -804,6 +804,7 @@ service apexserver /system/bin/apexserver
 	class main
 	user system
 	group system graphics media media_rw
+	disabled
 
 # RTC logging daemon (SEC_PM)
 service rtc_log /system/bin/rtc_log.sh

@@ -306,6 +306,7 @@ ctl.factory_adsp                                 u:object_r:ctl_factory_adsp_pro
 ctl.powersnd                                     u:object_r:ctl_powersnd_prop:s0
 ctl.redsocks             u:object_r:ctl_redsocks_prop:s0
 ctl.sdumpstate           u:object_r:ctl_dumpstate_prop:s0
+ctl.ikev2-client         u:object_r:ctl_ikev2_client_prop:s0
 ctl.preparefbe              u:object_r:ctl_preparefbe_prop:s0
 dev.MDPLimitCondition		u:object_r:system_prop:s0
 dev.kies.		u:object_r:kies_prop:s0

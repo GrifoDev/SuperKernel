@@ -297,6 +297,9 @@ com.samsung.android.jam.IAPAClientOboe      u:object_r:apaservice_service:s0
 com.samsung.android.jam.IAPAService         u:object_r:apaservice_service:s0
 com.samsung.android.jam.IJackService        u:object_r:jackservice_service:s0
 com.samsung.android.pass.IPassService       u:object_r:platform_app_service:s0
+# SEA_site N OS#395 ,board/N_review_request/view/21598999    tigerservice (com.samsung.srk.tigerkeystoreprovider.ITigerService)
+# add TigerService permission requested by  Multimedia TG (th0228.kim)
+com.samsung.srk.tigerkeystoreprovider.ITigerService               u:object_r:tigerservice_service:s0
 com.samsung.ucs.ucsservice                  u:object_r:ucs_service:s0
 com.sc.scservice.ISCServiceFactory          u:object_r:sc_service:s0
 com.sc.scservicedownloadable.ISCServiceFactory u:object_r:sc_service:s0
@@ -324,6 +327,7 @@ dmb.DMBFrmwrks                              u:object_r:dmb_service:s0
 download                                    u:object_r:download_service:s0
 dtv.server                                  u:object_r:dtvserver_service:s0
 dtvbml.server                               u:object_r:dtvserver_service:s0
+dual_app                                    u:object_r:dualapp_service:s0
 dualscreen                                  u:object_r:dualscreen_service:s0
 dualsim_policy                              u:object_r:EDM_Policy_service:s0
 DCM                                         u:object_r:tlc_server_service:s0
@@ -363,6 +367,8 @@ Exynos.IPService                            u:object_r:surfaceflinger_service:s0
 fclicemwserver                              u:object_r:mmb_mw_service:s0
 felica                                      u:object_r:nfc_service:s0
 fingerprint_service                         u:object_r:fingerprint_app_service:s0
+downloadableccm_svc                         u:object_r:downloadable_ccm_service:s0
+pkcs11wrapperccm_svc                        u:object_r:downloadable_ccm_service:s0
 firewall                                    u:object_r:firewall_service:s0
 firewall_policy                             u:object_r:EDM_Policy_service:s0
 front_led                                   u:object_r:front_led_service:s0
@@ -405,6 +411,7 @@ knox_scep_policy                            u:object_r:EDM_Policy_service:s0
 knox_timakeystore_policy                    u:object_r:EDM_Policy_service:s0
 knox_ucsm_policy                            u:object_r:EDM_Policy_service:s0
 knox_vpn_policy                             u:object_r:EDM_Policy_service:s0
+knoxnap                                     u:object_r:EDM_Policy_service:s0
 knoxcustom                                  u:object_r:knoxcustom_service:s0
 ktuca                                       u:object_r:ktuca_service:s0
 layout_inflater                             u:object_r:layout_inflater_service:s0
@@ -419,7 +426,7 @@ magazinecardservice                         u:object_r:magazinecard_service:s0
 mate_service                                u:object_r:mate_service:s0
 mdm.remotedesktop                           u:object_r:remotedesktop_service:s0
 mDNIe                                       u:object_r:mDNIe_service:s0
-media.air                                   u:object_r:airserver_service:s0
+media.air                                   u:object_r:visiond_service:s0
 media.mediacapture                          u:object_r:mediaserver_service:s0
 media.transcoder                            u:object_r:mediaserver_service:s0
 media.wifi_display                          u:object_r:surfaceflinger_service:s0

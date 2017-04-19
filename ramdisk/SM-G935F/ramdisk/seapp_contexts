@@ -36,6 +36,7 @@ user=wechatwifiservice seinfo=platform domain=platform_app type=app_data_file le
 user=fresco seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=ocrservice seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=advmodem seinfo=platform domain=platform_app type=app_data_file levelFrom=user
+user=bixby.client seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=spass seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=_app seinfo=release name=com.sec.android.app.shealth* domain=untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=shealth name=com.sec.android.app.shealth* domain=untrusted_app type=app_data_file levelFrom=user
