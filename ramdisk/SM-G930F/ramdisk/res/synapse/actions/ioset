@@ -52,7 +52,7 @@ scheduler)
 scheduler_ext)
   if [ -f /sys/block/mmcblk0/queue/scheduler ]; then
 	if [[ ! -z $2 ]]; then
-		for i in /sys/block/sd*/queue/scheduler; do
+		for i in /sys/block/mmcblk*/queue/scheduler; do
 			$BB echo "$2" > "$i" 2> /dev/null;
 		done;
 	fi;
