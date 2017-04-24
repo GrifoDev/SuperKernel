@@ -33,6 +33,7 @@ module_param(wl_pickup, int, 0644);
 static int wl_tilt = 0.3;
 module_param(wl_tilt, int, 0644);
 static int wl_grip = 0.3;
+module_param(wl_grip, int, 0644);
 
 /*************************************************************************/
 /* SSP Kernel -> HAL input evnet function                                */
