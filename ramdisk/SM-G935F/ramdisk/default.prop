@@ -35,6 +35,6 @@ ro.securestorage.support=false
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Wed May 10 11:06:43 KST 2017
-ro.bootimage.build.date.utc=1494382003
-ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:7.0/NRD90M/G935FXXU1DQE7:user/test-keys
+ro.bootimage.build.date=Tue May 16 15:11:50 KST 2017
+ro.bootimage.build.date.utc=1494915110
+ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:7.0/NRD90M/G935FXXU1DQEF:user/test-keys
