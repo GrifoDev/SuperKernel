@@ -723,6 +723,9 @@ service cs_service /system/bin/cs
     group system
     disabled
 
+on property:vold.decrypt=trigger_restart_framework
+     start cs_service
+
 on property:ro.crypto.default.encrypted=true
     start cs_service
 
