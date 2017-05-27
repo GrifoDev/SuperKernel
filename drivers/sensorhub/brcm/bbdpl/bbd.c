@@ -135,12 +135,8 @@ static unsigned char bbd_patch[] =
 {
 #if defined (CONFIG_SENSORS_SSP_GRACE)
 #include "n_os/bbd_patch_file_grace.h"
-#elif defined (CONFIG_SENSORS_SSP_HAECHI)
-#include "bbd_patch_file_haechi.h"
 #elif defined (CONFIG_SENSORS_SSP_LUCKY)
 #include "n_os/bbd_patch_file_lucky.h"
-#elif defined (CONFIG_SENSORS_SSP_VLTE)
-#include "bbd_patch_file_valley.h"
 #endif
 };
 
