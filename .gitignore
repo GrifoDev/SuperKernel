@@ -55,6 +55,8 @@ build.log
 #
 # git files that we don't want to ignore even it they are dot-files
 #
+!ramdisk/SM-G930F/ramdisk/file_contexts.bin
+!ramdisk/SM-G935F/ramdisk/file_contexts.bin
 !.gitignore
 !.mailmap
 
