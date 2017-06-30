@@ -56,8 +56,6 @@ ui_print " - setting permissions"
 
 chmod 0644 /system/vendor/lib/libsecure_storage.so
 chmod 0644 /system/vendor/lib64/libsecure_storage.so
-chmod 0755 /system/app/mcRegistry
-chmod 0644 /system/app/mcRegistry/*.tlbin
 chmod 0755 /system/xbin/sqlite3
 chmod 0755 /system/xbin/zip
 chmod 0755 /system/xbin/fstrim
