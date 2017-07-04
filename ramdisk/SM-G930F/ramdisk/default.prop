@@ -3,6 +3,7 @@
 #
 telephony.lteOnCdmaDevice=0
 persist.security.ams.enforcing=1
+ro.oem_unlock_supported=1
 ro.secure=0
 security.perf_harden=1
 ro.adb.secure=1
@@ -35,6 +36,6 @@ ro.securestorage.support=false
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Tue May 16 15:11:50 KST 2017
-ro.bootimage.build.date.utc=1494915110
-ro.bootimage.build.fingerprint=samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQEF:user/test-keys
+ro.bootimage.build.date=Fri May 19 21:59:09 KST 2017
+ro.bootimage.build.date.utc=1495198749
+ro.bootimage.build.fingerprint=samsung/dreamltexx/dreamlte:7.0/NRD90M/G950FXXU1AQEB:user/test-keys

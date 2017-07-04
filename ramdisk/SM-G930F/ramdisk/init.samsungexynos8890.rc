@@ -8,10 +8,12 @@ import init.exynos8890_fac.rc
 import init.remove_recovery.rc
 
 on early-init
+    mkdir /efs 0771 radio system
     mount debugfs /sys/kernel/debug /sys/kernel/debug
 
 on init
     start watchdogd
+
     mkdir /preload 0771 system system
 
     # See storage config details at http://source.android.com/tech/storage/
@@ -26,13 +28,15 @@ on init
     #export SECONDARY_STORAGE /storage/extSdCard
 
     symlink /data/app /factory
-	#Reactivation Lock
+    #Reactivation Lock
     symlink /dev/block/platform/155a0000.ufs/by-name/STEADY /dev/block/steady
 
-	#Google FRP solution
+    #Google FRP solution
     symlink /dev/block/platform/155a0000.ufs/by-name/PERSISTENT /dev/block/persistent
 
 on post-fs-data
+# Log data folder
+    mkdir /data/log 0771 radio system
     mkdir /data/media 0770 media_rw media_rw
 
     setprop vold.post_fs_data_done 1
@@ -60,7 +64,7 @@ on post-fs-data
     chown system system /sys/class/audio/earjack/water_detected
     chmod 0440 /sys/class/audio/earjack/water_detected
 
-    # Permissions Camera
+# Permissions Camera
     mkdir /data/camera 0770 cameraserver system
     chown system radio /sys/class/camera/rear/rear_camfw
     chown system radio /sys/class/camera/rear/rear_camfw_full
@@ -131,17 +135,24 @@ on boot
     # write /proc/sys/vm/min_free_order_shift 1
 
 # SSWAP
-    write /proc/sys/vm/swappiness 190
+    write /proc/sys/vm/swappiness 160
 
     # Allow to access debugfs for system:system
     chmod 755 /sys/kernel/debug
     chown system system /sys/kernel/debug
 
+    setprop ro.radio.noril no
+
     # Set up kernel tracing, but disable it by default
     chmod 0222 /sys/kernel/debug/tracing/trace_marker
     write /sys/kernel/debug/tracing/tracing_on 0
 
-    # PMS DVFS
+    # SEC_PM sysfs
+    # RTC logging daemon
+    chmod 0770 /system/bin/rtc_log.sh
+    chown system system /system/bin/rtc_log.sh
+
+    # DVFS & Hotplug
     chown system system /sys/power/cpuhotplug/enabled
     chown system system /sys/power/cpuhotplug/min_online_cpu
     chown system system /sys/power/cpuhotplug/max_online_cpu
@@ -269,27 +280,31 @@ on boot
     chown system system /sys/power/cpufreq_self_discharging
     chmod 0660 /sys/power/cpufreq_self_discharging
 
+    # RTC status
+    chown system system /sys/power/rtc_status
+    chmod 0664 /sys/power/rtc_status
+    chown system system /efs/FactoryApp/rtc_status
+    chmod 0664 /efs/FactoryApp/rtc_status
+
     # ASV
     chown system system /d/asv_summary
+    chmod 0660 /d/asv_summary
 
     #AP2CP PLL SHARE
     chown system system /sys/power/call_state
     chmod 660 /sys/power/call_state
 
+# Support DM logging
+    chmod 0770 /system/bin/dmd
+
+# Support Virtual Com
+    chmod 0770 /system/bin/vcd
+
+# Support AP/CP log dump
+    chmod 0770 /system/bin/sced
+
 # Switch Device
     chown system radio /sys/class/sec/switch/afc_disable
-
-# Bluetooth
-    chown bluetooth net_bt_stack /dev/ttySAC1
-    chmod 0660 /dev/ttySAC1
-    # permissions for bluetooth.
-    setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
-    chown bluetooth net_bt_stack ro.bt.bdaddr_path
-    chown radio net_bt_stack /efs/bluetooth/bt_addr
-    chmod 0640 /efs/bluetooth/bt_addr
-    chmod 0660 /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
 
 #for datarouter
     chown system system /dev/dun
@@ -321,16 +336,29 @@ on boot
 # MSP FactoryApp
 	mkdir /efs/FactoryApp 0775 system system
 
+# Bluetooth
+    chown bluetooth net_bt_stack /dev/ttySAC1
+    chmod 0660 /dev/ttySAC1
+    # permissions for bluetooth.
+    setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
+    chown bluetooth net_bt_stack ro.bt.bdaddr_path
+    chown radio net_bt_stack /efs/bluetooth/bt_addr
+    chmod 0640 /efs/bluetooth/bt_addr
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+
 # IMS Stack
 service imsd /system/bin/imsd
     class main
     socket imsd stream 0660 system system
     user root
     group system radio net_raw inet net_admin readproc
-
 on fs
     mount_all /fstab.samsungexynos8890
     setprop ro.crypto.fuse_sdcard true
+    chown radio system /efs
+    restorecon_recursive /efs
 
 #For Absolute Persistence Partition
     mkdir /persdata 0755 system system
@@ -608,7 +636,7 @@ on fs
 # Permissions for hall
     chown system radio /sys/class/sec/sec_key/hall_irq_ctrl
 
-#ARGOSD network_throughput
+# ARGOSD network_throughput
     chown system system /dev/network_throughput
 
 #Current meter node
@@ -623,10 +651,29 @@ on fs
     chown system system /sys/class/rtc/rtc0/device/adc_ctrl1
 
 # ARGOSD
-service argos-daemon /system/bin/argosd
+    service argos-daemon /system/bin/argosd
     class main
     user system
     group system radio
+
+# DM daemon
+#    service DM-daemon /system/bin/dmd
+#    class main
+#    user root
+#    group system
+
+# VC daemon
+    service VC-daemon /system/bin/vcd
+    class main
+    user root
+    group system
+    seclabel u:r:vcd:s0
+
+# SCE daemon
+#    service SCE-daemon /system/bin/sced
+#    class main
+#    user root
+#    group system
 
 service prepare_param /system/bin/prepare_param.sh /dev/block/platform/155a0000.ufs/by-name/PARAM
     class core
@@ -643,6 +690,12 @@ service vcsFPService /system/bin/vcsFPService
 
 # FINGERPRINT FRAMEWORK : starts fingerprintd
 service fingerprintd /system/bin/fingerprintd
+    class late_start
+    user system
+    group system
+
+# faced
+service faced /system/bin/faced
     class late_start
     user system
     group system
@@ -704,6 +757,12 @@ on property:ro.bootmode=charger
 service lpm /system/bin/lpm
     class sec-charger
     critical
+
+# Sensorhub service
+service sensorhubservice /system/bin/sensorhubservice
+    class main
+    user system
+    group input
 
 # sem_daemon permission
     chown system system /efs/sec_efs/ssp_data
@@ -775,6 +834,24 @@ on property:ro.securestorage.support=true
     chown system system /dev/.secure_storage
     start secure_storage
 
+# WSM service startup
+service wsmd /system/bin/wsmd
+    class core
+    user system
+    group system
+    disabled
+on property:ro.wsmd.enable=true
+    mkdir /dev/socket/wsm_socket 
+    chmod 0711 /dev/socket/wsm_socket
+    chown system system /dev/socket/wsm_socket
+    start wsmd
+
+# AIR
+service visiond /system/bin/visiond
+    class main
+    user system
+    group system camera media media_rw
+
 # SSWAP
 service swapon /sbin/sswap -s -f 2048
     class core
@@ -790,12 +867,6 @@ service redsocks /system/bin/redsocks -c /data/mptcp/redsocks.conf
     group system net_raw net_admin
     disabled
 
-# Sensorhub service
-service sensorhubservice /system/bin/sensorhubservice
-    class main
-    user system
-    group input
-
 #SLocation
 	service cellgeofenced /system/bin/cellgeofenced
 	class main
@@ -809,11 +880,3 @@ service apexserver /system/bin/apexserver
 	user system
 	group system graphics media media_rw
 	disabled
-
-# RTC logging daemon (SEC_PM)
-service rtc_log /system/bin/rtc_log.sh
-    class main
-    user system
-    group system
-    seclabel u:r:rtc_log:s0
-    oneshot

@@ -122,3 +122,14 @@ subsystem adf
 # Fingerprint Sensor
 /dev/vfsspi        0660   system     system
 /dev/esfp0        0660   system     system
+
+# sensor sysfs properties
+/sys/devices/virtual/input/input*	poll_delay	0660	system	radio
+/sys/devices/virtual/input/input*	enable		0660	system	radio
+
+# Sensorhub IIO
+/dev/ssp_sensorhub        0660   system		system
+/dev/iio:device*          0660   system		system
+/sys/devices/13930000.spi/spi_master/spi2/spi2.0/iio:device*    buffer/enable       0660    system    system
+/sys/devices/13930000.spi/spi_master/spi2/spi2.0/iio:device*    buffer/length       0660    system    system
+/sys/bus/iio/devices/iio:device*    0664   system     radio

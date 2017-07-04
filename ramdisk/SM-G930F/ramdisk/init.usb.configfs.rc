@@ -91,6 +91,7 @@ on property:sys.usb.config=midi && property:sys.usb.configfs=1
     write /sys/class/android_usb/android0/functions ${sys.usb.config}
     write /sys/kernel/config/usb_gadget/g1/UDC "10c00000.dwc3"
     write /sys/class/android_usb/android0/enable 1
+    setprop sys.usb.state ${sys.usb.config}
 
 on property:sys.usb.config=midi,adb && property:sys.usb.configfs=1
     write /sys/class/android_usb/android0/enable 0
@@ -110,6 +111,7 @@ on property:sys.usb.config=midi,adb && property:sys.usb.configfs=1
     write /sys/class/android_usb/android0/bDeviceClass 2
     write /sys/kernel/config/usb_gadget/g1/UDC "10c00000.dwc3"
     write /sys/class/android_usb/android0/enable 1
+    setprop sys.usb.state ${sys.usb.config}
 
 on property:sys.usb.config=ncm,adb && property:sys.usb.configfs=1
     write /sys/class/android_usb/android0/enable 0
@@ -122,4 +124,3 @@ on property:sys.usb.config=ncm,adb && property:sys.usb.configfs=1
     start adbd
     setprop sys.usb.state ${sys.usb.config}
    
-

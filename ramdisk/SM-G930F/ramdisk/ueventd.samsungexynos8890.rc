@@ -149,6 +149,7 @@
 /dev/umts*                0660   system     radio
 /dev/umts_csd             0660   system     loop_radio
 /dev/smd4                 0660   system     radio
+/dev/ramdump_memshare     0660   system     radio
 
 # interactive governor parameters
 /sys/devices/system/cpu/cpu*	cpufreq/interactive/timer_rate			0660	system	system
@@ -165,6 +166,11 @@
 /sys/devices/system/cpu/cpu*	cpufreq/interactive/io_is_busy			0660	system	system
 /sys/devices/system/cpu/cpu*	cpufreq/interactive/param_index			0660	system	system
 /sys/devices/system/cpu/cpu*	cpufreq/interactive/mode				0660	system	system
+
+# Vision (VPU, SCORE)
+/dev/vertex0             0660   media      media
+/dev/vertex1             0660   media      media
+/dev/iva_ctl             0660   media      media
 
 # sensor sysfs properties
 /sys/devices/virtual/input/input*	poll_delay	0660	system	radio

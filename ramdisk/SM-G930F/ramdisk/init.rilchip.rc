@@ -37,8 +37,8 @@ service DIAG-daemon /system/bin/diagexe
     user root
     group system radio inet net_raw
 
-on boot
+on early-boot
 # Assign TCP buffer thresholds to be ceiling value of technology maximums
 # Increased technology maximums should be reflected here.
-    write /proc/sys/net/core/rmem_max 1048576
+    write /proc/sys/net/core/rmem_max 2097152
     write /proc/sys/net/core/wmem_max 2097152

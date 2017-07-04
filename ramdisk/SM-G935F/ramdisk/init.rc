@@ -1,4 +1,3 @@
-# Copyright (C) 2012 The Android Open Source Project
 #
 # IMPORTANT: Do not create world writable files or directories.
 # This is a common source of Android security bugs.
@@ -178,16 +177,17 @@ on init
     chown system system /dev/cpuctl/tasks
     chmod 0666 /dev/cpuctl/tasks
     write /dev/cpuctl/cpu.shares 1024
-    write /dev/cpuctl/cpu.rt_runtime_us 800000
     write /dev/cpuctl/cpu.rt_period_us 1000000
+    write /dev/cpuctl/cpu.rt_runtime_us 950000
 
     mkdir /dev/cpuctl/bg_non_interactive
     chown system system /dev/cpuctl/bg_non_interactive/tasks
     chmod 0666 /dev/cpuctl/bg_non_interactive/tasks
     # 5.0 %
     write /dev/cpuctl/bg_non_interactive/cpu.shares 52
-    write /dev/cpuctl/bg_non_interactive/cpu.rt_runtime_us 700000
     write /dev/cpuctl/bg_non_interactive/cpu.rt_period_us 1000000
+    # active FIFO threads will never be in BG
+    write /dev/cpuctl/bg_non_interactive/cpu.rt_runtime_us 10000
 
     mkdir /dev/cpuctl/bg_cached
     chown system system /dev/cpuctl/bg_cached/tasks
@@ -198,7 +198,7 @@ on init
     chmod 0664 /dev/cpuctl/bg_cached/cpu.cfs_quota_us
     # 5.0 %
     write /dev/cpuctl/bg_cached/cpu.shares 52
-    write /dev/cpuctl/bg_cached/cpu.rt_runtime_us 700000
+    write /dev/cpuctl/bg_cached/cpu.rt_runtime_us 10000
     write /dev/cpuctl/bg_cached/cpu.rt_period_us 1000000
     write /dev/cpuctl/bg_cached/cpu.cfs_period_us 20000
     write /dev/cpuctl/bg_cached/cpu.cfs_quota_us 10000
@@ -212,7 +212,7 @@ on init
     chmod 0664 /dev/cpuctl/bg_abnormal/cpu.cfs_quota_us
     # 5.0 %
     write /dev/cpuctl/bg_abnormal/cpu.shares 52
-    write /dev/cpuctl/bg_abnormal/cpu.rt_runtime_us 700000
+    write /dev/cpuctl/bg_abnormal/cpu.rt_runtime_us 10000
     write /dev/cpuctl/bg_abnormal/cpu.rt_period_us 1000000
     write /dev/cpuctl/bg_abnormal/cpu.cfs_period_us 20000
     write /dev/cpuctl/bg_abnormal/cpu.cfs_quota_us 10000
@@ -241,6 +241,9 @@ on init
     mkdir /dev/cpuset/dex2oat
     write /dev/cpuset/dex2oat/cpus 0-2,4-7
     write /dev/cpuset/dex2oat/mems 0
+    mkdir /dev/cpuset/surfaceflinger
+    write /dev/cpuset/surfaceflinger/cpus 0-2,4-7
+    write /dev/cpuset/surfaceflinger/mems 0
 
     # system-background is for system tasks that should only run on
     # little cores, not on bigs
@@ -258,6 +261,7 @@ on init
     chown system system /dev/cpuset/cached
     chown system system /dev/cpuset/abnormal
     chown system system /dev/cpuset/dex2oat
+    chown system system /dev/cpuset/surfaceflinger
     chown system system /dev/cpuset/tasks
     chown system system /dev/cpuset/top-app/tasks
     chown system system /dev/cpuset/foreground/tasks
@@ -266,6 +270,7 @@ on init
     chown system system /dev/cpuset/cached/tasks
     chown system system /dev/cpuset/abnormal/tasks
     chown system system /dev/cpuset/dex2oat/tasks
+    chown system system /dev/cpuset/surfaceflinger/tasks
     chown system system /dev/cpuset/cpus
     chown system system /dev/cpuset/top-app/cpus
     chown system system /dev/cpuset/foreground/cpus
@@ -274,9 +279,11 @@ on init
     chown system system /dev/cpuset/cached/cpus
     chown system system /dev/cpuset/abnormal/cpus
     chown system system /dev/cpuset/dex2oat/cpus
+    chown system system /dev/cpuset/surfaceflinger/cpus
 
     # set system-background to 0775 so SurfaceFlinger can touch it
     chmod 0775 /dev/cpuset/system-background
+    chmod 0775 /dev/cpuset/surfaceflinger
 
     chmod 0664 /dev/cpuset/top-app/tasks
     chmod 0664 /dev/cpuset/foreground/tasks
@@ -285,6 +292,7 @@ on init
     chmod 0664 /dev/cpuset/cached/tasks
     chmod 0664 /dev/cpuset/abnormal/tasks
     chmod 0664 /dev/cpuset/dex2oat/tasks
+    chmod 0664 /dev/cpuset/surfaceflinger/tasks
     chmod 0664 /dev/cpuset/tasks
     chmod 0664 /dev/cpuset/top-app/cpus
     chmod 0664 /dev/cpuset/foreground/cpus
@@ -293,13 +301,18 @@ on init
     chmod 0664 /dev/cpuset/cached/cpus
     chmod 0664 /dev/cpuset/abnormal/cpus
     chmod 0664 /dev/cpuset/dex2oat/cpus
+    chmod 0664 /dev/cpuset/surfaceflinger/cpus
     chmod 0664 /dev/cpuset/cpus
 
-    # change own for camera preview lagging
+    # change own for camera lagging
     chown system system /sys/kernel/hmp/down_threshold
+    chown system system /sys/kernel/hmp/up_threshold
+    chown system system /sys/kernel/hmp/family_boost
 
-    # set permission to 0660 for camera preview lagging
+    # set permission to 0660 for camera lagging
     chmod 0660 /sys/kernel/hmp/down_threshold 
+    chmod 0660 /sys/kernel/hmp/up_threshold 
+    chmod 0660 /sys/kernel/hmp/family_boost 
 
     # qtaguid will limit access to specific data based on group memberships.
     #   net_bw_acct grants impersonation of socket owners.
@@ -334,18 +347,37 @@ on init
     chmod 0600 /proc/reset_reason
     chown system system /proc/reset_reason_extra_info
     chmod 0600 /proc/reset_reason_extra_info
+    chown system system /proc/store_lastkmsg
+    chmod 0600 /proc/store_lastkmsg
     chown system system /proc/auto_comment
     chmod 0600 /proc/auto_comment
 
-# ap hw param data
+    # ap hw param data
     chown system system /sys/class/sec/sec_hw_param/ap_info
     chmod 0600 /sys/class/sec/sec_hw_param/ap_info
     chown system system /sys/class/sec/sec_hw_param/ddr_info
     chmod 0600 /sys/class/sec/sec_hw_param/ddr_info
+    chown system system /sys/class/sec/sec_hw_param/extra_info
+    chmod 0600 /sys/class/sec/sec_hw_param/extra_info
+    chown system radio /sys/class/sec/sec_hw_param/pcb_info
+    chmod 0660 /sys/class/sec/sec_hw_param/pcb_info
+    chown system radio /sys/class/sec/sec_hw_param/smd_info
+    chmod 0660 /sys/class/sec/sec_hw_param/smd_info
+    chown system system /sys/class/sec/sec_hw_param/thermal_info
 
     # binder
     chown system system /sys/module/binder/parameters/trace_pid
     chmod 0600 /sys/module/binder/parameters/trace_pid
+    
+    # invalid fd close
+    chown system system /sys/module/sec_fd_detect/parameters/dbg_mode
+    chown system system /sys/module/sec_fd_detect/parameters/fdmon_pid
+    chown system system /sys/module/sec_fd_detect/parameters/sys_pid
+    chown system system /sys/module/sec_fd_detect/parameters/upload_mode
+    chmod 0600 /sys/module/sec_fd_detect/parameters/dbg_mode
+    chmod 0600 /sys/module/sec_fd_detect/parameters/fdmon_pid
+    chmod 0600 /sys/module/sec_fd_detect/parameters/sys_pid
+    chmod 0600 /sys/module/sec_fd_detect/parameters/upload_mode
 
     # disable klogd to avoid interrupting 'cat /proc/kmsg' by reading /proc/kmsg simultaneously
     setprop logd.kernel false
@@ -364,6 +396,7 @@ on load_persist_props_action
     load_persist_props
     start logd
     start logd-reinit
+    start scs
 
 # Indicate to fw loaders that the relevant mounts are up.
 on firmware_mounts_complete
@@ -452,6 +485,9 @@ on post-fs
     # create the lost+found directories, so as to enforce our permissions
     mkdir /cache/lost+found 0770 root root
 
+    #vpnclient
+    mkdir /data/misc/vpnclientd 0770 system system
+
 on post-fs-data
 # [ SEC_SELINUX_PORTING_COMMON
     # Reload SE Android Policy
@@ -505,6 +541,7 @@ on post-fs-data
     # Make sure we have the device encryption key.
     start vold
     installkey /data
+
 
     # Start bootcharting as soon as possible after the data partition is
     # mounted to collect more data.
@@ -564,6 +601,9 @@ on post-fs-data
 
     mkdir /data/misc/profman 0770 system shell
 
+    #OTP
+    mkdir /data/otp 0700 system system
+	
     # NFC
     mkdir /data/nfc 0700 nfc nfc
     mkdir /data/nfc/param 0700 nfc nfc
@@ -745,9 +785,11 @@ on post-fs-data
     mkdir  /data/app_fonts 0775 system system
 
 on boot
-    # Bluetooth permissions
-    chown bluetooth net_bt_stack /dev/ttySAC1
-    chmod 0660 /dev/ttySAC1
+
+	# KNOX KAP
+    chown system system /dev/knox_kap
+    chmod 0660 /dev/knox_kap
+	
     # permissions for bluetooth.
     mkdir /efs/bluetooth 0775 radio system
     chown radio system /efs/bluetooth
@@ -819,6 +861,10 @@ on boot
     chown system system /sys/class/sec/sec_touchkey/input/enabled
     chown system radio /sys/class/sec/sec_touchkey/brightness
 
+# Permissions for Auto Input
+    chown system system /sys/class/sec/sec_auto_input/enable
+    chown system system /sys/class/sec/sec_auto_input/tsp_event
+
 # Permissions for HW parameter
     chown system system /sys/class/sec/tsp/ito_check
     chown system system /sys/class/sec/tsp/raw_check
@@ -826,6 +872,10 @@ on boot
     chown system system /sys/class/sec/tsp/wet_mode
     chown system system /sys/class/sec/tsp/comm_err_count
     chown system system /sys/class/sec/tsp/module_id
+    chown system system /sys/class/sec/tsp/vendor
+    chown system system /sys/class/sec/tsp/holding_time
+    chown system system /sys/class/sec/tsp/all_touch_count
+    chown system system /sys/class/sec/tsp/z_value
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
@@ -889,6 +939,7 @@ on boot
    chown system radio /sys/class/power_supply/battery/fg_full_voltage
    chown system radio /sys/class/power_supply/battery/batt_self_discharging_control
    chown system radio /sys/class/power_supply/battery/batt_inbat_wireless_cs100
+   chown system radio /sys/class/power_supply/battery/batt_swelling_control
    chmod 0664 /efs/Battery/fg_full_voltage
    chmod 0664 /sys/class/power_supply/battery/fg_full_voltage
    chown system radio /sys/class/power_supply/battery/batt_reset_soc
@@ -900,6 +951,7 @@ on boot
    chown system radio /sys/class/power_supply/battery/wc_enable
    chown system nfc /sys/class/power_supply/battery/wc_control
    chown system nfc /sys/class/power_supply/battery/wc_control_cnt
+   chown system nfc /sys/class/power_supply/battery/led_cover
    chown system radio /sys/class/power_supply/battery/update
    chown system radio /sys/class/power_supply/battery/batt_wdt_control
    chown system radio /sys/class/power_supply/battery/factory_mode_relieve
@@ -923,6 +975,7 @@ on boot
    chown system radio /sys/class/power_supply/ps/status
    chmod 0664 /sys/class/power_supply/battery/wc_control
    chmod 0664 /sys/class/power_supply/battery/wc_control_cnt
+   chmod 0664 /sys/class/power_supply/battery/led_cover
    chmod 0664 /sys/class/power_supply/ps/status
    chmod 0664 /sys/class/power_supply/battery/batt_temp_table
    chown system radio /sys/class/power_supply/battery/batt_temp_table
@@ -1004,6 +1057,8 @@ on boot
    chown system radio /sys/class/power_supply/battery/voltage_avg
    chown system radio /sys/class/power_supply/battery/voltage_now
    chown system radio /sys/class/power_supply/battery/mode
+   chown system radio /sys/class/power_supply/battery/safety_timer_set
+   chown system radio /sys/class/power_supply/battery/safety_timer_info
    chmod 0664 /sys/class/power_supply/battery/mode
    chown system radio /sys/class/power_supply/battery/wc_op_freq
    chmod 0664 /sys/class/power_supply/battery/wc_op_freq
@@ -1013,8 +1068,12 @@ on boot
    chmod 0660 /sys/class/power_supply/battery/cisd_fullcaprep_max
    chown system radio /sys/class/power_supply/battery/cisd_wire_count
    chmod 0660 /sys/class/power_supply/battery/cisd_wire_count
+   chown system radio /sys/class/power_supply/battery/batt_type
+   chmod 0660 /sys/class/power_supply/battery/batt_type
    chown system radio /sys/class/power_supply/battery/cisd_data
    chmod 0660 /sys/class/power_supply/battery/cisd_data
+   chown system radio /sys/class/power_supply/battery/cisd_data_json
+   chmod 0660 /sys/class/power_supply/battery/cisd_data_json
    chown system system /efs/FactoryApp/cisd_data
    chmod 0640 /efs/FactoryApp/cisd_data
 
@@ -1031,6 +1090,8 @@ on boot
     chmod 0220 /sys/class/sec/ccic/fw_update
     chown system radio /sys/class/sec/ccic/role_swap
     chmod 0220 /sys/class/sec/ccic/role_swap
+    chown system usb /sys/class/sec/ccic/dex_fan_uvdm
+    chown system usb /sys/class/sec/ccic/samsung_uvdm
 
     # usb disable
     chown system usb /sys/class/usb_notify/usb_control/disable
@@ -1039,10 +1100,66 @@ on boot
     # usb hw param
     chown system usb /sys/class/usb_notify/usb_control/usb_hw_param
     chmod 0664 /sys/class/usb_notify/usb_control/usb_hw_param
+    chown system usb /sys/class/usb_notify/usb_control/hw_param
+    chmod 0664 /sys/class/usb_notify/usb_control/hw_param
 
     # Assume SMP uses shared cpufreq policy for all CPUs
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
     chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+	
+# Sensors permissions
+# Accelerometer_sensor
+    chown system radio /sys/class/sensors/accelerometer_sensor/raw_data
+    chown system radio /sys/class/sensors/accelerometer_sensor/calibration
+    chown system radio /sys/class/sensors/accelerometer_sensor/reactive_alert
+    chown system radio /sys/class/sensors/accelerometer_sensor/selftest
+    chown system radio /sys/class/sensors/accelerometer_sensor/vendor
+    chown system radio /sys/class/sensors/accelerometer_sensor/name
+    chown system system /efs/calibration_data
+    chmod 0666 /efs/calibration_data
+# Proximity_sensor
+    chown system radio /sys/class/sensors/proximity_sensor/state
+    chown system radio /sys/class/sensors/proximity_sensor/raw_data
+    chown system radio /sys/class/sensors/proximity_sensor/prox_avg
+    chown system radio /sys/class/sensors/proximity_sensor/prox_cal
+    chown system radio /sys/class/sensors/proximity_sensor/prox_thresh
+    chown system radio /sys/class/sensors/proximity_sensor/thresh_high
+    chown system radio /sys/class/sensors/proximity_sensor/thresh_low
+    chown system radio /sys/class/sensors/proximity_sensor/thresh_detect_high
+    chown system radio /sys/class/sensors/proximity_sensor/thresh_detect_low
+    chown system radio /sys/class/sensors/proximity_sensor/vendor
+    chown system radio /sys/class/sensors/proximity_sensor/name
+# Light_sensor
+    chown system radio /sys/class/sensors/light_sensor/lux
+    chown system radio /sys/class/sensors/light_sensor/raw_data
+    chown system radio /sys/class/sensors/light_sensor/vendor
+    chown system radio /sys/class/sensors/light_sensor/name
+# Gyro_sensor
+    chown system radio /sys/class/sensors/gyro_sensor/power_on
+    chown system radio /sys/class/sensors/gyro_sensor/power_off
+    chown system media /sys/class/sensors/gyro_sensor/temperature
+    chown system radio /sys/class/sensors/gyro_sensor/selftest
+    chown system radio /sys/class/sensors/gyro_sensor/selftest_dps
+    chown system radio /sys/class/sensors/gyro_sensor/vendor
+    chown system radio /sys/class/sensors/gyro_sensor/name
+# Magnetic_sensor
+    chown system radio /sys/class/sensors/magnetic_sensor/selftest
+    chown system radio /sys/class/sensors/magnetic_sensor/raw_data
+    chown system radio /sys/class/sensors/magnetic_sensor/adc
+    chown system radio /sys/class/sensors/magnetic_sensor/vendor
+    chown system radio /sys/class/sensors/magnetic_sensor/name
+    chown system radio /sys/class/sensors/magnetic_sensor/status
+# MPL IIO
+    chown system system /dev/invensense
+    chown system system /sys/bus/iio/devices/invensense/buffer/enable
+    chown system system /sys/bus/iio/devices/invensense/buffer/length
+    chown system system /sys/bus/iio/devices/invensense/control
+    chmod 0660 /dev/invensense
+    chmod 0664 /sys/bus/iio/devices/invensense/buffer/enable
+    chmod 0664 /sys/bus/iio/devices/invensense/buffer/length
+    chmod 0664 /sys/bus/iio/devices/invensense/control
+#Meta event
+    chown system radio /sys/class/sensors/sensor_dev/flush
 
     chown system system /sys/class/timed_output/vibrator/enable
     chown system system /sys/class/timed_output/vibrator/intensity
@@ -1066,13 +1183,57 @@ on boot
     chown system system /sys/kernel/ipv4/tcp_rmem_max
     chown root radio /proc/cmdline
 
+#Store Gyro cal data
+    chown system system /efs/FactoryApp/gyro_cal_data
+    chmod 0660 /efs/FactoryApp/gyro_cal_data
+
     # Define default initial receive window size in segments.
     setprop net.tcp.default_init_rwnd 60
+# Assign TCP buffer thresholds to be ceiling value of technology maximums
+# Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  1048576
+    write /proc/sys/net/core/wmem_max  2097152
 
     class_start core
 
 # HMT relay mode
     chown radio system /sys/devices/virtual/relay_on
+
+# KNOX_NAP
+    chmod 0660 /dev/ncm_dev
+    chown system system /dev/ncm_dev
+
+# UFS
+    chown system system /sys/block/sda/device/model
+    chmod 660 /sys/block/sda/device/model
+    chown system system /sys/block/sda/device/rev
+    chmod 660 /sys/block/sda/device/rev
+    chown system system /sys/class/scsi_host/host0/lt
+    chmod 660 /sys/class/scsi_host/host0/lt
+    chown system system /sys/class/scsi_host/host0/SEC_UFS_err_sum
+    chmod 660 /sys/class/scsi_host/host0/SEC_UFS_err_sum
+    chown system system /sys/class/scsi_host/host0/SEC_UFS_op_cnt
+    chmod 660 /sys/class/scsi_host/host0/SEC_UFS_op_cnt
+    chown system system /sys/class/scsi_host/host0/SEC_UFS_query_cnt
+    chmod 660 /sys/class/scsi_host/host0/SEC_UFS_query_cnt
+    chown system system /sys/class/scsi_host/host0/SEC_UFS_uic_cmd_cnt
+    chmod 660 /sys/class/scsi_host/host0/SEC_UFS_uic_cmd_cnt
+    chown system system /sys/class/scsi_host/host0/SEC_UFS_uic_err_cnt
+    chmod 660 /sys/class/scsi_host/host0/SEC_UFS_uic_err_cnt
+    chown system system /sys/class/scsi_host/host0/SEC_UFS_utp_cnt
+    chmod 660 /sys/class/scsi_host/host0/SEC_UFS_utp_cnt
+    chown system system /sys/class/scsi_host/host0/SEC_UFS_fatal_cnt
+    chmod 660 /sys/class/scsi_host/host0/SEC_UFS_fatal_cnt
+    chown system system /sys/block/sda/diskios
+    chmod 660 /sys/block/sda/diskios
+
+# SD
+    chown system system /sys/block/mmcblk0/device/cid
+    chmod 660 /sys/block/mmcblk0/device/cid
+    chown system system /sys/class/sec/sdcard/cd_cnt
+    chmod 660 /sys/class/sec/sdcard/cd_cnt
+    chown system system /sys/class/sec/sddata/sd_data
+    chmod 660 /sys/class/sec/sddata/sd_data
 
 on nonencrypted
     # mobicore
@@ -1108,9 +1269,6 @@ on charger
     write /sys/class/power_supply/battery/batt_update_data "/efs/Battery/battery_data.dat"
     class_start charger
 
-# KNOX KAP
-    chown system system /dev/knox_kap
-    chmod 0660 /dev/knox_kap
 
 on property:vold.decrypt=trigger_reset_main
     class_reset main
@@ -1130,6 +1288,9 @@ on property:vold.decrypt=trigger_restart_min_framework
     class_start main
 
 on property:vold.decrypt=trigger_restart_framework
+    # PDP : Preload data preserve
+    pdp restore
+    pdp backup
     # mobicore
     mkdir /data/misc/mcRegistry 0775 system system
     # A/B update verifier that marks a successful boot.
@@ -1292,7 +1453,7 @@ service vaultkeeperd /system/bin/vaultkeeperd
 service ss_kb_service /system/bin/ss_kbservice_daemon
     class main
     user system
-    group system
+    group systemss_kbservice_daemon
 
 service drm /system/bin/drmserver
     class main
@@ -1309,6 +1470,7 @@ service scs /system/bin/scs
     user system
     group system
     oneshot
+    disabled
 
 # MobiCore startup
 service mobicore /system/bin/mcDriverDaemon -r /system/app/FFFFFFFF000000000000000000000001.drbin -r /system/app/mcRegistry/ffffffffd0000000000000000000000a.tlbin -r /system/app/mcRegistry/ffffffffd00000000000000000000016.tlbin
@@ -1419,6 +1581,7 @@ service iod /system/bin/iod
     disabled
 
 on property:sys.boot_completed=1
+    pdp result
     start iod
 
 # icd
@@ -1457,3 +1620,16 @@ service preparefbe_ce /system/bin/preparefbe storage_ce
 service preparefbe_de /system/bin/preparefbe storage_de
     oneshot
     disabled
+
+service vpnclientd /system/bin/vpnclientd
+    socket vpnclientd seqpacket 0600 system system
+    user system
+    group system net_admin inet net_raw
+    disabled
+on property:service.vpnclientd.enable=1
+    start vpnclientd
+on property:service.vpnclientd.enable=0
+    stop vpnclientd
+
+on property:sys.sf.restart=1
+    restart surfaceflinger
