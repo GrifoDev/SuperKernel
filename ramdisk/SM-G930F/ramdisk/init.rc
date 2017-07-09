@@ -789,7 +789,11 @@ on boot
 	# KNOX KAP
     chown system system /dev/knox_kap
     chmod 0660 /dev/knox_kap
-	
+
+    # Bluetooth permissions
+    chown bluetooth net_bt_stack /dev/ttySAC1
+    chmod 0660 /dev/ttySAC1
+
     # permissions for bluetooth.
     mkdir /efs/bluetooth 0775 radio system
     chown radio system /efs/bluetooth
