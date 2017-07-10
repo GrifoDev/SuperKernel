@@ -4,7 +4,7 @@
 export MODEL=herolte
 export VARIANT=eur
 export ARCH=arm64
-export VERSION=V1.0.1
+export VERSION=V1.0.2
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.3.0/bin/aarch64-cortex_a53-linux-gnueabi-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
