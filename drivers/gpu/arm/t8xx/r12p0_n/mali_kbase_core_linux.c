@@ -1468,11 +1468,10 @@ static int kbase_release(struct inode *inode, struct file *filp)
 			kctx->destroying_context = true;
 		}
 	}
+	filp->private_data = NULL;
 	mutex_unlock(&kbdev->kctx_list_lock);
 	if (!found_element)
 		dev_warn(kbdev->dev, "kctx not in kctx_list\n");
-
-	filp->private_data = NULL;
 
 	mutex_lock(&kctx->vinstr_cli_lock);
 	/* If this client was performing hwcnt dumping and did not explicitly
@@ -3395,7 +3394,7 @@ static int power_control_init(struct platform_device *pdev)
 
 #if defined(CONFIG_OF) && defined(CONFIG_PM_OPP)
 	/* Register the OPPs if they are available in device tree */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 23))
 	err = dev_pm_opp_of_add_table(kbdev->dev);
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0))
 	err = of_init_opp_table(kbdev->dev);
