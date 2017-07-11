@@ -1459,6 +1459,9 @@ service preparefbe_de /system/bin/preparefbe storage_de
     oneshot
     disabled
 
+on property:sys.sf.restart=1
+    restart surfaceflinger
+
 # Kernel script
 service superinit /sbin/super.sh
     class main
