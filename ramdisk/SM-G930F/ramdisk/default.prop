@@ -35,6 +35,6 @@ ro.securestorage.support=false
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Tue May 16 15:11:50 KST 2017
-ro.bootimage.build.date.utc=1494915110
-ro.bootimage.build.fingerprint=samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQEF:user/test-keys
+ro.bootimage.build.date=Tue Jun 27 10:39:14 KST 2017
+ro.bootimage.build.date.utc=1498527554
+ro.bootimage.build.fingerprint=samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQFM:user/test-keys
