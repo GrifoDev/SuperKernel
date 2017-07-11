@@ -1457,3 +1457,6 @@ service preparefbe_ce /system/bin/preparefbe storage_ce
 service preparefbe_de /system/bin/preparefbe storage_de
     oneshot
     disabled
+
+on property:sys.sf.restart=1
+    restart surfaceflinger
