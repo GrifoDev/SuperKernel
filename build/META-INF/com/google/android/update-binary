@@ -37,16 +37,15 @@ else
 fi;
 fi;
 
-ui_print " - setting right fingerprint files"
+ui_print " - removing critical mcRegistry"
 
-rm -rf /system/app/mcRegistry
+rm -f /system/app/mcRegistry/ffffffffd0000000000000000000000a.tlbin
 rm -f /system/vendor/lib/libsecure_storage.so
 rm -f /system/vendor/lib64/libsecure_storage.so
 mkdir /system/etc/init.d
 
 cd
 cd /tmp/tkkg1994
-mv -f mcRegistry /system/app
 mv -f vendor/lib/libsecure_storage.so /system/vendor/lib/libsecure_storage.so
 mv -f vendor/lib64/libsecure_storage.so /system/vendor/lib64/libsecure_storage.so
 mv -f files/sqlite3 /system/xbin
