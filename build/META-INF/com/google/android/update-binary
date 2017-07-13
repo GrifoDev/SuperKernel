@@ -23,7 +23,7 @@ mount /system
 ui_print " - mounting data partition"
 mount /data
 
-ui_print " - Installing SuperStock-Kernel"
+ui_print " - Installing BatStock-Kernel"
 
 if grep -q G935 BLmodel; then
 	cat hero2lte-eur.img > /dev/block/platform/155a0000.ufs/by-name/BOOT
@@ -37,25 +37,28 @@ else
 fi;
 fi;
 
-ui_print " - setting right fingerprint files"
+ui_print " - removing critical mcRegistry"
 
-rm -rf /system/app/mcRegistry
+rm -f /system/app/mcRegistry/ffffffffd0000000000000000000000a.tlbin
 rm -f /system/vendor/lib/libsecure_storage.so
 rm -f /system/vendor/lib64/libsecure_storage.so
+rm -f /system/vendor/lib/egl/libGLES_mali.so
+rm -f /system/vendor/lib64/egl/libGLES_mali.so
 mkdir /system/etc/init.d
 
 cd
 cd /tmp/tkkg1994
-mv -f mcRegistry /system/app
 mv -f vendor/lib/libsecure_storage.so /system/vendor/lib/libsecure_storage.so
 mv -f vendor/lib64/libsecure_storage.so /system/vendor/lib64/libsecure_storage.so
+mv -f vendor/lib/egl/libGLES_mali.so /system/vendor/lib/egl/libGLES_mali.so
+mv -f vendor/lib64/egl/libGLES_mali.so /system/vendor/lib64/egl/libGLES_mali.so
 
 ui_print " - setting permissions"
 
 chmod 0644 /system/vendor/lib/libsecure_storage.so
 chmod 0644 /system/vendor/lib64/libsecure_storage.so
-chmod 0755 /system/app/mcRegistry
-chmod 0644 /system/app/mcRegistry/*.tlbin
+chmod 0644 /system/vendor/lib/egl/libGLES_mali.so
+chmod 0644 /system/vendor/lib64/egl/libGLES_mali.so
 
 ui_print " - unmounting partition /data"
 umount /data > /dev/null 2>&1
