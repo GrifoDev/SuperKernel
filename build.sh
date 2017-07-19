@@ -1,7 +1,7 @@
 #!/bin/bash
 # kernel build script by Tkkg1994 v0.5 (optimized from apq8084 kernel source)
 
-export MODEL=herolte
+export MODEL=hero2lte
 export ARCH=arm64
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.3.0/bin/aarch64-cortex_a53-linux-gnueabi-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
