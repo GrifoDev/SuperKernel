@@ -167,6 +167,8 @@ void exynos_ion_sync_vaddr_for_cpu(struct device *dev,
 void exynos_ion_sync_sg_for_cpu(struct device *dev, size_t size,
 					struct sg_table *sgt,
 					enum dma_data_direction dir);
+void exynos_ion_flush_dmabuf_for_device(struct device *dev,
+					struct dma_buf *dmabuf, size_t size);
 unsigned int ion_exynos_contig_region_mask(char *region_name);
 int ion_exynos_contig_heap_info(int region_id, phys_addr_t *phys, size_t *size);
 int ion_exynos_contig_heap_isolate(int region_id);
