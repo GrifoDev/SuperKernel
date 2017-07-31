@@ -1204,6 +1204,9 @@ on boot
 # HMT relay mode
     chown radio system /sys/devices/virtual/relay_on
 
+# Daydream
+    setprop sys.daydream.connected 0
+    
 # KNOX_NAP
     chmod 0660 /dev/ncm_dev
     chown system system /dev/ncm_dev
@@ -1274,9 +1277,6 @@ on charger
     write /sys/class/power_supply/battery/batt_update_data "/efs/Battery/battery_data.dat"
     class_start charger
 
-# KNOX KAP
-    chown system system /dev/knox_kap
-    chmod 0660 /dev/knox_kap
 
 on property:vold.decrypt=trigger_reset_main
     class_reset main
@@ -1388,7 +1388,13 @@ service SIDESYNC_service /system/bin/ss_conn_daemon
 service edmaudit /system/bin/edmaudit
     class main
     user root
-    
+ 	disabled
+
+on property:security.edmaudit=true
+    start edmaudit
+
+on property:security.edmaudit=false
+    stop edmaudit
 ## WTL_EDM_END
 
 service kap_enable /sbin/knox_changer -e
@@ -1457,11 +1463,6 @@ on property:ro.debuggable=1
 
 service vaultkeeperd /system/bin/vaultkeeperd
     class core
-
-service ss_kb_service /system/bin/ss_kbservice_daemon
-    class main
-    user system
-    group systemss_kbservice_daemon
 
 service drm /system/bin/drmserver
     class main

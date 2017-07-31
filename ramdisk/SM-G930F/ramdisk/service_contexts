@@ -407,6 +407,13 @@ gamemanager                                 u:object_r:gamemanager_service:s0
 generic_vpn_policy                          u:object_r:EDM_Policy_service:s0
 genericssoservice                           u:object_r:genericsso_service:s0
 geofencing                                  u:object_r:geofencing_service:s0
+
+# GameSDKService
+# http://mobilerndhub.sec.samsung.net/hub/site/seandroid/board/N_review_request/view/22142783
+# requester : steeze.kim
+# GameSDKService
+gamesdk                                     u:object_r:gamesdk_service:s0
+
 # SEA_site_N_OS #33, name changed (nfccontroller -> gsmaapi)
 gsmaapi                                     u:object_r:nfc_service:s0
 harmony_eas_service                         u:object_r:harmony_eas_service:s0
@@ -567,6 +574,5 @@ directpeninputmanagerservicerestricted      u:object_r:directpeninputmanager_ser
 directpeninputmanagerservicerestricted[0-9] u:object_r:directpeninputmanager_service:s0
 directpeninputmanagerservicerestricted10    u:object_r:directpeninputmanager_service:s0
 WlanDutService                              u:object_r:wlandutservice_service:s0
-
 #line 1 "out/target/product/dream2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
 

@@ -53,6 +53,7 @@ user=_app seinfo=release name=com.samsung.android.messaging domain=sec_untrusted
 user=_app seinfo=samsung name=com.samsung.android.voicewakeup domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=samsung name=com.sec.android.mimage.photoretouching domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=samsung name=com.vlingo.midas domain=sec_untrusted_app type=app_data_file levelFrom=user
+user=_app seinfo=release name=com.samsung.android.spaylite domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=system seinfo=platform name=com.sec.knox.containeragent domain=knox_system_app type=app_data_file
 user=system seinfo=platform name=com.sec.knox.switcher domain=system_app type=share_via_app_data_file
 user=system seinfo=platform name=com.policydm domain=policyloader_app type=policyloader_app_data_file
@@ -60,6 +61,7 @@ user=_app seinfo=trustonicpartner domain=trustonicpartner_app type=app_data_file
 user=_app seinfo=good_trustonicpartner domain=trustonicpartner_app type=app_data_file levelFrom=user
 user=_app seinfo=umcjsagent domain=umcagent_app type=app_data_file levelFrom=user
 user=_app seinfo=aasa_platform domain=aasa_platform_app type=app_data_file levelFrom=user
+user=_app seinfo=aasa_blocked domain=blocked_app type=app_data_file levelFrom=user
 user=_app seinfo=vmware domain=vmware_app type=app_data_file levelFrom=user
 user=_app seinfo=filtered_untrusted name=com.expway.embmsserver* domain=filtered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=filtered_untrusted name=com.jio.emiddleware domain=filtered_untrusted_app type=app_data_file levelFrom=user
