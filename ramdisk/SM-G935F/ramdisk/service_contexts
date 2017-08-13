@@ -327,6 +327,7 @@ com.samsung.android.jam.IAPAClientOboe      u:object_r:apaservice_service:s0
 com.samsung.android.jam.IAPAService         u:object_r:apaservice_service:s0
 com.samsung.android.jam.IJackService        u:object_r:jackservice_service:s0
 com.samsung.android.pass.IPassService       u:object_r:platform_app_service:s0
+com.samsung.android.ifaaservice.IIfaaService          u:object_r:ifaaservice_service:s0
 # SEA_site N OS#395 ,board/N_review_request/view/21598999    tigerservice (com.samsung.srk.tigerkeystoreprovider.ITigerService)
 # add TigerService permission requested by  Multimedia TG (th0228.kim)
 com.samsung.srk.tigerkeystoreprovider.ITigerService               u:object_r:tigerservice_service:s0
