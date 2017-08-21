@@ -462,6 +462,7 @@ lpnet                                       u:object_r:lpnet_service:s0
 LSManager                                   u:object_r:LSManager_service:s0
 magazinecardservice                         u:object_r:magazinecard_service:s0
 mate_service                                u:object_r:mate_service:s0
+mdc_service                                 u:object_r:mdc_service:s0
 mdm.remotedesktop                           u:object_r:remotedesktop_service:s0
 mDNIe                                       u:object_r:mDNIe_service:s0
 media.air                                   u:object_r:visiond_service:s0
