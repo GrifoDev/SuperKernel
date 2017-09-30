@@ -37,12 +37,13 @@ user=fresco seinfo=platform domain=platform_app type=app_data_file levelFrom=use
 user=ocrservice seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=advmodem seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=bixby.client seinfo=platform domain=platform_app type=app_data_file levelFrom=user
+user=visionservice seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=spass seinfo=platform domain=platform_app type=app_data_file levelFrom=user
 user=_app seinfo=release name=com.sec.android.app.shealth* domain=untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=shealth name=com.sec.android.app.shealth* domain=untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=platform name=com.samsung.ucm.baiplugin domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=platform name=com.sec.smartcard.manager domain=sec_untrusted_app type=app_data_file levelFrom=user
-user=_app seinfo=platform name=com.samsung.android.oneconnect domain=sec_untrusted_app type=app_data_file levelFrom=user
+user=_app seinfo=platform name=com.samsung.android.oneconnect* domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=spay domain=platform_app type=platform_app_data_file levelFrom=user
 user=spay seinfo=spay domain=platform_app type=platform_app_data_file
 user=system seinfo=spay domain=platform_app type=platform_app_data_file
@@ -52,6 +53,7 @@ user=_app seinfo=release name=com.samsung.android.messaging domain=sec_untrusted
 user=_app seinfo=samsung name=com.samsung.android.voicewakeup domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=samsung name=com.sec.android.mimage.photoretouching domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=samsung name=com.vlingo.midas domain=sec_untrusted_app type=app_data_file levelFrom=user
+user=_app seinfo=release name=com.samsung.android.spaylite domain=sec_untrusted_app type=app_data_file levelFrom=user
 user=system seinfo=platform name=com.sec.knox.containeragent domain=knox_system_app type=app_data_file
 user=system seinfo=platform name=com.sec.knox.switcher domain=system_app type=share_via_app_data_file
 user=system seinfo=platform name=com.policydm domain=policyloader_app type=policyloader_app_data_file
@@ -59,6 +61,7 @@ user=_app seinfo=trustonicpartner domain=trustonicpartner_app type=app_data_file
 user=_app seinfo=good_trustonicpartner domain=trustonicpartner_app type=app_data_file levelFrom=user
 user=_app seinfo=umcjsagent domain=umcagent_app type=app_data_file levelFrom=user
 user=_app seinfo=aasa_platform domain=aasa_platform_app type=app_data_file levelFrom=user
+user=_app seinfo=aasa_blocked domain=blocked_app type=app_data_file levelFrom=user
 user=_app seinfo=vmware domain=vmware_app type=app_data_file levelFrom=user
 user=_app seinfo=filtered_untrusted name=com.expway.embmsserver* domain=filtered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=filtered_untrusted name=com.jio.emiddleware domain=filtered_untrusted_app type=app_data_file levelFrom=user
@@ -72,6 +75,7 @@ user=_app seinfo=sprintitson domain=itsonclient_app type=itsonapp_data_file leve
 user=itson seinfo=sprintitson domain=itsonclient_app type=itsonapp_data_file levelFrom=user
 user=sprintitson seinfo=sprintitson domain=itsonclient_app type=itsonapp_data_file levelFrom=user
 user=_app seinfo=mmphone domain=carrier_app type=app_data_file levelFrom=user
+user=system seinfo=platform domain=diagandroid_app name=diagandroid.iqd
 user=system seinfo=default domain=untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=vzw_untrusted domain=vzwfiltered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=xcal_untrusted domain=vzwfiltered_untrusted_app type=app_data_file levelFrom=user
