@@ -881,6 +881,8 @@ on boot
     chown system system /sys/class/sec/tsp/holding_time
     chown system system /sys/class/sec/tsp/all_touch_count
     chown system system /sys/class/sec/tsp/z_value
+    chown system system /sys/class/sec/tsp/get_lp_dump
+    chown system system /sys/class/sec/tsp/force_recal_count
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state

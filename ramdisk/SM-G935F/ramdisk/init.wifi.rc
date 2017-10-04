@@ -15,6 +15,7 @@ on post-fs-data
     mkdir /data/misc/wifi/log/ 0770 wifi system
     mkdir /data/media/wifi/ 0770 wifi system
     mkdir /data/media/wifi/log/ 0770 wifi system
+    mkdir /data/log/wifi/ 0770 wifi log
     mkdir /data/misc/dhcp 0775 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
 

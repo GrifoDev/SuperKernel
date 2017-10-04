@@ -75,6 +75,7 @@ user=_app seinfo=sprintitson domain=itsonclient_app type=itsonapp_data_file leve
 user=itson seinfo=sprintitson domain=itsonclient_app type=itsonapp_data_file levelFrom=user
 user=sprintitson seinfo=sprintitson domain=itsonclient_app type=itsonapp_data_file levelFrom=user
 user=_app seinfo=mmphone domain=carrier_app type=app_data_file levelFrom=user
+user=system seinfo=platform domain=diagandroid_app name=diagandroid.iqd
 user=system seinfo=default domain=untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=vzw_untrusted domain=vzwfiltered_untrusted_app type=app_data_file levelFrom=user
 user=_app seinfo=xcal_untrusted domain=vzwfiltered_untrusted_app type=app_data_file levelFrom=user
