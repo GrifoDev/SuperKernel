@@ -40,7 +40,8 @@ on post-fs-data
     chmod 0666 /data/misc/conn/.wificable.info
 
     # for WIFI MEMDUMP
-    write /data/misc/conn/.memdump.info 0
+    # The default value of below memdump file is set in SecProductFeature 
+    # write /data/misc/conn/.memdump.info 2
     chown system root /data/misc/conn/.memdump.info
     chmod 0666 /data/misc/conn/.memdump.info
 
@@ -58,7 +59,11 @@ on post-fs-data
     mkdir /efs/wifi 0775 radio system
     chown system wifi /efs/wifi/.mac.info
     chmod 0660 /efs/wifi/.mac.info
-    start macloader
+    
+    # for WIFI hotspot
+    write /data/misc/conn/.softap.info 0
+    chown system root /data/misc/conn/.softap.info
+    chmod 0666 /data/misc/conn/.softap.info
 
 on boot
     setprop wifi.interface wlan0
@@ -94,7 +99,6 @@ service wlandutservice /system/bin/wlandutservice
 
 service macloader /system/bin/macloader
     class main
-    disabled
     oneshot
 
 on property:init.svc.macloader=stopped

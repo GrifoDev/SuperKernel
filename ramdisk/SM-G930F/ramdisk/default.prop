@@ -12,6 +12,11 @@ ro.debuggable=1
 persist.sys.usb.config=mtp,adb
 persist.service.adb.enable=1
 ro.zygote=zygote64_32
+ro.sf.lcd_density=480
+ro.sf.init.lcd_density=640
+ro.telephony.default_network=9
+ro.supportmodel.mptcp=1
+ro.radio.noril=no
 pm.dexopt.first-boot=interpret-only
 pm.dexopt.boot=verify-profile
 pm.dexopt.install=interpret-only
@@ -36,6 +41,6 @@ ro.config.tima=0
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Tue Sep 19 18:23:54 KST 2017
-ro.bootimage.build.date.utc=1505813034
-ro.bootimage.build.fingerprint=samsung/dreamltexx/dreamlte:7.0/NRD90M/G950FXXU1AQI7:user/test-keys
+ro.bootimage.build.date=Mon Sep 25 16:01:14 KST 2017
+ro.bootimage.build.date.utc=1506322874
+ro.bootimage.build.fingerprint=samsung/greatltexx/greatlte:7.1.1/NMF26X/N950FXXU1AQIA:user/test-keys
