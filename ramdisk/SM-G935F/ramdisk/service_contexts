@@ -576,6 +576,8 @@ directpeninputmanagerservicerestricted      u:object_r:directpeninputmanager_ser
 directpeninputmanagerservicerestricted[0-9] u:object_r:directpeninputmanager_service:s0
 directpeninputmanagerservicerestricted10    u:object_r:directpeninputmanager_service:s0
 WlanDutService                              u:object_r:wlandutservice_service:s0
+TigerSskdsService                           u:object_r:TigerSskdsService_service:s0
 SCPMHelper                                  u:object_r:scpmhelper_service:s0
+IfaaService                                 u:object_r:IfaaService_service:s0
 #line 1 "out/target/product/hero2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
 
