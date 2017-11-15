@@ -36,7 +36,7 @@
 #endif
 #include "score-cache-ctrl.h"
 
-//#define ENABLE_DEBUG_TIMER
+#define ENABLE_DEBUG_TIMER
 
 static inline int score_print_buf_full(struct score_print_buf *buf)
 {
@@ -169,5 +169,15 @@ void score_print_probe(struct score_system *system)
 	buf->timer.expires = jiffies + SCORE_PRINT_TIME_STEP;
 	buf->timer.data = (unsigned long)buf;
 	buf->timer.function = score_print_timer;
+#endif
+}
+
+void score_print_release(struct score_system *system)
+{
+	struct score_print_buf *buf;
+
+	buf = &system->print_buf;
+#ifdef ENABLE_DEBUG_TIMER
+	del_timer_sync(&buf->timer);
 #endif
 }

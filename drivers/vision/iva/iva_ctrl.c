@@ -241,7 +241,7 @@ static int32_t iva_ctrl_mcu_boot_file(struct iva_dev_data *iva,
 	name_len = strncpy_from_user(mcu_file, mcu_file_u,
 			sizeof(mcu_file) - 1);
 	mcu_file[sizeof(mcu_file) - 1] = 0x0;
-	if (name_len < 0) {
+	if (name_len <= 0) {
 		dev_err(dev, "%s() unexpected name_len(%d)\n",
 				__func__, name_len);
 		return name_len;
