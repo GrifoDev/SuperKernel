@@ -10,7 +10,7 @@ on property:sys.boot_completed=1
    # Enable Spectrum support
    setprop spectrum.support 1
    # Add kernel name
-   setprop persist.spectrum.kernel BatStock-Kernel
+   setprop persist.spectrum.kernel IronKernel
 
 # Balance (default profile)
 on property:persist.spectrum.profile=0
