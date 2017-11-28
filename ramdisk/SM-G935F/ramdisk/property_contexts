@@ -378,7 +378,7 @@ tps.keepstate                          u:object_r:tps_prop:s0
 
 ### ro property
 ro.cdma.home.operator.		                 u:object_r:radio_prop:s0
-ro.com.google.clientidbase.                      u:object_r:csc_prop:s0
+ro.com.google.clientidbase                      u:object_r:csc_prop:s0
 ro.csc.                                          u:object_r:csc_prop:s0
 ro.home.operator.                                u:object_r:radio_prop:s0
 
