@@ -225,6 +225,7 @@ on init
     mkdir /dev/cpuset/top-app
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/top-app/mems 0
+    write /dev/cpuset/top-app/family_boost 1
     mkdir /dev/cpuset/foreground
     write /dev/cpuset/foreground/cpus 0-2,4-7
     write /dev/cpuset/foreground/mems 0
@@ -886,8 +887,6 @@ on boot
     chown system radio /sys/class/sec/tsp/cmd
     chmod 0660 /sys/class/sec/tsp/input/enabled
     chown system system /sys/class/sec/tsp/input/enabled
-    chown root system /proc/tsp_raw_data
-    chmod 0440 /proc/tsp_raw_data
 
     chmod 0660 /sys/class/sec_touchkey/input/enabled
     chown system system /sys/class/sec/sec_touchkey/input/enabled

@@ -41,6 +41,6 @@ ro.config.tima=0
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Mon Sep 25 16:01:14 KST 2017
-ro.bootimage.build.date.utc=1506322874
-ro.bootimage.build.fingerprint=samsung/greatltexx/greatlte:7.1.1/NMF26X/N950FXXU1AQIA:user/test-keys
+ro.bootimage.build.date=Sat Nov 18 14:48:39 KST 2017
+ro.bootimage.build.date.utc=1510984119
+ro.bootimage.build.fingerprint=samsung/greatltexx/greatlte:7.1.1/NMF26X/N950FXXU1BQK6:user/test-keys

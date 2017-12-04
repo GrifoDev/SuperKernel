@@ -463,6 +463,7 @@ lpnet                                       u:object_r:lpnet_service:s0
 LSManager                                   u:object_r:LSManager_service:s0
 magazinecardservice                         u:object_r:magazinecard_service:s0
 mate_service                                u:object_r:mate_service:s0
+mdc_service                                 u:object_r:mdc_service:s0
 mdm.remotedesktop                           u:object_r:remotedesktop_service:s0
 mDNIe                                       u:object_r:mDNIe_service:s0
 media.air                                   u:object_r:visiond_service:s0
@@ -576,6 +577,9 @@ directpeninputmanagerservicerestricted      u:object_r:directpeninputmanager_ser
 directpeninputmanagerservicerestricted[0-9] u:object_r:directpeninputmanager_service:s0
 directpeninputmanagerservicerestricted10    u:object_r:directpeninputmanager_service:s0
 WlanDutService                              u:object_r:wlandutservice_service:s0
+TigerSskdsService                           u:object_r:TigerSskdsService_service:s0
+SCPMHelper                                  u:object_r:scpmhelper_service:s0
+IfaaService                                 u:object_r:IfaaService_service:s0
 #line 1 "out/target/product/greatlte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
 
 #line 1 "vendor/samsung/system/sepolicy/mr1/sec_common/service_contexts"
