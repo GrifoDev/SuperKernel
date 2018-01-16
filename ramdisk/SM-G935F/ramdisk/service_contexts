@@ -278,6 +278,7 @@ application_policy                          u:object_r:EDM_Policy_service:s0
 apppermission_control_policy                u:object_r:EDM_Policy_service:s0
 AAS                                         u:object_r:AAS_service:s0
 ABTPersistenceService                       u:object_r:abt_persistence_service:s0
+android.samsung.IRemosaicDaemon             u:object_r:remosaicd_service:s0
 AODManagerService                           u:object_r:aod_manager_service:s0
 ApexService                                 u:object_r:apexserver_service:s0
 barbeam                                     u:object_r:barbeam_service:s0
@@ -579,5 +580,11 @@ WlanDutService                              u:object_r:wlandutservice_service:s0
 TigerSskdsService                           u:object_r:TigerSskdsService_service:s0
 SCPMHelper                                  u:object_r:scpmhelper_service:s0
 IfaaService                                 u:object_r:IfaaService_service:s0
+
+# http://mobilerndhub.sec.samsung.net/hub/site/seandroid/board/N_review_request/view/22465287
+# requester: kasthuri.r@samsung.com
+IextSDUFsServiceVold.unionFSStackServiceVold       u:object_r:sdunion_FSStack_servicevold:s0
+IextSDUFsService.unionFSStackService               u:object_r:sdunion_FSStack_service:s0
+
 #line 1 "out/target/product/dream2lte/obj/ETC/sectxfile_nl_intermediates/sectxfile_nl"
 
