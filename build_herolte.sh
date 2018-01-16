@@ -184,7 +184,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930F/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930F/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G930F
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		ktt)
@@ -193,7 +193,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930K/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930K/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G930K
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		lgt)
@@ -202,7 +202,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930L/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930L/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G930L
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		skt)
@@ -211,7 +211,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930S/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930S/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G930S
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		*)
@@ -228,7 +228,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935F/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935F/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G935F
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		ktt)
@@ -237,7 +237,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935K/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935K/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G935K
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		lgt)
@@ -246,7 +246,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935L/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935L/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G935L
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		skt)
@@ -255,7 +255,7 @@ FUNC_BUILD_RAMDISK()
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935S/split_img/boot.img-zImage
 			mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935S/split_img/boot.img-dtb
 			cd $RDIR/ramdisk/SM-G935S
-			./repackimg.sh
+			./repackimg.sh --nosude
 			echo SEANDROIDENFORCE >> image-new.img
 			;;
 		*)
