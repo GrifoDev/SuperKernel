@@ -128,7 +128,7 @@ FUNC_BUILD_RAMDISK()
 		mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G930F/split_img/boot.img-zImage
 		mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G930F/split_img/boot.img-dtb
 		cd $RDIR/ramdisk/SM-G930F
-		./repackimg.sh
+		./repackimg.sh --nosudo
 		echo SEANDROIDENFORCE >> image-new.img
 		;;
 	hero2lte)
@@ -137,7 +137,7 @@ FUNC_BUILD_RAMDISK()
 		mv -f $RDIR/arch/$ARCH/boot/boot.img-zImage $RDIR/ramdisk/SM-G935F/split_img/boot.img-zImage
 		mv -f $RDIR/arch/$ARCH/boot/boot.img-dtb $RDIR/ramdisk/SM-G935F/split_img/boot.img-dtb
 		cd $RDIR/ramdisk/SM-G935F
-		./repackimg.sh
+		./repackimg.sh --nosudo
 		echo SEANDROIDENFORCE >> image-new.img
 		;;
 	*)
