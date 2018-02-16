@@ -40,8 +40,7 @@ on post-fs-data
     chmod 0666 /data/misc/conn/.wificable.info
 
     # for WIFI MEMDUMP
-    # The default value of below memdump file is set in SecProductFeature 
-    # write /data/misc/conn/.memdump.info 2
+    write /data/misc/conn/.memdump.info 0
     chown system root /data/misc/conn/.memdump.info
     chmod 0666 /data/misc/conn/.memdump.info
 

@@ -36,11 +36,12 @@ dalvik.vm.usejitprofiles=true
 dalvik.vm.appimageformat=lz4
 debug.atrace.tags.enableflags=0
 
+wlan.wfd.hdcp=disable
 ro.securestorage.support=false
 ro.config.tima=0
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Thu Dec 28 14:42:38 KST 2017
-ro.bootimage.build.date.utc=1514439758
-ro.bootimage.build.fingerprint=samsung/greatltexx/greatlte:7.1.1/NMF26X/N950FXXU2BQL6:user/test-keys
+ro.bootimage.build.date=Fri Jan 26 14:26:46 KST 2018
+ro.bootimage.build.date.utc=1516944406
+ro.bootimage.build.fingerprint=samsung/greatltexx/greatlte:7.1.1/NMF26X/N950FXXU3BRA8:user/test-keys
