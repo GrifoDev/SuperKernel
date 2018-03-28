@@ -52,6 +52,7 @@ struct v4l2_window32 {
 	compat_caddr_t		clips; /* actually struct v4l2_clip32 * */
 	__u32			clipcount;
 	compat_caddr_t		bitmap;
+	__u8                    global_alpha;
 };
 
 static int bufsize_v4l2_window32(struct v4l2_window32 __user *up)
@@ -75,7 +76,8 @@ static int get_v4l2_window32(struct v4l2_window __user *kp, struct
 		convert_in_user(&up->field, &kp->field) ||
 		convert_in_user(&up->chromakey, &kp->chromakey) ||
 		get_user(clipcount, &up->clipcount) ||
-		put_user(clipcount, &kp->clipcount))
+		put_user(clipcount, &kp->clipcount) ||
+		put_user(global_alpha, &up->global_alpha))
 			return -EFAULT;
 	if (clipcount > 2048)
 		return -EINVAL;
@@ -113,7 +115,8 @@ static int put_v4l2_window32(struct v4l2_window __user *kp, struct v4l2_window32
 	if (copy_in_user(&up->w, &kp->w, sizeof(kp->w)) ||
 			convert_in_user(&kp->field, &up->field) ||
 			convert_in_user(&kp->chromakey, &up->chromakey) ||
-			convert_in_user(&kp->clipcount, &up->clipcount))
+			convert_in_user(&kp->clipcount, &up->clipcount) ||
+			convert_in_user(&kp->global_alpha, &up->global_alpha))
 		return -EFAULT;
 	return 0;
 }
