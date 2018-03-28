@@ -69,6 +69,10 @@ static int bufsize_v4l2_window32(struct v4l2_window32 __user *up)
 static int get_v4l2_window32(struct v4l2_window __user *kp, struct
 		v4l2_window32 __user *up, void __user *aux_buf, int aux_space)
 {
+	struct v4l2_clip32 __user *uclips;
+	struct v4l2_clip __user *kclips;
+	compat_caddr_t p;
+	u32 n;
 	__u32 clipcount;
 
 	if (!access_ok(VERIFY_READ, up, sizeof(*up)) ||
@@ -81,13 +85,19 @@ static int get_v4l2_window32(struct v4l2_window __user *kp, struct
 			return -EFAULT;
 	if (clipcount > 2048)
 		return -EINVAL;
-	if (clipcount) {
-		struct v4l2_clip32 __user *uclips;
-		struct v4l2_clip __user *kclips;
-		int n = clipcount;
-		compat_caddr_t p;
+	if (!clipcount) {
+		kp->clips = NULL;
+		return 0;
+	}
 
-		if (get_user(p, &up->clips))
+	n = kp->clipcount;
+	if (get_user(p, &up->clips))
+		return -EFAULT;
+	uclips = compat_ptr(p);
+	kclips = compat_alloc_user_space(n * sizeof(*kclips));
+	kp->clips = kclips;
+	while (n--) {
+		if (copy_in_user(&kclips->c, &uclips->c, sizeof(uclips->c)))
 			return -EFAULT;
 		uclips = compat_ptr(p);
 		if (aux_space < n * sizeof(*kclips))
@@ -112,12 +122,30 @@ static int get_v4l2_window32(struct v4l2_window __user *kp, struct
 
 static int put_v4l2_window32(struct v4l2_window __user *kp, struct v4l2_window32 __user *up)
 {
+	struct v4l2_clip __user *kclips = kp->clips;
+	struct v4l2_clip32 __user *uclips;
+	u32 n = kp->clipcount;
+	compat_caddr_t p;
+
 	if (copy_in_user(&up->w, &kp->w, sizeof(kp->w)) ||
 			convert_in_user(&kp->field, &up->field) ||
 			convert_in_user(&kp->chromakey, &up->chromakey) ||
 			convert_in_user(&kp->clipcount, &up->clipcount) ||
 			convert_in_user(&kp->global_alpha, &up->global_alpha))
 		return -EFAULT;
+
+	if (!kp->clipcount)
+		return 0;
+
+	if (get_user(p, &up->clips))
+		return -EFAULT;
+	uclips = compat_ptr(p);
+	while (n--) {
+		if (copy_in_user(&uclips->c, &kclips->c, sizeof(uclips->c)))
+			return -EFAULT;
+		uclips++;
+		kclips++;
+	}
 	return 0;
 }
 
