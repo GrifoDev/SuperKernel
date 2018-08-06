@@ -2,15 +2,8 @@ on early-init
 	
 on init
 
-    # create Container (KNOX 1.0) mountpoints for KNOX Migration
-    mkdir /knox_data 0775 root system
-    mkdir /knox_data/userdata 0775 system system
-    mkdir /knox_data/appdata 0775 system system
     mkdir /mnt/shell 0750 shell shell
-    mkdir /mnt/shell/knox-emulated 0700 system system
 
-    symlink /mnt/shell/knox-emulated /storage/knox-emulated
-    
     mkdir /mnt/shell/privatemode 0700 system system
     mkdir /mnt/shell/privatemode/default 0700 system system
     mkdir /mnt/shell/privatemode/read 0700 system system
@@ -22,9 +15,15 @@ on init
     
     # From M OS, FS for ext has been seperated
     mkdir /mnt/knox 0700 root root
+    mkdir /mnt/knox/default 0700 root root
+    mkdir /mnt/knox/read 0700 root root
+    mkdir /mnt/knox/write 0700 root root
+    mkdir /mnt/knox/default/emulated 0700 root root
+    mkdir /mnt/knox/read/emulated 0700 root root
+    mkdir /mnt/knox/write/emulated 0700 root root
 
     # SDP USER 0, SECURE FS
-    mkdir /mnt/shell/enc_emulated 0700 system system
+    mkdir /mnt/shell/enc_emulated 0700 root system
     mkdir /mnt/shell/enc_media 0700 system system
     mkdir /mnt/runtime/default/enc_emulated 0755 system system
     mkdir /mnt/runtime/read/enc_emulated 0755 system system
@@ -50,20 +49,13 @@ on post-fs-data
     # create knox filesystem structure
     mkdir /data/knox 0771 system system
     mkdir /data/knox/data 0771 system system
-    mkdir /data/knox/sdcard 0771 system system
+    mkdir /data/knox/sdcard 0770 media_rw media_rw
+    chmod 0770 /data/knox/sdcard
+    chown media_rw media_rw /data/knox/sdcard
     mkdir /data/knox/ext_sdcard 0771 system system
     mkdir /data/knox/app 0771 system system
     mkdir /data/knox/tmp 0771 system system
-    mkdir /data/knox/tmp_sdcard 0700 system system
-    mkdir /data/knox/tmp_sdcard/default 0700 root root
-    mkdir /data/knox/tmp_sdcard/read 0700 root root
-    mkdir /data/knox/tmp_sdcard/write 0700 root root
-    mkdir /data/knox/tmp_sdcard/default/knox-emulated 0700 root root
-    mkdir /data/knox/tmp_sdcard/read/knox-emulated 0700 root root
-    mkdir /data/knox/tmp_sdcard/write/knox-emulated 0700 root root
-    mkdir /data/knox/tmp_sdcard/default/emulated 0700 root root
-    mkdir /data/knox/tmp_sdcard/read/emulated 0700 root root
-    mkdir /data/knox/tmp_sdcard/write/emulated 0700 root root
+
     # From Android M, separated CE/DE storages have to be supported
     mkdir /data/knox/data_de 0771 system system
     mkdir /data/knox/system_ce 0770 system system

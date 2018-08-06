@@ -19,8 +19,10 @@ subsystem adf
 /dev/hw_random            0440   root       system
 /dev/ashmem               0666   root       root
 /dev/binder               0666   root       root
-/dev/hidraw1              0664   root       system
+/dev/hwbinder             0666   root       root
+/dev/vndbinder            0666   root       root
 /dev/ovr*                 0664   root       system
+/dev/tvr*                 0664   root       system
 
 # Anyone can read the logs, but if they're not in the "logs"
 # group, then they'll only see log entries for their UID.
@@ -39,12 +41,11 @@ subsystem adf
 # these should not be world writable
 /dev/diag                 0660   radio      radio
 /dev/diag_arm9            0660   radio      radio
-/dev/android_adb          0660   adb        adb
-/dev/android_adb_enable   0660   adb        adb
 /dev/ttyMSM0              0600   bluetooth  bluetooth
-/dev/uhid                 0660   system     net_bt_stack
-/dev/uinput               0660   system     net_bt_stack
+/dev/uhid                 0660   system     bluetooth
+/dev/uinput               0660   system     bluetooth
 /dev/alarm                0664   system     radio
+/dev/power_on_alarm       0660   system     radio
 /dev/rtc0                 0640   system     system
 /dev/tty0                 0660   root       system
 /dev/graphics/*           0660   root       graphics
@@ -105,9 +106,6 @@ subsystem adf
 /sys/devices/system/cpu/cpu*   cpufreq/scaling_max_freq   0664  system system
 /sys/devices/system/cpu/cpu*   cpufreq/scaling_min_freq   0664  system system
 
-# DVB API device nodes
-/dev/dvb*                 0660   root       system
-
 # MobiCore
 /dev/mobicore             0700   system     system
 /dev/mobicore-user        0666   radio     system
@@ -115,10 +113,10 @@ subsystem adf
 # Secure MEM driver
 /dev/s5p-smem             0660   system     system
 
-# sensorhub
-/dev/ssp_sensorhub        0660   system     system
-/dev/ssp_data_injection   0660   system     system
-
 # Fingerprint Sensor
-/dev/vfsspi        0660   system     system
-/dev/esfp0        0660   system     system
+/dev/vfsspi               0660   system     system
+/dev/esfp0                0660   system     system
+/dev/goodix_fp            0660   system     system
+
+# DVB API device nodes
+/dev/dvb*                 0660   root       system

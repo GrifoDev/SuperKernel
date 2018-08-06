@@ -229,6 +229,9 @@ struct dw_mci {
 	/* Sfr dump */
 	struct dw_mci_sfe_ram_dump	*sfr_dump;
 
+	/* Card Clock In */
+	u32			cclk_in;
+
 	/* S/W Timeout check */
 	bool sw_timeout_chk;
 };

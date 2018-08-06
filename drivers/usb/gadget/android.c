@@ -211,7 +211,7 @@ static void android_work(struct work_struct *data)
 	char **uevent_envp = NULL;
 	unsigned long flags;
 
-	printk(KERN_DEBUG "usb: %s config=%p,connected=%d,sw_connected=%d\n",
+	printk(KERN_DEBUG "usb: %s config=%pK,connected=%d,sw_connected=%d\n",
 			__func__, cdev->config, dev->connected,
 			dev->sw_connected);
 	spin_lock_irqsave(&cdev->lock, flags);
@@ -240,7 +240,7 @@ static void android_work(struct work_struct *data)
 		printk(KERN_DEBUG "usb: %s sent uevent %s\n",
 			 __func__, uevent_envp[0]);
 	} else {
-		printk(KERN_DEBUG "usb: %s did not send uevent (%d %d %p)\n",
+		printk(KERN_DEBUG "usb: %s did not send uevent (%d %d %pK)\n",
 		 __func__, dev->connected, dev->sw_connected, cdev->config);
 	}
 }
@@ -270,7 +270,7 @@ static void android_disable(struct android_dev *dev)
 		usb_remove_config(cdev, &android_config_driver);
 	}
 }
-#if 0
+
 /*-------------------------------------------------------------------------*/
 /* Supported functions initialization */
 struct functionfs_config {
@@ -427,7 +427,6 @@ static void *functionfs_acquire_dev_callback(const char *dev_name)
 static void functionfs_release_dev_callback(struct ffs_data *ffs_data)
 {
 }
-#endif
 
 struct adb_data {
 	bool opened;
@@ -1343,7 +1342,7 @@ static struct android_usb_function hid_function = {
 };
 
 static struct android_usb_function *supported_functions[] = {
-//	&ffs_function,
+	&ffs_function,
 	&adb_function,
 	&acm_function,
 	&mtp_function,
@@ -1533,7 +1532,7 @@ functions_store(struct device *pdev, struct device_attribute *attr,
 	b = strim(buf);
 
 #ifdef CONFIG_USB_NOTIFY_PROC_LOG
-	store_usblog_notify(NOTIFY_USBMODE_FUNC, (void *)b, NULL);
+	store_usblog_notify(NOTIFY_USBMODE, (void *)b, NULL);
 #endif
 
 	while (b) {
@@ -1558,7 +1557,7 @@ functions_store(struct device *pdev, struct device_attribute *attr,
 				continue;
 			err = android_enable_function(dev, "ffs");
 			if (err)
-				pr_err("android_usb: Cannot enable ffs (%d)",
+				pr_err("android_usb: Cannot enable ffs (%d)\n",
 									err);
 			else
 				ffs_enabled = 1;
@@ -1567,7 +1566,7 @@ functions_store(struct device *pdev, struct device_attribute *attr,
 
 		err = android_enable_function(dev, name);
 		if (err)
-			pr_err("android_usb: Cannot enable '%s' (%d)",
+			pr_err("android_usb: Cannot enable '%s' (%d)\n",
 							   name, err);
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 
@@ -1576,7 +1575,7 @@ functions_store(struct device *pdev, struct device_attribute *attr,
 				err = android_enable_function(dev, "acm");
 				if (err)
 					pr_err(
-					"android_usb: Cannot enable '%s'",
+					"android_usb: Cannot enable '%s'\n",
 					name);
 			}
 

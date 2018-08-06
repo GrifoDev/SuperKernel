@@ -19,8 +19,8 @@ service adbd /sbin/adbd --root_seclabel=u:r:su:s0
     seclabel u:r:adbd:s0
 
 # adbd on at boot in emulator
-on property:ro.kernel.qemu=1
-    start adbd
+#on property:ro.kernel.qemu=1
+#    start adbd
 
 on boot
     setprop sys.usb.configfs 0
@@ -130,7 +130,7 @@ on property:sys.usb.config=midi,adb && property:sys.usb.configfs=0
 
 # Used to set USB configuration at boot and to switch the configuration
 # when changing the default configuration
-on property:persist.sys.usb.config=*
+on boot && property:persist.sys.usb.config=*
     setprop sys.usb.config ${persist.sys.usb.config}
 
 #

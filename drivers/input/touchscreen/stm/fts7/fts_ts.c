@@ -548,6 +548,8 @@ void fts_systemreset(struct fts_ts_info *info)
 
 	tsp_debug_info(true, &info->client->dev, "FTS SystemReset STM_VER(0x%2X)\n", info->stm_ver);
 	fts_write_reg(info, &regAdd[0], 4);
+
+	fts_release_all_finger(info);
 	fts_delay(10);
 }
 
@@ -652,6 +654,13 @@ static int fts_wait_for_ready(struct fts_ts_info *info)
 		}
 
 		if (data[0] == EVENTID_ERROR) {
+			if (data[1] == 0x03 && (data[2] == 0x01 || data[2] == 0x02)) {
+				tsp_debug_err(true, &info->client->dev, "%s: config error: 0x%02X\n",
+						__func__, data[2]);
+				rc = -FTS_ERROR_EVENT_ID;
+				break;
+			}
+
 			if (err_cnt++ > 32) {
 				rc = -FTS_ERROR_EVENT_ID;
 				break;

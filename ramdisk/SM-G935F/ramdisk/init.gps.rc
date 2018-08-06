@@ -27,14 +27,14 @@ chown gps system /sys/devices/platform/bbd.0/ssi_trace
 chown gps system /sys/devices/platform/bbd.0/shmd
 
 # SensorHub (Location Hub)
-service lhd /system/bin/lhd /system/etc/lhd.conf
+service lhd /vendor/bin/hw/lhd /vendor/etc/sensor/lhd.conf
     class main
     user gps
     group system inet net_raw
     ioprio be 0
 
 # GPS
-service gpsd /system/bin/gpsd -c /system/etc/gps.xml
+service gpsd /vendor/bin/hw/gpsd -c /vendor/etc/gnss/gps.xml
     class main
     user gps
     group system inet net_raw wakelock

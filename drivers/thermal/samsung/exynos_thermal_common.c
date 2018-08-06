@@ -598,6 +598,10 @@ static struct notifier_block exynos_tmu_pm_notifier = {
 	.notifier_call = exynos_pm_notifier,
 };
 
+#if defined(CONFIG_GPU_THERMAL) && defined(CONFIG_MALI_DEBUG_KERNEL_SYSFS)
+struct thermal_sensor_conf *gpu_thermal_conf_ptr = NULL;
+#endif
+
 static struct global_attr little_thermal_temp =
 		__ATTR(little_thermal_temp, S_IRUGO | S_IWUSR,
 			show_little_thermal_temp, store_little_thermal_temp);
@@ -649,6 +653,9 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
 		} else if (sensor_conf->d_type ==  GPU) {
 			th_zone->cool_dev[th_zone->cool_dev_size] =
 					gpufreq_cooling_register(&mask_val);
+#if defined(CONFIG_GPU_THERMAL) && defined(CONFIG_MALI_DEBUG_KERNEL_SYSFS)
+			gpu_thermal_conf_ptr = sensor_conf;
+#endif
 		} else if (sensor_conf->d_type ==  ISP) {
 			th_zone->cool_dev[th_zone->cool_dev_size] =
 					isp_cooling_register(&mask_val);
@@ -717,6 +724,10 @@ void exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf)
 		pr_err("Invalid temperature sensor configuration data\n");
 		return;
 	}
+
+#if defined(CONFIG_GPU_THERMAL) && defined(CONFIG_MALI_DEBUG_KERNEL_SYSFS)
+	gpu_thermal_conf_ptr = NULL;
+#endif
 
 	th_zone = sensor_conf->pzone_data;
 

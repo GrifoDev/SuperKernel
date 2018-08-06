@@ -57,7 +57,7 @@
 			wlf,hpdet-moisture-debounce = <40>;
 			wlf,hpdet-ext-res = <34>;
 
-			wlf,hpdet-short-circuit-imp = <3>;
+			wlf,hpdet-short-circuit-imp = <2>;
 			wlf,micd-ranges = <
 				116 226
 				173 582

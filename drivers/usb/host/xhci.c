@@ -3949,10 +3949,7 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
 		break;
 	}
 	if (ret) {
-#if defined(CONFIG_SEC_FACTORY)
-		if (ret != -ETIME)
-#endif			
-			kfree(command);
+		kfree(command);
 		return ret;
 	}
 	temp_64 = xhci_read_64(xhci, &xhci->op_regs->dcbaa_ptr);
@@ -4173,6 +4170,11 @@ int xhci_set_usb2_hardware_lpm(struct usb_hcd *hcd,
 		return -EPERM;
 
 	if (udev->usb2_hw_lpm_capable != 1)
+		return -EPERM;
+
+	/* some USB3.0 memory stick doesn't support L1 mode,
+	  * so we add XHCI_LPM_L1_DISABLE quirks for disabling L1 mode */
+	if (!(xhci->quirks & XHCI_LPM_L1_SUPPORT))
 		return -EPERM;
 
 	spin_lock_irqsave(&xhci->lock, flags);

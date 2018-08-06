@@ -2,12 +2,15 @@ on fs
     mount_all /fstab.ranchu
 
 on early-init
-    mount debugfs debugfs /sys/kernel/debug
+    mount debugfs debugfs /sys/kernel/debug mode=755
 
 on init
 
     symlink /dev/goldfish_pipe /dev/android_pipe
     symlink /dev/goldfish_pipe /dev/qemu_pipe
+
+on post-fs-data
+    setprop vold.post_fs_data_done 1
 
 on boot
     setprop net.eth0.gw 10.0.2.2
@@ -17,6 +20,7 @@ on boot
     setprop ro.build.product generic
     setprop ro.product.device generic
     setprop ro.hardware.audio.primary goldfish
+    setprop ro.setupwizard.mode EMULATOR
 
 # fake some battery state
     setprop status.battery.state Slow
@@ -44,16 +48,39 @@ on boot
 # start essential services
 # These were written for the classic emulator, but are applicable to ranchu
     start goldfish-logcat
-    start goldfish-setup
+#    start goldfish-setup
 
 
 # enable Google-specific location features,
 # like NetworkLocationProvider and LocationCollector
     setprop ro.com.google.locationfeatures 1
 
-service goldfish-setup /system/etc/init.goldfish.sh
+#emulator is not much useful before boot complete
+#start it later
+on property:sys.boot_completed=1
+    setprop sys.usb.config adb
+    start adbd
+    start goldfish-logcat
+
+on property:qemu.adbd=start
+    setprop sys.usb.config adb
+    start adbd
+    start goldfish-logcat
+
+# allow goldfish-setup to take wake lock
+    chown root system /sys/power/wake_lock
+    chown root system /sys/power/wake_unlock
+
+service ranchu-setup /system/bin/init.ranchu-core.sh
+    class core
     user root
     group root
+    oneshot
+
+service ranchu-net /system/bin/init.ranchu-net.sh
+    class late_start
+    user root
+    group root wakelock
     oneshot
 
 # The qemu-props program is used to set various system
@@ -68,15 +95,28 @@ service qemu-props /system/bin/qemu-props
     group root
     oneshot
 
+on property:qemu.logcat=start
+    start goldfish-logcat
+
 # -Q is a special logcat option that forces the
 # program to check wether it runs on the emulator
 # if it does, it redirects its output to the device
 # named by the androidboot.console kernel option
 # if not, is simply exits immediately
-
+# logd user added to prevent logcat from logging content.
+# log group added to support access to read logs socket.
 service goldfish-logcat /system/bin/logcat -Q
+    user logd
+    group log
     oneshot
 
 service fingerprintd /system/bin/fingerprintd
     class late_start
     user system
+
+service bugreport /system/bin/dumpstate -d -p -B \
+        -o /data/data/com.android.shell/files/bugreports/bugreport
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116

@@ -15,6 +15,11 @@
 		#size-cells = <1>;
 		ranges;
 
+		tima_mem: tima_region@0xB1000000 {
+			compatible = "removed-dma-pool";
+			reg = <0x0 0xB1000000 0x200000>;
+		};
+
 		crypto {
 			compatible = "exynos8890-ion,crypto";
 			reusable;
@@ -44,7 +49,7 @@
 			compatible = "exynos8890-ion,vstream";
 			secure;
 			reusable;
-			reg = <0x0 0xC1000000 0x1000000>;
+			reg = <0x0 0xC1000000 0x1400000>;
 			id = <3>;
 			compat-id = <25 31>;
 		};
@@ -53,7 +58,7 @@
 			compatible = "exynos8890-ion,vframe";
 			secure;
 			reusable;
-			reg = <0x0 0xC2000000 0x6400000>;
+			reg = <0x0 0xC2400000 0x6400000>;
 			id = <5>;
 			compat-id = <26 29>;
 		};
@@ -62,7 +67,7 @@
 			compatible = "exynos8890-ion,vscaler";
 			secure;
 			reusable;
-			reg = <0x0 0xC8400000 0x4800000>;
+			reg = <0x0 0xC8800000 0x4800000>;
 			id = <6>;
 			compat-id = <28>;
 		};
@@ -70,7 +75,7 @@
 		gpu_crc {
 			compatible = "exynos8890-ion,gpu_crc";
 			secure;
-			reg = <0x0 0xCCC00000 0x800000>;
+			reg = <0x0 0xCD000000 0x800000>;
 			id = <8>;
 		};
 
@@ -78,13 +83,13 @@
 			compatible = "exynos8890-ion,gpu_buffer";
 			secure;
 			reusable;
-			reg = <0x0 0xCD400000 0x2400000>;
+			reg = <0x0 0xCD800000 0x3000000>;
 			id = <9>;
 		};
 
 		camera {
 			compatible = "exynos8890-ion,camera";
-			reg = <0x0 0xCF800000 0xE400000>;
+			reg = <0x0 0xD0800000 0xE400000>;
 			id = <10>;
 		};
 
@@ -93,6 +98,11 @@
 			secure;
 			reg = <0x0 0xFC000000 0x1C00000>;
 			id = <11>;
+		};
+
+		modem_if_reserved: modem_if@0xF0000000 {
+			compatible = "exynos,modem_if";
+			reg = <0x0 0xF0000000 0x8800000>;
 		};
 	};
 };

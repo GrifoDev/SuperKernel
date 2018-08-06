@@ -1,8 +1,8 @@
 #
 # ADDITIONAL_DEFAULT_PROPERTIES
 #
-telephony.lteOnCdmaDevice=0
 persist.security.ams.enforcing=1
+ro.oem_unlock_supported=1
 ro.secure=0
 security.perf_harden=1
 ro.adb.secure=1
@@ -11,15 +11,10 @@ ro.debuggable=1
 persist.sys.usb.config=mtp,adb
 persist.service.adb.enable=1
 ro.zygote=zygote64_32
-pm.dexopt.first-boot=interpret-only
-pm.dexopt.boot=verify-profile
-pm.dexopt.install=interpret-only
-pm.dexopt.bg-dexopt=speed-profile
-pm.dexopt.ab-ota=speed-profile
-pm.dexopt.nsys-library=speed
-pm.dexopt.shared-apk=speed
-pm.dexopt.forced-dexopt=speed
-pm.dexopt.core-app=speed
+ro.telephony.default_network=9
+ro.supportmodel.mptcp=1
+ro.radio.noril=no
+ro.telephony.default_cdma_sub=0
 dalvik.vm.image-dex2oat-Xms=64m
 dalvik.vm.image-dex2oat-Xmx=64m
 dalvik.vm.dex2oat-Xms=64m
@@ -27,7 +22,13 @@ dalvik.vm.dex2oat-Xmx=512m
 ro.dalvik.vm.native.bridge=0
 dalvik.vm.usejit=true
 dalvik.vm.usejitprofiles=true
+dalvik.vm.dexopt.secondary=true
 dalvik.vm.appimageformat=lz4
+pm.dexopt.first-boot=quicken
+pm.dexopt.boot=verify
+pm.dexopt.install=quicken
+pm.dexopt.bg-dexopt=speed-profile
+pm.dexopt.ab-ota=speed-profile
 debug.atrace.tags.enableflags=0
 
 ro.securestorage.support=false
@@ -35,6 +36,6 @@ ro.securestorage.support=false
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Wed Jan 17 10:55:23 KST 2018
-ro.bootimage.build.date.utc=1516154123
-ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:7.0/NRD90M/G935FXXU2DRAG:user/test-keys
+ro.bootimage.build.date=Wed Jul 4 16:01:32 KST 2018
+ro.bootimage.build.date.utc=1530687692
+ro.bootimage.build.fingerprint=samsung/hero2ltexx/hero2lte:8.0.0/R16NW/G935FXXU2ERG2:user/test-keys

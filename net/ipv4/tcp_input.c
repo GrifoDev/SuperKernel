@@ -3421,12 +3421,12 @@ static void tcp_send_challenge_ack(struct sock *sk)
 		u32 half = (sysctl_tcp_challenge_ack_limit + 1) >> 1;
 
 		challenge_timestamp = now;
-		challenge_count = half +
-				  prandom_u32_max(sysctl_tcp_challenge_ack_limit);
+		WRITE_ONCE(challenge_count, half +
+			   prandom_u32_max(sysctl_tcp_challenge_ack_limit));
 	}
-	count = challenge_count;
+	count = READ_ONCE(challenge_count);
 	if (count > 0) {
-		challenge_count = count - 1;
+		WRITE_ONCE(challenge_count, count - 1);
 		NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_TCPCHALLENGEACK);
 		tcp_send_ack(sk);
 	}

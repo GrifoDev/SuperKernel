@@ -1,7 +1,7 @@
 /*
  * Common function shared by Linux WEXT, cfg80211 and p2p drivers
  *
- * Copyright (C) 1999-2017, Broadcom Corporation
+ * Copyright (C) 1999-2018, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -24,7 +24,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wldev_common.h 697414 2017-05-03 14:48:20Z $
+ * $Id: wldev_common.h 699163 2017-05-12 05:18:23Z $
  */
 #ifndef __WLDEV_COMMON_H__
 #define __WLDEV_COMMON_H__
@@ -121,7 +121,7 @@ int wldev_get_rssi(struct net_device *dev, scb_val_t *prssi);
 int wldev_get_ssid(struct net_device *dev, wlc_ssid_t *pssid);
 
 int wldev_get_band(struct net_device *dev, uint *pband);
-int wldev_get_mode(struct net_device *dev, uint8 *pband);
+int wldev_get_mode(struct net_device *dev, uint8 *pband, uint8 caplen);
 int wldev_get_datarate(struct net_device *dev, int *datarate);
 int wldev_set_band(struct net_device *dev, uint band);
 

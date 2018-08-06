@@ -1264,6 +1264,31 @@ static int __dwc3_gadget_ep_queue(struct dwc3_ep *dep, struct dwc3_request *req)
 	return 0;
 }
 
+static void __dwc3_gadget_ep_zlp_complete(struct usb_ep *ep,struct usb_request *request)
+{
+         dwc3_gadget_ep_free_request(ep, request);
+}
+ 
+static int __dwc3_gadget_ep_queue_zlp(struct dwc3 *dwc, struct dwc3_ep *dep)
+{
+        struct dwc3_request             *req;
+        struct usb_request              *request;
+        struct usb_ep                   *ep = &dep->endpoint;
+ 
+        dev_vdbg(dwc->dev, "queing request ZLP \n");
+         request = dwc3_gadget_ep_alloc_request(ep, GFP_ATOMIC);
+         if (!request)
+                 return -ENOMEM;
+ 
+         request->length = 0;
+         request->buf = dwc->zlp_buf;
+         request->complete = __dwc3_gadget_ep_zlp_complete;
+ 
+         req = to_dwc3_request(request);
+ 
+         return __dwc3_gadget_ep_queue(dep, req);
+}
+
 static int dwc3_gadget_ep_queue(struct usb_ep *ep, struct usb_request *request,
 	gfp_t gfp_flags)
 {
@@ -1288,6 +1313,18 @@ static int dwc3_gadget_ep_queue(struct usb_ep *ep, struct usb_request *request,
 	trace_dwc3_ep_queue(req);
 
 	ret = __dwc3_gadget_ep_queue(dep, req);
+	
+ /*
+	 * Okay, here's the thing, if gadget driver has requested for a ZLP by
+	 * setting request->zero, instead of doing magic, we will just queue an
+	 * extra usb_request ourselves so that it gets handled the same way as
+	 * any other request.
+ */
+	if (ret == 0 && request->zero && request->length &&
+	   (request->length % ep->maxpacket == 0)) {
+	   ret = __dwc3_gadget_ep_queue_zlp(dwc, dep);
+	}
+
 	spin_unlock_irqrestore(&dwc->lock, flags);
 
 	return ret;
@@ -1824,7 +1861,6 @@ static int dwc3_gadget_vbus_session(struct usb_gadget *g, int is_active)
 		} else {
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 			dwc3_gadget_cable_connect(dwc,false);
-			dwc3_disconnect_gadget(dwc);
 			dwc->gadget.speed = USB_SPEED_UNKNOWN;
 			dwc->setup_packet_pending = false;
 #endif
@@ -1837,6 +1873,9 @@ static int dwc3_gadget_vbus_session(struct usb_gadget *g, int is_active)
 			else
 				store_usblog_notify(NOTIFY_USBSTATE,
 							(void *)"USB_STATE=VBUS:DIS:FAIL", NULL);
+#endif
+#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
+			dwc3_disconnect_gadget(dwc);
 #endif
 		}
 	}
@@ -2320,6 +2359,14 @@ static int dwc3_cleanup_done_reqs(struct dwc3 *dwc, struct dwc3_ep *dep,
 			break;
 	} while (1);
 
+	/*  
+	* Our endpoint might get disabled by another thread during  
+	* dwc3_gadget_giveback(). If that happens, we're just gonna return 1  
+	* early on so DWC3_EP_BUSY flag gets cleared  
+	*/  
+	if (!dep->endpoint.desc)  
+		return 1;
+
 	if (usb_endpoint_xfer_isoc(dep->endpoint.desc) &&
 			list_empty(&dep->req_queued)) {
 		if (list_empty(&dep->request_list))
@@ -2358,7 +2405,8 @@ static void dwc3_endpoint_transfer_complete(struct dwc3 *dwc,
 		status = -ECONNRESET;
 
 	clean_busy = dwc3_cleanup_done_reqs(dwc, dep, event, status);
-	if (clean_busy && (is_xfer_complete || usb_endpoint_xfer_isoc(dep->endpoint.desc)))
+	if (clean_busy && (is_xfer_complete ||
+				usb_endpoint_xfer_isoc(dep->endpoint.desc)))
 		dep->flags &= ~DWC3_EP_BUSY;
 
 	/*
@@ -3206,6 +3254,12 @@ int dwc3_gadget_init(struct dwc3 *dwc)
 		goto err3;
 	}
 
+	dwc->zlp_buf = kzalloc(DWC3_ZLP_BUF_SIZE, GFP_KERNEL);
+	if (!dwc->zlp_buf) {
+		ret = -ENOMEM;
+		goto err4;
+	}
+
 	dwc->gadget.ops			= &dwc3_gadget_ops;
 	dwc->gadget.max_speed		= dwc->maximum_speed;
 	dwc->gadget.speed		= USB_SPEED_UNKNOWN;
@@ -3247,6 +3301,7 @@ err5:
 	usb_del_gadget_udc(&dwc->gadget);
 err4:
 	dwc3_gadget_free_endpoints(dwc);
+	kfree(dwc->zlp_buf);
 	dma_free_coherent(dwc->dev, DWC3_EP0_BOUNCE_SIZE,
 			dwc->ep0_bounce, dwc->ep0_bounce_addr);
 
@@ -3280,6 +3335,7 @@ void dwc3_gadget_exit(struct dwc3 *dwc)
 			dwc->ep0_bounce, dwc->ep0_bounce_addr);
 
 	kfree(dwc->setup_buf);
+	kfree(dwc->zlp_buf);
 
 	dma_free_coherent(dwc->dev, sizeof(*dwc->ep0_trb),
 			dwc->ep0_trb, dwc->ep0_trb_addr);

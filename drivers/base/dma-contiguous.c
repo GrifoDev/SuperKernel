@@ -349,10 +349,10 @@ struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
 
 	if (align > CONFIG_CMA_ALIGNMENT)
 		align = CONFIG_CMA_ALIGNMENT;
-
+/*
 	pr_debug("%s(cma %p, count %d, align %d)\n", __func__, (void *)cma,
 		 count, align);
-
+*/
 	if (!count)
 		return NULL;
 

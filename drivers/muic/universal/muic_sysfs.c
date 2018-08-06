@@ -29,7 +29,7 @@
 #include <linux/delay.h>
 #include <linux/host_notify.h>
 #include <linux/string.h>
-#include <linux/sec_debug.h>
+#include <linux/sec_ext.h>
 #include <linux/power_supply.h>
 
 #include <linux/muic/muic.h>
@@ -367,6 +367,11 @@ static ssize_t muic_show_attached_dev(struct device *dev,
 	case ATTACHED_DEV_QC_CHARGER_5V_MUIC:
 	case ATTACHED_DEV_QC_CHARGER_9V_MUIC:
 		return sprintf(buf, "AFC Charger\n");
+	case ATTACHED_DEV_POGO_DOCK_MUIC:
+	case ATTACHED_DEV_POGO_DOCK_5V_MUIC:
+		return sprintf(buf, "POGO Dock/5V\n");
+	case ATTACHED_DEV_POGO_DOCK_9V_MUIC:
+		return sprintf(buf, "POGO Dock/9V\n");
 	default:
 		break;
 	}
@@ -560,72 +565,27 @@ static ssize_t muic_store_afc_set_voltage(struct device *dev,
 #endif
 #endif /* CONFIG_MUIC_HV */
 
-#if defined(CONFIG_MUIC_SUPPORT_CCIC)
-static ssize_t cc_xx_show(struct device *dev,
-					   struct device_attribute *attr,
-					   char *buf)
+#if defined(CONFIG_HICCUP_CHARGER)
+static ssize_t hiccup_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
 {
-	const char *mode = "UNKNOWN\n";
-
-	pr_info("%s:%s %s", MUIC_DEV_NAME, __func__, mode);
-
-	return sprintf(buf, mode);
+	return sprintf(buf, "ENABLE\n");
 }
 
-static ssize_t cc_xx_set(struct device *dev,
-					  struct device_attribute *attr,
-					  const char *buf, size_t count)
+static ssize_t hiccup_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
 {
 	muic_data_t *pmuic = dev_get_drvdata(dev);
-	int mid = 0, rid = 0;
-	int ret = 0;
 
-	pr_info("%s:%s buf=%s\n", MUIC_DEV_NAME, __func__, buf);
+	if (!strncasecmp(buf, "DISABLE", 7)) {
+		pr_info("%s\n", __func__);
+		com_to_open_with_vbus(pmuic);
+	} else
+		pr_warn("%s invalid com : %s\n", __func__, buf);
 
-	if (buf[1] != ':') {
-		pr_err("A wrong Input Fomat!\n");
-		return count;
-	}
-
-	if ((buf[0]=='A') || (buf[0]=='a'))
-		mid = 1; /* ATTACH */
-
-	else if ((buf[0]=='R') || (buf[0]=='r'))
-		mid = 2; /* RID */
-
-	else if ((buf[0]=='M') || (buf[0]=='m'))
-		mid = 100; /* MODE */
-	else {
-		pr_err("Undefined Command!\n");
-		return count;
-	}
-
-	ret = kstrtoint(buf + 2, 0, &rid);
-	if (ret) {
-		pr_err("%s: Undefined rid\n", __func__);
-		goto err;
-	}
-
-	if (mid == 100) {
-		pmuic->opmode  = rid ? OPMODE_CCIC : OPMODE_MUIC;
-		pr_info("%s:%s OP_MODE=%d\n", MUIC_DEV_NAME, __func__, pmuic->opmode);
-		if (pmuic->opmode & OPMODE_CCIC) {
-			muic_notifier_set_new_noti(true);
-			muic_register_ccic_notifier(pmuic);
-		}
-
-		return count;
-	}
-
-	muic_ccic_pseudo_noti(mid, rid);
-
-err:
 	return count;
 }
-
-static DEVICE_ATTR(cc_xx, 0664, cc_xx_show,
-		cc_xx_set);
-#endif
+#endif /* CONFIG_HICCUP_CHARGER */
 
 static DEVICE_ATTR(uart_en, 0664, muic_show_uart_en, muic_set_uart_en);
 static DEVICE_ATTR(uart_sel, 0664, muic_show_uart_sel,
@@ -654,11 +614,11 @@ static DEVICE_ATTR(afc_set_voltage, 0220,
 		NULL, muic_store_afc_set_voltage);
 #endif
 #endif
+#if defined(CONFIG_HICCUP_CHARGER)
+static DEVICE_ATTR_RW(hiccup);
+#endif
 
 static struct attribute *muic_attributes[] = {
-#if defined(CONFIG_MUIC_SUPPORT_CCIC)
-	&dev_attr_cc_xx.attr,
-#endif
 	&dev_attr_uart_en.attr,
 	&dev_attr_uart_sel.attr,
 	&dev_attr_usb_sel.attr,
@@ -677,6 +637,9 @@ static struct attribute *muic_attributes[] = {
 #if defined(CONFIG_MUIC_HV_12V) && defined(CONFIG_SEC_FACTORY)
 	&dev_attr_afc_set_voltage.attr,
 #endif
+#endif
+#if defined(CONFIG_HICCUP_CHARGER)
+	&dev_attr_hiccup.attr,
 #endif
 	NULL
 };

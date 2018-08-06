@@ -526,6 +526,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
 	if (!tz->ops->get_mode)
 		return;
 
+	if (atomic_read(&in_suspend))
+		return;
+
 	update_temperature(tz);
 
 	result = tz->ops->get_mode(tz, &mode);
@@ -1973,12 +1976,14 @@ static int exynos_thermal_pm_notifier(struct notifier_block *notifier,
 
 	switch (event) {
 	case PM_SUSPEND_PREPARE:
+		atomic_set(&in_suspend, 1);
 		list_for_each_entry(pos, &thermal_tz_list, node) {
 			if (delayed_work_pending(&pos->poll_queue))
 				cancel_delayed_work(&pos->poll_queue);
 		}
 		break;
 	case PM_POST_SUSPEND:
+		atomic_set(&in_suspend, 0);
 		list_for_each_entry(pos, &thermal_tz_list, node) {
 			if (!pos->polling_delay) {
 				start_poll_queue(pos, polling_interval);

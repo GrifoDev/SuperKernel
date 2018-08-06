@@ -130,6 +130,7 @@ void unix_inflight(struct file *fp)
 
 	if (s) {
 		struct unix_sock *u = unix_sk(s);
+
 		if (atomic_long_inc_return(&u->inflight) == 1) {
 			BUG_ON(!list_empty(&u->link));
 			list_add_tail(&u->link, &gc_inflight_list);

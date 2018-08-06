@@ -1,7 +1,7 @@
 /*
  * Customer HW 4 dependant file
  *
- * Copyright (C) 1999-2017, Broadcom Corporation
+ * Copyright (C) 1999-2018, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -31,7 +31,7 @@
 #include <linuxver.h>
 #include <osl.h>
 
-#include <proto/ethernet.h>
+#include <ethernet.h>
 #include <dngl_stats.h>
 #include <bcmutils.h>
 #include <dhd.h>
@@ -42,12 +42,13 @@
 #include <linux/fcntl.h>
 #include <linux/fs.h>
 
-struct cntry_locales_custom {
-	char iso_abbrev[WLC_CNTRY_BUF_SZ]; /* ISO 3166-1 country abbreviation */
-	char custom_locale[WLC_CNTRY_BUF_SZ]; /* Custom firmware locale */
-	int32 custom_locale_rev; /* Custom local revisin default -1 */
-};
+#if defined(ARGOS_CPU_SCHEDULER) && !defined(DHD_LB_IRQSET)
+extern int argos_irq_affinity_setup_label(unsigned int irq, const char *label,
+	struct cpumask *affinity_cpu_mask,
+	struct cpumask *default_cpu_mask);
+#endif /* ARGOS_CPU_SCHEDULER && !DHD_LB_IRQSET */
 
+#if !defined(DHD_USE_CLMINFO_PARSER)
 const struct cntry_locales_custom translate_custom_table[] = {
 #if defined(BCM4330_CHIP) || defined(BCM4334_CHIP) || defined(BCM43241_CHIP)
 	/* 4330/4334/43241 */
@@ -173,6 +174,7 @@ const struct cntry_locales_custom translate_custom_table[] = {
 	{"PS", "XZ", 11},	/* Universal if Country code is PALESTINIAN TERRITORY, OCCUPIED */
 	{"TL", "XZ", 11},	/* Universal if Country code is TIMOR-LESTE (EAST TIMOR) */
 	{"MH", "XZ", 11},	/* Universal if Country code is MARSHALL ISLANDS */
+#if defined(BCM4359_CHIP)
 	{"SX", "XZ", 11},	/* Universal if Country code is Sint Maarten */
 	{"CC", "XZ", 11},	/* Universal if Country code is COCOS (KEELING) ISLANDS */
 	{"HM", "XZ", 11},	/* Universal if Country code is HEARD ISLAND AND MCDONALD ISLANDS */
@@ -186,6 +188,7 @@ const struct cntry_locales_custom translate_custom_table[] = {
 	{"SH", "XZ", 11},	/* Universal if Country code is SAINT HELENA */
 	{"SJ", "XZ", 11},	/* Universal if Country code is SVALBARD AND JAN MAYEN */
 	{"SS", "XZ", 11},	/* Universal if Country code is SOUTH SUDAN */
+#endif /* BCM4359_CHIP */
 	{"GL", "GP", 2},
 	{"AL", "AL", 2},
 	{"AS", "AS", 12},
@@ -248,9 +251,13 @@ const struct cntry_locales_custom translate_custom_table[] = {
 	{"MO", "SG", 0},
 	{"MK", "MK", 2},
 	{"MW", "MW", 1},
-	{"AM", "AM", 1},
-	{"MY", "MY", 19},
+#if defined(BCM4359_CHIP)
 	{"DZ", "DZ", 2},
+#elif defined(DHD_SUPPORT_GB_999)
+	{"DZ", "GB", 999},
+#else
+	{"DZ", "GB", 6},
+#endif /* BCM4359_CHIP */
 	{"MV", "MV", 3},
 	{"MT", "MT", 4},
 	{"MQ", "MQ", 2},
@@ -285,7 +292,6 @@ const struct cntry_locales_custom translate_custom_table[] = {
 	{"LK", "LK", 1},
 	{"SE", "SE", 4},
 	{"CH", "CH", 4},
-	{"TW", "TW", 65},
 	{"TH", "TH", 5},
 	{"TT", "TT", 3},
 	{"TR", "TR", 7},
@@ -308,14 +314,26 @@ const struct cntry_locales_custom translate_custom_table[] = {
 #else
 	{"KR", "KR", 48},
 #endif
+#if defined(BCM4359_CHIP)
+	{"TW", "TW", 65},
 	{"JP", "JP", 968},
 	{"RU", "RU", 986},
 	{"UA", "UA", 16},
+	{"ZA", "ZA", 19},
+	{"AM", "AM", 1},
+	{"MY", "MY", 19},
+#else
+	{"TW", "TW", 1},
+	{"JP", "JP", 45},
+	{"RU", "RU", 13},
+	{"UA", "UA", 8},
+	{"ZA", "ZA", 6},
+	{"MY", "MY", 3},
+#endif /* BCM4359_CHIP */
 	{"GT", "GT", 1},
 	{"MN", "MN", 1},
 	{"NI", "NI", 2},
 	{"UZ", "MA", 2},
-	{"ZA", "ZA", 19},
 	{"EG", "EG", 13},
 	{"TN", "TN", 1},
 	{"AO", "AD", 0},
@@ -332,11 +350,14 @@ const struct cntry_locales_custom translate_custom_table[] = {
 	{"US", "US", 945},
 #else
 	{"US", "US", 988},
-#endif
+#endif /* DHD_SUPPORT_US_949 */
 	{"CU", "US", 988},
 	{"CA", "Q2", 993},
 #endif /* default ccode/regrev */
 };
+#else
+struct cntry_locales_custom translate_custom_table[NUM_OF_COUNTRYS];
+#endif /* !DHD_USE_CLMINFO_PARSER */
 
 /* Customized Locale convertor
 *  input : ISO 3166-1 country abbreviation
@@ -371,6 +392,8 @@ void get_customized_country_code(void *adapter, char *country_iso_code, wl_count
 #define WIFIVERINFO	PLATFORM_PATH".wifiver.info"
 #define RSDBINFO	PLATFORM_PATH".rsdb.info"
 #define LOGTRACEINFO	PLATFORM_PATH".logtrace.info"
+#define ADPSINFO	PLATFORM_PATH".adps.info"
+#define SOFTAPINFO	PLATFORM_PATH".softap.info"
 
 #ifdef DHD_PM_CONTROL_FROM_FILE
 extern bool g_pm_control;
@@ -385,7 +408,6 @@ void sec_control_pm(dhd_pub_t *dhd, uint *power_mode)
 #endif /* DHD_ENABLE_LPC */
 
 	g_pm_control = FALSE;
-
 	fp = filp_open(filepath, O_RDONLY, 0);
 	if (IS_ERR(fp) || (fp == NULL)) {
 		/* Enable PowerSave Mode */
@@ -409,9 +431,11 @@ void sec_control_pm(dhd_pub_t *dhd, uint *power_mode)
 			/* Disable PowerSave Mode */
 			dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)power_mode,
 				sizeof(uint), TRUE, 0);
+#ifndef CUSTOM_SET_ANTNPM
 			/* Turn off MPC in AP mode */
 			dhd_iovar(dhd, 0, "mpc", (char *)power_mode, sizeof(*power_mode), NULL, 0,
 					TRUE);
+#endif /* !CUSTOM_SET_ANTNPM */
 			g_pm_control = TRUE;
 #ifdef ROAM_ENABLE
 			/* Roaming off of dongle */
@@ -437,6 +461,7 @@ void sec_control_pm(dhd_pub_t *dhd, uint *power_mode)
 				DHD_ERROR(("[WIFI_SEC] %s: WLC_UP faield %d\n", __FUNCTION__, ret));
 			}
 
+#ifndef CUSTOM_SET_OCLOFF
 			{
 				uint32 ocl_enable = 0;
 				ret = dhd_iovar(dhd, 0, "ocl_enable", (char *)&ocl_enable,
@@ -449,6 +474,18 @@ void sec_control_pm(dhd_pub_t *dhd, uint *power_mode)
 						__FUNCTION__, ocl_enable, ret));
 				}
 			}
+#else
+			dhd->ocl_off = TRUE;
+#endif /* CUSTOM_SET_OCLOFF */
+#ifdef WLADPS
+			if ((ret = dhd_enable_adps(dhd, ADPS_DISABLE)) < 0) {
+				DHD_ERROR(("[WIFI_SEC] %s: dhd_enable_adps failed %d\n",
+						__FUNCTION__, ret));
+			}
+#ifdef WLADPS_SEAK_AP_WAR
+			dhd->disabled_adps = TRUE;
+#endif /* WLADPS_SEAK_AP_WAR */
+#endif /* WLADPS */
 
 			if ((ret = dhd_wl_ioctl_cmd(dhd, WLC_DOWN, (char *)&wl_updown,
 					sizeof(wl_updown), TRUE, 0)) < 0) {
@@ -473,21 +510,24 @@ int dhd_sel_ant_from_file(dhd_pub_t *dhd)
 	int ret = -1;
 	uint32 ant_val = 0;
 	uint32 btc_mode = 0;
+#ifndef CUSTOM_SET_ANTNPM
 	wl_config_t rsdb_mode;
+#endif /* !CUSTOM_SET_ANTNPM */
 	char *filepath = ANTINFO;
 	uint chip_id = dhd_bus_chip_id(dhd);
-
-	memset(&rsdb_mode, 0, sizeof(rsdb_mode));
-
+#ifndef CUSTOM_SET_ANTNPM
+	 memset(&rsdb_mode, 0, sizeof(rsdb_mode));
+#endif /* CUSTOM_SET_ANTNPM */
 	/* Check if this chip can support MIMO */
 	if (chip_id != BCM4324_CHIP_ID &&
 		chip_id != BCM4350_CHIP_ID &&
 		chip_id != BCM4354_CHIP_ID &&
-		chip_id != BCM4356_CHIP_ID &&
 		chip_id != BCM43569_CHIP_ID &&
 		chip_id != BCM4358_CHIP_ID &&
 		chip_id != BCM4359_CHIP_ID &&
-		chip_id != BCM4355_CHIP_ID) {
+		chip_id != BCM4355_CHIP_ID &&
+		chip_id != BCM4347_CHIP_ID &&
+		chip_id != BCM4361_CHIP_ID) {
 		DHD_ERROR(("[WIFI_SEC] %s: This chipset does not support MIMO\n",
 			__FUNCTION__));
 		return ret;
@@ -497,6 +537,9 @@ int dhd_sel_ant_from_file(dhd_pub_t *dhd)
 	fp = filp_open(filepath, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		DHD_ERROR(("[WIFI_SEC] %s: File [%s] doesn't exist\n", __FUNCTION__, filepath));
+#ifdef CUSTOM_SET_ANTNPM
+		dhd->mimo_ant_set = 0;
+#endif /* !CUSTOM_SET_ANTNPM */
 		return ret;
 	} else {
 		ret = kernel_read(fp, 0, (char *)&ant_val, 4);
@@ -531,6 +574,7 @@ int dhd_sel_ant_from_file(dhd_pub_t *dhd)
 		}
 	}
 
+#ifndef CUSTOM_SET_ANTNPM
 	/* rsdb mode off */
 	DHD_ERROR(("[WIFI_SEC] %s: %s the RSDB mode!\n",
 		__FUNCTION__, rsdb_mode.config ? "Enable" : "Disable"));
@@ -555,7 +599,10 @@ int dhd_sel_ant_from_file(dhd_pub_t *dhd)
 			__FUNCTION__, ret));
 		return ret;
 	}
-
+#else
+	dhd->mimo_ant_set = ant_val;
+	DHD_ERROR(("[WIFI_SEC] %s: mimo_ant_set = %d\n", __FUNCTION__, dhd->mimo_ant_set));
+#endif /* !CUSTOM_SET_ANTNPM */
 	return 0;
 }
 #endif /* MIMO_ANTENNA_SETTING */
@@ -571,7 +618,7 @@ int dhd_rsdb_mode_from_file(dhd_pub_t *dhd)
 {
 	struct file *fp = NULL;
 	int ret = -1;
-	wl_config_t rsdb_mode;
+	wl_config_t  rsdb_mode;
 	uint32 rsdb_configuration = 0;
 	char *filepath = RSDBINFO;
 
@@ -591,9 +638,9 @@ int dhd_rsdb_mode_from_file(dhd_pub_t *dhd)
 		}
 
 		rsdb_mode.config = bcm_atoi((char *)&rsdb_configuration);
-
 		DHD_ERROR(("[WIFI_SEC] %s: RSDB mode from file = %d\n",
 			__FUNCTION__, rsdb_mode.config));
+
 		filp_close(fp, NULL);
 
 		/* Check value from the file */
@@ -704,10 +751,9 @@ int sec_get_param_wfa_cert(dhd_pub_t *dhd, int mode, uint* read_val)
 				__FUNCTION__, mode));
 			return BCME_ERROR;
 	}
-
 	fp = filp_open(filepath, O_RDONLY, 0);
 	if (IS_ERR(fp) || (fp == NULL)) {
-		DHD_ERROR(("[WIFI_SEC] %s: File [%s] doesn't exist \n",
+		DHD_ERROR(("[WIFI_SEC] %s: File [%s] doesn't exist\n",
 			__FUNCTION__, filepath));
 		return BCME_ERROR;
 	} else {
@@ -849,17 +895,17 @@ uint32 sec_save_wlinfo(char *firm_ver, char *dhd_ver, char *nvram_p, char *clm_v
 	}
 
 	if (strlen(clm_ver)) {
-		min_len = min(strlen(clm_ver), max_len(temp_buf, CLM_PREFIX));
-		min_len += strlen(CLM_PREFIX) + 3;
-		DHD_INFO(("[WIFI_SEC] clm ver length : %d\n", min_len));
-		snprintf(version_info+str_len, min_len, CLM_PREFIX " %s\n", clm_ver);
-		str_len = strlen(version_info);
+		 min_len = min(strlen(clm_ver), max_len(temp_buf, CLM_PREFIX));
+		 min_len += strlen(CLM_PREFIX) + 3;
+		 DHD_INFO(("[WIFI_SEC] clm ver length : %d\n", min_len));
+		 snprintf(version_info+str_len, min_len, CLM_PREFIX " %s\n", clm_ver);
+		 str_len = strlen(version_info);
 
-		DHD_INFO(("[WIFI_SEC] CLM version_info len : %d\n", str_len));
-		DHD_INFO(("[WIFI_SEC] CLM version_info : %s\n", version_info));
-	} else {
-		DHD_ERROR(("[WIFI_SEC] CLM version is missing.\n"));
-	}
+		 DHD_INFO(("[WIFI_SEC] CLM version_info len : %d\n", str_len));
+		 DHD_INFO(("[WIFI_SEC] CLM version_info : %s\n", version_info));
+	 } else {
+		 DHD_ERROR(("[WIFI_SEC] CLM version is missing.\n"));
+	 }
 
 	DHD_INFO(("[WIFI_SEC] version_info : %s, strlen : %zu\n",
 		version_info, strlen(version_info)));
@@ -891,6 +937,19 @@ uint32 sec_save_wlinfo(char *firm_ver, char *dhd_ver, char *nvram_p, char *clm_v
 	return ret;
 }
 #endif /* WRITE_WLANINFO */
+
+#ifdef SUPPORT_MULTIPLE_BOARD_REV_FROM_HW
+unsigned int system_hw_rev;
+static int
+__init get_hw_rev(char *arg)
+{
+	get_option(&arg, &system_hw_rev);
+	printk("dhd : hw_rev : %d\n", system_hw_rev);
+	return 0;
+}
+
+early_param("androidboot.hw_rev", get_hw_rev);
+#endif /* SUPPORT_MULTIPLE_BOARD_REV_FROM_HW */
 #endif /* CUSTOMER_HW4 || CUSTOMER_HW40 */
 
 #if defined(FORCE_DISABLE_SINGLECORE_SCAN)
@@ -900,6 +959,7 @@ dhd_force_disable_singlcore_scan(dhd_pub_t *dhd)
 	int ret = 0;
 	struct file *fp = NULL;
 	char *filepath = PLATFORM_PATH".cid.info";
+	s8 iovbuf[WL_EVENTING_MASK_LEN + 12];
 	char vender[10] = {0, };
 	uint32 pm_bcnrx = 0;
 	uint32 scan_ps = 0;
@@ -916,13 +976,13 @@ dhd_force_disable_singlcore_scan(dhd_pub_t *dhd)
 		if (ret > 0 && NULL != strstr(vender, "wisol")) {
 			DHD_ERROR(("wisol module : set pm_bcnrx=0, set scan_ps=0\n"));
 
-			ret = dhd_iovar(dhd, 0, "pm_bcnrx", (char *)&pm_bcnrx, sizeof(pm_bcnrx),
-					NULL, 0, TRUE);
+			bcm_mkiovar("pm_bcnrx", (char *)&pm_bcnrx, 4, iovbuf, sizeof(iovbuf));
+			ret = dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
 			if (ret < 0)
 				DHD_ERROR(("Set pm_bcnrx error (%d)\n", ret));
 
-			ret = dhd_iovar(dhd, 0, "scan_ps", (char *)&scan_ps, sizeof(scan_ps), NULL,
-					0, TRUE);
+			bcm_mkiovar("scan_ps", (char *)&scan_ps, 4, iovbuf, sizeof(iovbuf));
+			ret = dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
 			if (ret < 0)
 				DHD_ERROR(("Set scan_ps error (%d)\n", ret));
 		}
@@ -930,3 +990,192 @@ dhd_force_disable_singlcore_scan(dhd_pub_t *dhd)
 	}
 }
 #endif /* FORCE_DISABLE_SINGLECORE_SCAN */
+
+#if defined(ARGOS_CPU_SCHEDULER) && defined(CONFIG_SCHED_HMP) && \
+	!defined(DHD_LB_IRQSET)
+void
+set_irq_cpucore(unsigned int irq, cpumask_var_t default_cpu_mask,
+	cpumask_var_t affinity_cpu_mask)
+{
+	argos_irq_affinity_setup_label(irq,
+		ARGOS_IRQ_WIFI_TABLE_LABEL,
+		affinity_cpu_mask, default_cpu_mask);
+
+	argos_irq_affinity_setup_label(irq,
+		ARGOS_P2P_TABLE_LABEL,
+		affinity_cpu_mask, default_cpu_mask);
+}
+#elif defined(SET_PCIE_IRQ_CPU_CORE)
+void
+set_irq_cpucore(unsigned int irq, int set)
+{
+	if (set < 0 || set > 1) {
+		DHD_ERROR(("%s, PCIe CPU core set error\n", __FUNCTION__));
+		return;
+	}
+
+	if (set) {
+		DHD_ERROR(("%s, PCIe IRQ:%u set Core %d\n",
+			__FUNCTION__, irq, PCIE_IRQ_BIG_CORE));
+		irq_set_affinity(irq, cpumask_of(PCIE_IRQ_BIG_CORE));
+	} else {
+		DHD_ERROR(("%s, PCIe IRQ:%u set Core %d\n",
+			__FUNCTION__, irq, PCIE_IRQ_LITTLE_CORE));
+		irq_set_affinity(irq, cpumask_of(PCIE_IRQ_LITTLE_CORE));
+	}
+}
+#else
+void
+set_irq_cpucore(void)
+{
+	DHD_ERROR(("Unsupported IRQ affinity\n"));
+}
+#endif /* SET_PCIE_IRQ_CPU_CORE */
+
+#ifdef ADPS_MODE_FROM_FILE
+/*
+ * ADPSINFO = .asdp.info
+ *  - adps mode = 1 => Enable ADPS mode
+ *  - adps mode = 0 => Disalbe ADPS mode
+ *  - file not exit => Enable ADPS mode
+ */
+void dhd_adps_mode_from_file(dhd_pub_t *dhd)
+{
+	struct file *fp = NULL;
+	int ret = 0;
+	uint32 adps_mode = 0;
+	char *filepath = ADPSINFO;
+
+	/* Read ASDP on/off request from the file */
+	fp = filp_open(filepath, O_RDONLY, 0);
+	if (IS_ERR(fp)) {
+		DHD_ERROR(("[WIFI_SEC] %s: File [%s] doesn't exist\n", __FUNCTION__, filepath));
+		if ((ret = dhd_enable_adps(dhd, ADPS_ENABLE)) < 0) {
+			DHD_ERROR(("%s dhd_enable_adps failed %d\n", __FUNCTION__, ret));
+		}
+		return;
+	} else {
+		ret = kernel_read(fp, 0, (char *)&adps_mode, 4);
+		if (ret < 0) {
+			DHD_ERROR(("[WIFI_SEC] %s: File read error, ret=%d\n", __FUNCTION__, ret));
+			filp_close(fp, NULL);
+			return;
+		}
+
+		adps_mode = bcm_atoi((char *)&adps_mode);
+
+		DHD_ERROR(("[WIFI_SEC] %s: ASDP mode from file = %d\n", __FUNCTION__, adps_mode));
+		filp_close(fp, NULL);
+
+		/* Check value from the file */
+		if (adps_mode > 2) {
+			DHD_ERROR(("[WIFI_SEC] %s: Invalid value %d read from the file %s\n",
+				__FUNCTION__, adps_mode, filepath));
+			return;
+		}
+	}
+
+	if (adps_mode < 2) {
+		adps_mode = adps_mode == OFF ? ADPS_DISABLE : ADPS_ENABLE;
+
+		if ((ret = dhd_enable_adps(dhd, adps_mode)) < 0) {
+			DHD_ERROR(("[WIFI_SEC] %s: dhd_enable_adps failed %d\n",
+					__FUNCTION__, ret));
+			return;
+		}
+#ifdef WLADPS_SEAK_AP_WAR
+		if (adps_mode == ADPS_DISABLE) {
+			dhd->disabled_adps = TRUE;
+		}
+#endif /* WLADPS_SEAK_AP_WAR */
+	}
+
+	return;
+}
+#endif /* ADPS_MODE_FROM_FILE */
+
+#ifdef GEN_SOFTAP_INFO_FILE
+#define SOFTAP_INFO_FILE_FIRST_LINE	"#.softap.info"
+#define SOFTAP_INFO_BUF_SZ	512
+/*
+ * # Whether both wifi and hotspot can be turned on at the same time?
+ * DualBandConcurrency
+ * # 5Ghz band support?
+ * 5G
+ * # How many clients can be connected?
+ * maxClient
+ * # Does hotspot support PowerSave mode?
+ * PowerSave
+ * # Does android_net_wifi_set_Country_Code_Hal feature supported?
+ * HalFn_setCountryCodeHal
+ * # Does android_net_wifi_getValidChannels supported?
+ * HalFn_getValidChannels
+ */
+const char *softap_info_items[] = {
+	"DualBandConcurrency", "5G", "maxClient", "PowerSave",
+	"HalFn_setCountryCodeHal", "HalFn_getValidChannels", NULL
+};
+#if defined(BCM4361_CHIP)
+const char *softap_info_values[] = {
+	"yes", "yes", "10", "yes", "yes", "yes", NULL
+};
+#elif defined(BCM43455_CHIP) || defined(BCM43456_CHIP)
+const char *softap_info_values[] = {
+#ifdef WL_RESTRICTED_APSTA_SCC
+	"yes", "yes", "5", "no", "yes", "yes", NULL
+#else
+	"no", "yes", "10", "no", "yes", "yes", NULL
+#endif /* WL_RESTRICTED_APSTA_SCC */
+};
+#elif defined(BCM43430_CHIP)
+const char *softap_info_values[] = {
+	"no", "no", "10", "no", "yes", "yes", NULL
+};
+#else
+const char *softap_info_values[] = {
+	"UNDEF", "UNDEF", "UNDEF", "UNDEF", "UNDEF", "UNDEF", NULL
+};
+#endif /* defined(BCM4361_CHIP) */
+#endif /* GEN_SOFTAP_INFO_FILE */
+
+#ifdef GEN_SOFTAP_INFO_FILE
+uint32 sec_save_softap_info(void)
+{
+	struct file *fp = NULL;
+	char *filepath = SOFTAPINFO;
+	char temp_buf[SOFTAP_INFO_BUF_SZ];
+	int ret = -1, idx = 0, rem = 0, written = 0;
+	char *pos = NULL;
+
+	DHD_TRACE(("[WIFI_SEC] %s: Entered.\n", __FUNCTION__));
+	memset(temp_buf, 0, sizeof(temp_buf));
+
+	pos = temp_buf;
+	rem = sizeof(temp_buf);
+	written = snprintf(pos, sizeof(temp_buf), "%s\n",
+		SOFTAP_INFO_FILE_FIRST_LINE);
+	do {
+		int len = strlen(softap_info_items[idx]) +
+			strlen(softap_info_values[idx]) + 2;
+		pos += written;
+		rem -= written;
+		if (len > rem) {
+			break;
+		}
+		written = snprintf(pos, rem, "%s=%s\n",
+			softap_info_items[idx], softap_info_values[idx]);
+	} while (softap_info_items[++idx] != NULL);
+
+	fp = filp_open(filepath, O_RDWR | O_CREAT, 0664);
+	if (IS_ERR(fp) || (fp == NULL)) {
+		DHD_ERROR(("[WIFI_SEC] %s: %s File open failed.\n",
+			SOFTAPINFO, __FUNCTION__));
+	} else {
+		ret = write_filesystem(fp, fp->f_pos, temp_buf, strlen(temp_buf));
+		DHD_INFO(("[WIFI_SEC] %s done. ret : %d\n", __FUNCTION__, ret));
+		DHD_ERROR(("[WIFI_SEC] save %s file.\n", SOFTAPINFO));
+		filp_close(fp, NULL);
+	}
+	return ret;
+}
+#endif /* GEN_SOFTAP_INFO_FILE */

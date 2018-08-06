@@ -54,8 +54,6 @@
 
 #define RKP_PGT_BITMAP_LEN 0x20000
 
-#ifdef CONFIG_SOC_EXYNOS8890
-
 #define   TIMA_VMM_START        0xB0500000
 #define   TIMA_VMM_SIZE         1<<20
 
@@ -79,8 +77,6 @@
 #define CRED_JAR_RO "cred_jar_ro"
 #define TSEC_JAR	"tsec_jar"
 #define VFSMNT_JAR	"vfsmnt_cache"
-
-#endif /* CONFIG_SOC_EXYNOS7420 */
 
 extern u8 rkp_pgt_bitmap[];
 extern u8 rkp_map_bitmap[];
@@ -110,6 +106,9 @@ struct rkp_init {
 	u64 _srodata;
 	u64 _erodata;
 	u32 large_memory;
+#ifdef CONFIG_UNMAP_KERNEL_AT_EL0
+	u64 tramp_pgd;
+#endif
 } __attribute__((packed));
 
 #ifdef CONFIG_RKP_KDP

@@ -1,7 +1,7 @@
 /*
  * Common function shared by Linux WEXT, cfg80211 and p2p drivers
  *
- * Copyright (C) 1999-2017, Broadcom Corporation
+ * Copyright (C) 1999-2018, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -24,7 +24,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wldev_common.c 697414 2017-05-03 14:48:20Z $
+ * $Id: wldev_common.c 733436 2017-11-28 10:53:14Z $
  */
 
 #include <osl.h>
@@ -385,6 +385,12 @@ int wldev_set_band(
 {
 	int error = -1;
 
+#ifdef DHD_2G_ONLY_SUPPORT
+	if (band != WLC_BAND_2G) {
+		WLDEV_ERROR(("Enabled DHD only Band B support!! Blocked Band A!!\n"));
+		band = WLC_BAND_2G;
+	}
+#endif /* DHD_2G_ONLY_SUPPORT */
 	if ((band == WLC_BAND_AUTO) || (band == WLC_BAND_5G) || (band == WLC_BAND_2G)) {
 		error = wldev_ioctl_set(dev, WLC_SET_BAND, &band, sizeof(band));
 		if (!error)
@@ -410,7 +416,7 @@ extern chanspec_t
 wl_chspec_driver_to_host(chanspec_t chanspec);
 #define WL_EXTRA_BUF_MAX 2048
 int wldev_get_mode(
-	struct net_device *dev, uint8 *cap)
+	struct net_device *dev, uint8 *cap, uint8 caplen)
 {
 	int error = 0;
 	int chanspec = 0;
@@ -441,24 +447,24 @@ int wldev_get_mode(
 
 	if (band == WL_CHANSPEC_BAND_2G) {
 		if (bss->n_cap)
-			strcpy(cap, "n");
+			strncpy(cap, "n", caplen);
 		else
-			strcpy(cap, "bg");
+			strncpy(cap, "bg", caplen);
 	} else if (band == WL_CHANSPEC_BAND_5G) {
 		if (bandwidth == WL_CHANSPEC_BW_80)
-			strcpy(cap, "ac");
+			strncpy(cap, "ac", caplen);
 		else if ((bandwidth == WL_CHANSPEC_BW_40) || (bandwidth == WL_CHANSPEC_BW_20)) {
 			if ((bss->nbss_cap & 0xf00) && (bss->n_cap))
-				strcpy(cap, "n|ac");
+				strncpy(cap, "n|ac", caplen);
 			else if (bss->n_cap)
-				strcpy(cap, "n");
+				strncpy(cap, "n", caplen);
 			else if (bss->vht_cap)
-				strcpy(cap, "ac");
+				strncpy(cap, "ac", caplen);
 			else
-				strcpy(cap, "a");
+				strncpy(cap, "a", caplen);
 		} else {
 			WLDEV_ERROR(("%s:Mode get failed\n", __FUNCTION__));
-			return -1;
+			error = BCME_ERROR;
 		}
 
 	}

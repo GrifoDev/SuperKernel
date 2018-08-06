@@ -2,7 +2,7 @@
  * Common stats definitions for clients of dongle
  * ports
  *
- * Copyright (C) 1999-2017, Broadcom Corporation
+ * Copyright (C) 1999-2018, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -25,14 +25,14 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dngl_stats.h 681269 2017-01-25 10:59:55Z $
+ * $Id: dngl_stats.h 681171 2017-01-25 05:27:08Z $
  */
 
 #ifndef _dngl_stats_h_
 #define _dngl_stats_h_
 
-#include <proto/ethernet.h>
-#include <proto/802.11.h>
+#include <ethernet.h>
+#include <802.11.h>
 
 typedef struct {
 	unsigned long	rx_packets;		/* total packets received */
@@ -98,7 +98,7 @@ typedef enum {
 						     * element UTF-8 SSID bit is set
 						     */
 #define WIFI_CAPABILITY_COUNTRY      0x00000020     /* set is 802.11 Country Element is present */
-
+#define PACK_ATTRIBUTE __attribute__ ((packed))
 typedef struct {
 	wifi_interface_mode mode;     /* interface mode */
 	uint8 mac_addr[6];               /* interface mac address (self) */
@@ -109,7 +109,7 @@ typedef struct {
 	uint8 bssid[ETHER_ADDR_LEN];     /* bssid */
 	uint8 ap_country_str[3];         /* country string advertised by AP */
 	uint8 country_str[3];            /* country string for this association */
-} __attribute__ ((packed)) wifi_interface_info;
+} wifi_interface_info;
 
 typedef wifi_interface_info *wifi_interface_handle;
 
@@ -149,7 +149,7 @@ typedef struct {
 /* channel statistics */
 typedef struct {
 	wifi_channel_info channel;  /* channel */
-	uint32 on_time;				/* msecs the radio is awake (32 bits number
+	uint32 on_time;         	/* msecs the radio is awake (32 bits number
 				         * accruing over time)
 					 */
 	uint32 cca_busy_time;          /* msecs the CCA register is busy (32 bits number
