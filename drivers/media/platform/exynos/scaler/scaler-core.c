@@ -3083,6 +3083,7 @@ static int sc_m2m1shot_prepare_format(struct m2m1shot_context *m21ctx,
 	struct sc_frame *frame = (dir == DMA_TO_DEVICE) ?
 					&ctx->s_frame : &ctx->d_frame;
 	s32 size_min = (dir == DMA_TO_DEVICE) ? 16 : 4;
+	bool crop_modified = false;	
 	int i;
 
 	frame->sc_fmt = sc_find_format(ctx->sc_dev, fmt->fmt,
@@ -3095,65 +3096,108 @@ static int sc_m2m1shot_prepare_format(struct m2m1shot_context *m21ctx,
 		return -EINVAL;
 	}
 
+	if ((fmt->width & frame->sc_fmt->h_shift) ||
+			(fmt->height & frame->sc_fmt->v_shift)) {
+		dev_err(ctx->sc_dev->dev,
+			"%s: Invalid %s image size %dx%d for %s\n", __func__,
+			(dir == DMA_TO_DEVICE) ? "src" : "dst",
+			fmt->width, fmt->height, frame->sc_fmt->name);
+	}
+
 	if (!fmt->crop.width)
 		fmt->crop.width = fmt->width;
 	if (!fmt->crop.height)
 		fmt->crop.height = fmt->height;
 
-	if (!fmt->width || !fmt->height ||
-				!fmt->crop.width || !fmt->crop.height) {
+	frame->width = fmt->width;
+	frame->height = fmt->height;
+	frame->crop = fmt->crop;
+
+	/* just checking for an informative message */
+	if (((fmt->crop.left | fmt->crop.width) & frame->sc_fmt->h_shift) ||
+		((fmt->crop.top | fmt->crop.height) & frame->sc_fmt->v_shift)) {
+		dev_info(ctx->sc_dev->dev,
+			"%s: shrinking %s image of %dx%d@(%d,%d) for %s\n",
+			__func__, (dir == DMA_TO_DEVICE) ? "src" : "dst",
+			fmt->crop.width, fmt->crop.height, fmt->crop.left,
+			fmt->crop.top, frame->sc_fmt->name);
+		crop_modified = true;
+	}
+
+	if (frame->crop.left & frame->sc_fmt->h_shift) {
+		frame->crop.left++;
+		frame->crop.width--;
+	}
+
+	if (frame->crop.top & frame->sc_fmt->v_shift) {
+		frame->crop.top++;
+		frame->crop.height--;
+	}
+
+	if (frame->crop.width & frame->sc_fmt->h_shift)
+		frame->crop.width--;
+
+	if (frame->crop.height & frame->sc_fmt->v_shift)
+		frame->crop.height--;
+
+	if (crop_modified)
+		dev_info(ctx->sc_dev->dev,
+			"%s: into %dx%d@(%d,%d)\n", __func__, frame->crop.width,
+			frame->crop.height, frame->crop.left, frame->crop.top);
+
+	if (!frame->width || !frame->height ||
+				!frame->crop.width || !frame->crop.height) {
 		dev_err(ctx->sc_dev->dev,
 			"%s: neither width nor height can be zero\n",
 			__func__);
 		return -EINVAL;
 	}
 
-	if ((fmt->width > 8192) || (fmt->height > 8192)) {
+	if ((frame->width > 8192) || (frame->height > 8192)) {
 		dev_err(ctx->sc_dev->dev,
 			"%s: requested image size %dx%d exceed 8192x8192\n",
-			__func__, fmt->width, fmt->height);
+			__func__, frame->width, frame->height);
 		return -EINVAL;
 	}
 
-	if ((fmt->crop.width < size_min) || (fmt->crop.height < size_min)) {
+	if ((frame->crop.width < size_min) || (frame->crop.height < size_min)) {
 		dev_err(ctx->sc_dev->dev,
 			"%s: image size %dx%d must not less than %dx%d\n",
-			__func__, fmt->width, fmt->height, size_min, size_min);
+			__func__, frame->width, frame->height,
+			size_min, size_min);
 		return -EINVAL;
 	}
 
-	if ((fmt->crop.left < 0) || (fmt->crop.top < 0)) {
+	if ((frame->crop.left < 0) || (frame->crop.top < 0)) {
 		dev_err(ctx->sc_dev->dev,
 			"%s: negative crop offset(%d, %d) is not supported\n",
-			__func__, fmt->crop.left, fmt->crop.top);
+			__func__, frame->crop.left, frame->crop.top);
 		return -EINVAL;
 	}
 
-	if ((fmt->width < (fmt->crop.width + fmt->crop.left)) ||
-		(fmt->height < (fmt->crop.height + fmt->crop.top))) {
+	if ((frame->width < (frame->crop.width + frame->crop.left)) ||
+		(frame->height < (frame->crop.height + frame->crop.top))) {
 		dev_err(ctx->sc_dev->dev,
 			"%s: crop region(%d,%d,%d,%d) is larger than image\n",
-			__func__, fmt->crop.left, fmt->crop.top,
-			fmt->crop.width, fmt->crop.height);
+			__func__, frame->crop.left, frame->crop.top,
+			frame->crop.width, frame->crop.height);
 		return -EINVAL;
 	}
 
 	for (i = 0; i < frame->sc_fmt->num_planes; i++) {
 		if (sc_fmt_is_ayv12(fmt->fmt)) {
 			unsigned int y_size, c_span;
-			y_size = fmt->width * fmt->height;
-			c_span = ALIGN(fmt->width / 2, 16);
-			bytes_used[i] = y_size + (c_span * fmt->height / 2) * 2;
+
+			y_size = frame->width * frame->height;
+			c_span = ALIGN(frame->width / 2, 16);
+			bytes_used[i] = y_size;
+			bytes_used[i] += (c_span * frame->height / 2) * 2;
 		} else {
-			bytes_used[i] = fmt->width * fmt->height;
+			bytes_used[i] = frame->width * frame->height;
 			bytes_used[i] *= frame->sc_fmt->bitperpixel[i];
 			bytes_used[i] /= 8;
 		}
 	}
-
-	frame->width = fmt->width;
-	frame->height = fmt->height;
-	frame->crop = fmt->crop;
 
 	return frame->sc_fmt->num_planes;
 }

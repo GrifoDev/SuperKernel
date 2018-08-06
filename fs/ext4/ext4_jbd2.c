@@ -87,8 +87,14 @@ int __ext4_journal_stop(const char *where, unsigned int line, handle_t *handle)
 		ext4_put_nojournal(handle);
 		return 0;
 	}
-	sb = handle->h_transaction->t_journal->j_private;
+
 	err = handle->h_err;
+	if (!handle->h_transaction) {
+		rc = jbd2_journal_stop(handle);
+		return err ? err : rc;
+	}
+
+	sb = handle->h_transaction->t_journal->j_private;
 	rc = jbd2_journal_stop(handle);
 
 	if (!err)
@@ -310,6 +316,14 @@ int __ext4_handle_dirty_super(const char *where, unsigned int line,
 {
 	struct buffer_head *bh = EXT4_SB(sb)->s_sbh;
 	int err = 0;
+
+	if (unlikely(le16_to_cpu(EXT4_SB(sb)->s_es->s_magic) !=
+			EXT4_SUPER_MAGIC)) {
+		print_bh(sb, bh, 0, EXT4_BLOCK_SIZE(sb));
+		if (test_opt(sb, ERRORS_PANIC))
+			panic("EXT4(Can not find EXT4_SUPER_MAGIC");
+		return -EIO;
+	}
 
 	ext4_superblock_csum_set(sb);
 	if (ext4_handle_valid(handle)) {

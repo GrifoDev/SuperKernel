@@ -298,7 +298,7 @@
 	};
 
 	chosen {
-		bootargs = "console=ttySAC4,115200 clk_ignore_unused ess_setup=0x86000000 androidboot.hardware=samsungexynos8890 ess_setup=0x86000000 pmic_info=3 androidboot.debug_level=0x4948";
+		bootargs = "console=ttySAC4,115200 clk_ignore_unused ess_setup=0x86000000 androidboot.hardware=samsungexynos8890 ess_setup=0x86000000 pmic_info=3 androidboot.debug_level=0x4948 kpti=yes";
 		linux,initrd-start = <0x82000000>;
 		linux,initrd-end = <0x820FFFFF>;
 	};
@@ -346,10 +346,17 @@
 	};
 
 	pinctrl@10580000 {
-		hall_irq: hall-irq {
+		hall_irq_nopull: hall-irq-nopull {
 			samsung,pins = "gpa0-1";
 			samsung,pin-function = <0xf>;
 			samsung,pin-pud = <0>;
+			samsung,pin-drv = <0>;
+		};
+
+		hall_irq_pulldown: hall-irq-pulldown {
+			samsung,pins = "gpa0-1";
+			samsung,pin-function = <0xf>;
+			samsung,pin-pud = <1>;
 			samsung,pin-drv = <0>;
 		};
 
@@ -377,9 +384,11 @@
 	hall {
 		status = "okay";
 		compatible = "hall";
-		pinctrl-names = "default";
-		pinctrl-0 = <&hall_irq>;
+		pinctrl-names = "hall-irq_nopull", "hall-irq_pulldown";
+		pinctrl-0 = <&hall_irq_nopull>;
+		pinctrl-1 = <&hall_irq_pulldown>;
 		hall,gpio_flip_cover = <&gpa0 1 0>;
+		sub_pcb_det,gpio_flip_cover = <&gpa3 0 0>;
 	};
 
 	certify_hall {
@@ -1153,7 +1162,7 @@
 		desc-size = <4>;
 		card-detect-delay = <200>;
 		data-timeout = <200>;
-		hto-timeout = <550>;
+		hto-timeout = <80>;
 		clock-frequency = <800000000>;
 		samsung,dw-mshc-sdr-timing = <3 0 2 0>;
 		samsung,dw-mshc-ddr-timing = <3 0 2 1>;
@@ -3139,10 +3148,10 @@
 			net_boost,node="wlan0";
 			net_boost,table_size = <4>;
 			net_boost,table= <
-				60 1664000 0 1586000 0 0 0 0 0 0
-				150 1664000 0 1586000 0 0 0 0 0 0
-				200 1872000 0 1586000 0 845000 400000 1 1 1
-				300 2288000 0 1586000 0 845000 400000 1 1 1
+				40 1664000 0 1586000 0 0 0 0 0 0
+				80 1976000 0 1586000 0 0 0 0 0 0
+				150 2184000 0 1586000 0 845000 400000 1 1 1
+				250 2288000 0 1586000 0 845000 400000 1 1 1
 				>;
 		};
 		boot_device@9 {

@@ -3,3 +3,4 @@
 /dev/goldfish_pipe        0666   system     system
 /dev/ttyS*                0666   system     system
 /proc                     0666   system     system
+/dev/goldfish_sync        0666   system     system

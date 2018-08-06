@@ -112,9 +112,6 @@ static struct dentry *proc_mount(struct file_system_type *fs_type,
 		ns = task_active_pid_ns(current);
 		options = data;
 
-		if (!capable(CAP_SYS_ADMIN) && !fs_fully_visible(fs_type))
-			return ERR_PTR(-EPERM);
-
 		/* Does the mounter have privilege over the pid namespace? */
 		if (!ns_capable(ns->user_ns, CAP_SYS_ADMIN))
 			return ERR_PTR(-EPERM);
@@ -166,40 +163,8 @@ static struct file_system_type proc_fs_type = {
 	.name		= "proc",
 	.mount		= proc_mount,
 	.kill_sb	= proc_kill_sb,
-	.fs_flags	= FS_USERNS_MOUNT,
+	.fs_flags	= FS_USERNS_VISIBLE | FS_USERNS_MOUNT,
 };
-
-#ifdef CONFIG_DEFERRED_INITCALLS
-extern void do_deferred_initcalls(void);
-
-static ssize_t deferred_initcalls_read_proc(struct file *file, char __user *buf,
-					   size_t nbytes, loff_t *ppos)
-{
-	static int deferred_initcalls_done = 0;
-	int len, ret;
-	char tmp[3] = "1\n";
-
-	if (*ppos >= 3)
-		return 0;
-
-	if ((! deferred_initcalls_done) && ! (*ppos)) {
-		tmp[0] = '0';
-		do_deferred_initcalls();
-		deferred_initcalls_done = 1;
-	}
-
-	len = min(nbytes, (size_t)3);
-	ret = copy_to_user(buf, tmp, len);
-	if (ret)
-		return -EFAULT;
-	*ppos += len;
-	return len;
-}
-
-static const struct file_operations deferred_initcalls_fops = {
-	.read			= deferred_initcalls_read_proc,
-};
-#endif
 
 void __init proc_root_init(void)
 {
@@ -212,9 +177,6 @@ void __init proc_root_init(void)
 
 	proc_self_init();
 
-#ifdef CONFIG_DEFERRED_INITCALLS
-	proc_create("deferred_initcalls", 0, NULL, &deferred_initcalls_fops);
-#endif	
 	proc_thread_self_init();
 	proc_symlink("mounts", NULL, "self/mounts");
 

@@ -13,7 +13,6 @@
  * published by the Free Software Foundation.
  */
 
-/memreserve/ 0xF0000000 0x8800000;     /* CP memory(128MB) + AP-CP shared memory(8MB) */
 #include <dt-bindings/clock/exynos8890.h>
 #include <dt-bindings/ufs/ufs.h>
 #include <dt-bindings/sysmmu/sysmmu.h>
@@ -1871,6 +1870,7 @@
 		compatible = "arm,mali";
 		reg = <0x0 0x14AC0000 0x5000>;
 		interrupts = <0 225 0>, <0 226 0>, <0 224 0>;
+		interrupt-names = "JOB", "MMU", "GPU";
 		samsung,power-domain = <&pd_g3d>;
 	};
 
@@ -3239,7 +3239,7 @@
 		};
 		booster_key@8 {
 			input_booster,label = "PEN HOVER";
-			input_booster,type = <7>;	/* BOOSTER_DEVICE_MOUSE */
+			input_booster,type = <7>;	/* BOOSTER_DEVICE_SPEN */
 
 			input_booster,levels = <1 2>;
 
@@ -3255,6 +3255,23 @@
 			input_booster,head_times = <130 0>;
 			input_booster,tail_times = <0 500>;
 			input_booster,phase_times = <0 0>;
+		};
+		booster_key@9 {
+			input_booster,label = "PEN";
+			input_booster,type = <8>;	/* BOOSTER_DEVICE_SPEN */
+
+			input_booster,levels = <1 2>;
+
+			/* Frequency table */
+			/* for level	:	1_Head 2_Tail*/
+			input_booster,cpu_freqs = <1456000 728000>;
+			input_booster,hmp_boost = <1 1>;
+			input_booster,kfc_freqs = <754000 754000>;
+			input_booster,bimc_freqs = <0 0>;
+
+			/* Time table */
+			input_booster,head_times = <200 0>;
+			input_booster,tail_times = <0 600>;
 		}; // Input Booster -
 		/* If you need to add new key type, add it this position */
 	};

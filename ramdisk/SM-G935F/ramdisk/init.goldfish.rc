@@ -1,6 +1,6 @@
 
 on early-init
-    mount debugfs debugfs /sys/kernel/debug
+    mount debugfs debugfs /sys/kernel/debug mode=755
 
 on init
 
@@ -10,6 +10,10 @@ on boot
     setprop net.eth0.dns1 10.0.2.3
     setprop net.dns1 10.0.2.3
     setprop net.gprs.local-ip 10.0.2.15
+    setprop persist.adb.notify 1
+    setprop persist.sys.usb.config adb
+    setprop qemu.adb.secure 0
+    setprop ro.adb.secure 1
     setprop ro.radio.use-ppp no
     setprop ro.build.product generic
     setprop ro.product.device generic
@@ -64,6 +68,12 @@ on boot
 on fs
         mount_all /fstab.goldfish
 
+#emulator is not much useful before boot complete
+#start it later
+on property:sys.boot_completed=1
+    setprop sys.usb.config adb
+    start adbd
+
 service goldfish-setup /system/etc/init.goldfish.sh
     user root
     group root
@@ -90,10 +100,20 @@ service qemud /system/bin/qemud
 # if it does, it redirects its output to the device
 # named by the androidboot.console kernel option
 # if not, is simply exits immediately
-
+# logd user added to prevent logcat from logging content.
+# log group added to support access to read logs socket.
 service goldfish-logcat /system/bin/logcat -Q
+    user logd
+    group log
     oneshot
 
 service fingerprintd /system/bin/fingerprintd
     class late_start
     user system
+
+service bugreport /system/bin/dumpstate -d -p -B \
+        -o /data/data/com.android.shell/files/bugreports/bugreport
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116

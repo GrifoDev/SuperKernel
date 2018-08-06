@@ -1,7 +1,7 @@
 /*
  * Custom OID/ioctl related helper functions.
  *
- * Copyright (C) 1999-2017, Broadcom Corporation
+ * Copyright (C) 1999-2018, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -22,7 +22,7 @@
  * other than the GPL, without Broadcom's express prior written consent.
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl_utils.h 681269 2017-01-25 10:59:55Z $
+ * $Id: wlioctl_utils.h 614820 2016-01-23 17:16:17Z $
  */
 
 #ifndef _wlioctl_utils_h_
@@ -43,6 +43,8 @@ extern int cca_analyze(cca_congest_channel_req_t *input[], int num_chans,
 
 extern int wl_cntbuf_to_xtlv_format(void *ctx, void *cntbuf,
 	int buflen, uint32 corerev);
+
+extern const char * wl_get_reinit_rc_name(int rc);
 
 /* Get data pointer of wlc layer counters tuple from xtlv formatted counters IOVar buffer. */
 #define GET_WLCCNT_FROM_CNTBUF(cntbuf)						\
