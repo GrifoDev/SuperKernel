@@ -154,6 +154,15 @@ static int xhci_plat_probe(struct platform_device *pdev)
 			goto disable_clk;
 	}
 
+	if (of_device_is_compatible(pdev->dev.of_node,
+				    "marvell,armada-375-xhci") ||
+	    of_device_is_compatible(pdev->dev.of_node,
+				    "marvell,armada-380-xhci")) {
+		ret = xhci_mvebu_mbus_init_quirk(pdev);
+		if (ret)
+			goto disable_clk;
+	}
+
 	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
 	if (ret)
 		goto disable_clk;
@@ -174,6 +183,9 @@ static int xhci_plat_probe(struct platform_device *pdev)
 	if ((node && of_property_read_bool(node, "usb3-lpm-capable")) ||
 			(pdata && pdata->usb3_lpm_capable))
 		xhci->quirks |= XHCI_LPM_SUPPORT;
+#ifdef CONFIG_USB_HOST_L1_SUPPORT
+	xhci->quirks |= XHCI_LPM_L1_SUPPORT;
+#endif
 	/*
 	 * Set the xHCI pointer before xhci_plat_setup() (aka hcd_driver.reset)
 	 * is called by usb_add_hcd().
@@ -212,6 +224,18 @@ static int xhci_plat_remove(struct platform_device *dev)
 	struct xhci_hcd	*xhci = hcd_to_xhci(hcd);
 	struct clk *clk = xhci->clk;
 
+#if defined(CONFIG_USB_HOST_SAMSUNG_FEATURE)
+	pr_info("%s \n", __func__);
+	/* In order to prevent kernel panic */
+	if(!pm_runtime_suspended(&xhci->shared_hcd->self.root_hub->dev)) {
+		pr_info("%s, shared_hcd pm_runtime_forbid\n", __func__);
+		pm_runtime_forbid(&xhci->shared_hcd->self.root_hub->dev);
+	}
+	if(!pm_runtime_suspended(&xhci->main_hcd->self.root_hub->dev)) {
+		pr_info("%s, main_hcd pm_runtime_forbid\n", __func__);
+		pm_runtime_forbid(&xhci->main_hcd->self.root_hub->dev);
+	}
+#endif
 	xhci->xhc_state |= XHCI_STATE_REMOVING;
 
 	usb_remove_hcd(xhci->shared_hcd);

@@ -27,15 +27,10 @@
 #include <linux/exynos-ss.h>
 #include <asm/core_regs.h>
 #include "sched/sched.h"
-#ifdef CONFIG_SEC_DUMP_SUMMARY
-#include <linux/sec_debug.h>
-#endif
+#include <linux/console.h>
 
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
-
-/* Machine specific panic information string */
-char *mach_panic_string;
 
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask;
@@ -105,8 +100,10 @@ void panic(const char *fmt, ...)
 	 * stop themself or will wait until they are stopped by the 1st CPU
 	 * with smp_send_stop().
 	 */
-	if (!spin_trylock(&panic_lock))
+	if (!spin_trylock(&panic_lock)) {
+		exynos_ss_hook_hardlockup_exit();
 		panic_smp_self_stop();
+	}
 
 	console_verbose();
 	bust_spinlocks(1);
@@ -114,7 +111,7 @@ void panic(const char *fmt, ...)
 	vsnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 
-#ifdef CONFIG_KFAULT_AUTO_SUMMARY
+#ifdef CONFIG_SEC_DEBUG_AUTO_SUMMARY
 	if(buf[strlen(buf)-1] == '\n')
 		buf[strlen(buf)-1] = '\0';
 #endif
@@ -138,10 +135,7 @@ void panic(const char *fmt, ...)
 	if (!test_taint(TAINT_DIE) && oops_in_progress <= 1)
 		dump_stack();
 #endif
-#ifdef CONFIG_SEC_DUMP_SUMMARY
-	sec_debug_save_panic_info(buf,
-		(unsigned long)__builtin_return_address(0));
-#endif
+
 	sysrq_sched_debug_show();
 	/*
 	 * If we have crashed and we have a crash kernel loaded let it handle
@@ -444,11 +438,6 @@ late_initcall(init_oops_id);
 void print_oops_end_marker(void)
 {
 	init_oops_id();
-
-	if (mach_panic_string)
-		printk(KERN_WARNING "Board Information: %s\n",
-		       mach_panic_string);
-
 	pr_warn("---[ end trace %016llx ]---\n", (unsigned long long)oops_id);
 }
 

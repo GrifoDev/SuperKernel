@@ -396,8 +396,6 @@ extern int ignore_fs_panic;
 
 static void ext4_handle_error(struct super_block *sb, char* buf)
 {
-	print_debug_bdinfo(sb);
-
 	if (sb->s_flags & MS_RDONLY || ignore_fs_panic)
 		return;
 
@@ -421,8 +419,8 @@ static void ext4_handle_error(struct super_block *sb, char* buf)
 		if (EXT4_SB(sb)->s_journal &&
 		  !(EXT4_SB(sb)->s_journal->j_flags & JBD2_REC_ERR))
 			return;
-		panic("EXT4-fs (device %s): panic! %s\n",
-			sb->s_id, buf?buf:"no message");
+		panic("EXT4(%s:%s\n",
+			sb->s_id, buf?buf:"no message)");
 	}
 }
 
@@ -446,8 +444,8 @@ void __ext4_error(struct super_block *sb, const char *function,
 		       sb->s_id, function, line, current->comm, &vaf);
 		page_buf = (char *)__get_free_page(GFP_ATOMIC);
 		if (page_buf)
-			sprintf(page_buf, "%s %s:%u: %pV",
-					"***Keep this device after RDX, do not reboot***", function, line, &vaf);
+			sprintf(page_buf, "%s:%u:%pV)Keep this device after RDX, do not reboot",
+					function, line, &vaf);
 		else
 			printk(KERN_ERR "__ext4_error: failed to allocate page buf for panic msg\n");
 		va_end(args);
@@ -485,8 +483,8 @@ void __ext4_error_inode(struct inode *inode, const char *function,
 			       current->comm, &vaf);
 		page_buf = (char *)__get_free_page(GFP_ATOMIC);
 		if (page_buf)
-			sprintf(page_buf, "%s %s:%u: %pV",
-					"***Keep this device after RDX, do not reboot***", function, line, &vaf);
+			sprintf(page_buf, "%s:%u:%pV)Keep this device after RDX, do not reboot",
+					function, line, &vaf);
 		else
 			printk(KERN_ERR "__ext4_error: failed to allocate page buf for panic msg\n");
 		va_end(args);
@@ -531,8 +529,8 @@ void __ext4_error_file(struct file *file, const char *function,
 			       current->comm, path, &vaf);
 		page_buf = (char *)__get_free_page(GFP_ATOMIC);
 		if (page_buf)
-			sprintf(page_buf, "%s %s:%u: %pV",
-					"***Keep this device after RDX, do not reboot***", function, line, &vaf);
+			sprintf(page_buf, "%s:%u:%pV)Keep this device after RDX, do not reboot",
+					function, line, &vaf);
 		else
 			printk(KERN_ERR "__ext4_error: failed to allocate page buf for panic msg\n");
 		va_end(args);
@@ -722,8 +720,8 @@ __acquires(bitlock)
 		printk(KERN_CONT "%pV\n", &vaf);
 		page_buf = (char *)__get_free_page(GFP_ATOMIC);
 		if (page_buf)
-			sprintf(page_buf, "%s %s:%u: %pV",
-					"***Keep this device after RDX, do not reboot***", function, line, &vaf);
+			sprintf(page_buf, "%s:%u:%pV)Keep this device after RDX, do not reboot",
+					function, line, &vaf);
 		else
 			printk(KERN_ERR "__ext4_error: failed to allocate page buf for panic msg\n");
 		va_end(args);
@@ -836,6 +834,10 @@ static void dump_orphan_list(struct super_block *sb, struct ext4_sb_info *sbi)
 		       inode->i_mode, inode->i_nlink,
 		       NEXT_ORPHAN(inode));
 	}
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+	if (EXT4_I(inode)->i_crypt_info)
+		ext4_free_encryption_info(inode, EXT4_I(inode)->i_crypt_info);
+#endif
 }
 
 static void ext4_put_super(struct super_block *sb)
@@ -875,6 +877,10 @@ static void ext4_put_super(struct super_block *sb)
 		remove_proc_entry("options", sbi->s_proc);
 		remove_proc_entry(sb->s_id, ext4_proc_root);
 	}
+
+	if (le32_to_cpu(sbi->s_es->s_sec_magic) == EXT4_SEC_DATA_MAGIC)
+		sysfs_delete_link(&ext4_kset->kobj, &sbi->s_kobj, "userdata");
+
 	kobject_del(&sbi->s_kobj);
 
 	for (i = 0; i < sbi->s_gdb_count; i++)
@@ -970,7 +976,9 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
 	atomic_set(&ei->i_ioend_count, 0);
 	atomic_set(&ei->i_unwritten, 0);
 	INIT_WORK(&ei->i_rsv_conversion_work, ext4_end_io_rsv_work);
-
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+	ei->i_crypt_info = NULL;
+#endif
 	return &ei->vfs_inode;
 }
 
@@ -1048,6 +1056,10 @@ void ext4_clear_inode(struct inode *inode)
 		jbd2_free_inode(EXT4_I(inode)->jinode);
 		EXT4_I(inode)->jinode = NULL;
 	}
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+	if (EXT4_I(inode)->i_crypt_info)
+		ext4_free_encryption_info(inode, EXT4_I(inode)->i_crypt_info);
+#endif
 }
 
 static struct inode *ext4_nfs_get_inode(struct super_block *sb,
@@ -1146,6 +1158,7 @@ static const struct dquot_operations ext4_quota_operations = {
 	.write_info	= ext4_write_info,
 	.alloc_dquot	= dquot_alloc,
 	.destroy_dquot	= dquot_destroy,
+	.get_next_id	= dquot_get_next_id,
 };
 
 static const struct quotactl_ops ext4_qctl_operations = {
@@ -1165,7 +1178,8 @@ static const struct quotactl_ops ext4_qctl_sysfile_operations = {
 	.get_info	= dquot_get_dqinfo,
 	.set_info	= dquot_set_dqinfo,
 	.get_dqblk	= dquot_get_dqblk,
-	.set_dqblk	= dquot_set_dqblk
+	.set_dqblk	= dquot_set_dqblk,
+	.get_nextdqblk	= dquot_get_next_dqblk,
 };
 #endif
 
@@ -1205,7 +1219,7 @@ enum {
 	Opt_commit, Opt_min_batch_time, Opt_max_batch_time, Opt_journal_dev,
 	Opt_journal_path, Opt_journal_checksum, Opt_journal_async_commit,
 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
-	Opt_data_err_abort, Opt_data_err_ignore,
+	Opt_data_err_abort, Opt_data_err_ignore, Opt_test_dummy_encryption,
 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_jqfmt_vfsv1, Opt_quota,
 	Opt_noquota, Opt_barrier, Opt_nobarrier, Opt_err,
@@ -1292,6 +1306,7 @@ static const match_table_t tokens = {
 	{Opt_init_itable, "init_itable"},
 	{Opt_noinit_itable, "noinit_itable"},
 	{Opt_max_dir_size_kb, "max_dir_size_kb=%u"},
+	{Opt_test_dummy_encryption, "test_dummy_encryption"},
 	{Opt_removed, "check=none"},	/* mount option from ext2/3 */
 	{Opt_removed, "nocheck"},	/* mount option from ext2/3 */
 	{Opt_removed, "reservation"},	/* mount option from ext2/3 */
@@ -1491,6 +1506,7 @@ static const struct mount_opts {
 	{Opt_jqfmt_vfsv0, QFMT_VFS_V0, MOPT_QFMT},
 	{Opt_jqfmt_vfsv1, QFMT_VFS_V1, MOPT_QFMT},
 	{Opt_max_dir_size_kb, 0, MOPT_GTE0},
+	{Opt_test_dummy_encryption, 0, MOPT_GTE0},
 	{Opt_debug_bdinfo, EXT4_MOUNT_DEBUG_BDINFO, MOPT_SET},
 	{Opt_err, 0, 0}
 };
@@ -1662,6 +1678,15 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
 		}
 		*journal_ioprio =
 			IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, arg);
+	} else if (token == Opt_test_dummy_encryption) {
+#ifdef CONFIG_EXT4_FS_ENCRYPTION
+		sbi->s_mount_flags |= EXT4_MF_TEST_DUMMY_ENCRYPTION;
+		ext4_msg(sb, KERN_WARNING,
+			 "Test dummy encryption mode enabled");
+#else
+		ext4_msg(sb, KERN_WARNING,
+			 "Test dummy encryption mount option ignored");
+#endif
 	} else if (m->flags & MOPT_DATAJ) {
 		if (is_remount) {
 			if (!sbi->s_journal)
@@ -2545,6 +2570,32 @@ static int parse_strtoull(const char *buf,
 	return ret;
 }
 
+static ssize_t sec_fs_stat_show(struct ext4_attr *a,
+				struct ext4_sb_info *sbi, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "\"%s\":\"%llu\",\"%s\":\"%llu\",\"%s\":\"%u\",\"%s\":\"%llu\",\"%s\":\"%u\"\n",
+		"F_BLOCKS",
+		(unsigned long long)ext4_blocks_count(sbi->s_es),
+		"F_BFREE",
+		(unsigned long long)percpu_counter_sum_positive(
+						&sbi->s_freeclusters_counter) -
+		(unsigned long long)percpu_counter_sum_positive(
+						&sbi->s_dirtyclusters_counter),
+		"F_FILES",
+		(unsigned int)le32_to_cpu(sbi->s_es->s_inodes_count),
+		"F_FFREE",
+		(unsigned long long)percpu_counter_sum_positive(
+						&sbi->s_freeinodes_counter),
+		"FS_ERROR",
+		(unsigned int)le32_to_cpu(sbi->s_es->s_error_count));
+}
+
+static ssize_t sec_fs_freefrag_show(struct ext4_attr *a,
+				struct ext4_sb_info *sbi, char *buf)
+{
+	return ext4_mb_freefrag_show(sbi, buf);
+}
+
 static ssize_t delayed_allocation_blocks_show(struct ext4_attr *a,
 					      struct ext4_sb_info *sbi,
 					      char *buf)
@@ -2591,9 +2642,11 @@ static ssize_t r_blocks_count_store(struct ext4_attr *a,
 {
 	unsigned long long val;
 
-	if (parse_strtoull(buf, -1ULL, &val))
+	if (parse_strtoull(buf, -1ULL, &val) || ext4_r_blocks_count(sbi->s_es))
 		return -EINVAL;
 	atomic64_set(&sbi->s_r_blocks_count, val);
+	ext4_msg(sbi->s_sb, KERN_INFO, "Root reserved blocks %ld",
+			atomic64_read(&sbi->s_r_blocks_count));
 
 	return count;
 }
@@ -2735,6 +2788,8 @@ static struct ext4_attr ext4_attr_##_name = {			\
 	},							\
 }
 
+EXT4_RO_ATTR(sec_fs_stat);
+EXT4_RO_ATTR(sec_fs_freefrag);
 EXT4_RO_ATTR(delayed_allocation_blocks);
 EXT4_RO_ATTR(session_write_kbytes);
 EXT4_RO_ATTR(lifetime_write_kbytes);
@@ -2763,6 +2818,8 @@ EXT4_RO_ATTR_ES_UI(first_error_time, s_first_error_time);
 EXT4_RO_ATTR_ES_UI(last_error_time, s_last_error_time);
 
 static struct attribute *ext4_attrs[] = {
+	ATTR_LIST(sec_fs_stat),
+	ATTR_LIST(sec_fs_freefrag),
 	ATTR_LIST(delayed_allocation_blocks),
 	ATTR_LIST(session_write_kbytes),
 	ATTR_LIST(lifetime_write_kbytes),
@@ -2795,11 +2852,13 @@ static struct attribute *ext4_attrs[] = {
 EXT4_INFO_ATTR(lazy_itable_init);
 EXT4_INFO_ATTR(batched_discard);
 EXT4_INFO_ATTR(meta_bg_resize);
+EXT4_INFO_ATTR(encryption);
 
 static struct attribute *ext4_feat_attrs[] = {
 	ATTR_LIST(lazy_itable_init),
 	ATTR_LIST(batched_discard),
 	ATTR_LIST(meta_bg_resize),
+	ATTR_LIST(encryption),
 	NULL,
 };
 
@@ -3516,58 +3575,6 @@ static int ext4_reserve_clusters(struct ext4_sb_info *sbi, ext4_fsblk_t count)
 	return 0;
 }
 
-void print_debug_bdinfo(struct super_block *sb)
-{
-	if (test_opt(sb, DEBUG_BDINFO)) {
-		struct ext4_sb_info *sbi = EXT4_SB(sb);
-		struct tm tm;
-		char now[16] = {0, };
-
-		time_to_tm(get_seconds(), 0, &tm);
-		sprintf(now, "%04ld%02d%02d%02d%02d%02d",
-			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-			tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-		ext4_msg(sb, KERN_INFO, "bd reset count=%d, time=%s, now=%s",
-				sbi->s_bd_reset_cnt, sbi->s_bd_reset_time,
-				now);
-	}
-}
-
-void ext4_bd_reset_callback_fn(struct block_device *bdev)
-{
-	struct block_device *whole = bdev->bd_contains;
-	struct block_device *tmp;
-	struct disk_part_iter piter;
-	struct hd_struct *part;
-	struct ext4_sb_info *sbi;
-	struct super_block *sb;
-	struct tm tm;
-
-	disk_part_iter_init(&piter, whole->bd_disk, DISK_PITER_REVERSE);
-	while ((part = disk_part_iter_next(&piter))) {
-		tmp = bdget_disk(whole->bd_disk, part->partno);
-		if (tmp && tmp->bd_private ==
-				(unsigned long) whole->bd_fscallback_func)
-			break;
-	}
-
-	if (!part || !tmp->bd_super)
-		return;
-
-	sb = tmp->bd_super;
-	sbi = EXT4_SB(sb);
-
-	sbi->s_bd_reset_cnt++;
-	time_to_tm(get_seconds(), 0, &tm);
-	sprintf(sbi->s_bd_reset_time, "%04ld%02d%02d%02d%02d%02d",
-			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-			tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-	ext4_warning(sb, "bd reset arisen count=%d time=%s",
-			sbi->s_bd_reset_cnt, sbi->s_bd_reset_time);
-}
-
 static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 {
 	char *orig_data = kstrdup(data, GFP_KERNEL);
@@ -3844,10 +3851,24 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 		goto failed_mount;
 	}
 
+	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_ENCRYPT) &&
+	    es->s_encryption_level) {
+		ext4_msg(sb, KERN_ERR, "Unsupported encryption level %d",
+			 es->s_encryption_level);
+		goto failed_mount;
+	}
+
 	if (le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks) > (blocksize / 4)) {
 		ext4_msg(sb, KERN_ERR,
 			 "Number of reserved GDT blocks insanely large: %d",
 			 le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks));
+		goto failed_mount;
+	}
+
+	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_ENCRYPT) &&
+	    es->s_encryption_level) {
+		ext4_msg(sb, KERN_ERR, "Unsupported encryption level %d",
+			 es->s_encryption_level);
 		goto failed_mount;
 	}
 
@@ -4086,18 +4107,9 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
 		goto failed_mount;
 	}
 
-	if (test_opt(sb, DEBUG_BDINFO)) {
-		struct block_device *whole = sb->s_bdev->bd_contains;
-
-		whole->bd_fscallback_func = ext4_bd_reset_callback_fn;
-		sb->s_bdev->bd_private = 
-			(unsigned long) whole->bd_fscallback_func;
-
-		sbi->s_bd_reset_cnt = le32_to_cpu(es->s_bd_reset_cnt);
-		strncpy(sbi->s_bd_reset_time, es->s_bd_reset_time, 16);
-
-		print_debug_bdinfo(sb);
-	}
+	if (test_opt(sb, DEBUG_BDINFO))
+		ext4_msg(sb, KERN_INFO,
+				"Mount option debug_bdinfo is deprecated");
 
 	if (ext4_proc_root)
 		sbi->s_proc = proc_mkdir(sb->s_id, ext4_proc_root);
@@ -4239,6 +4251,21 @@ no_journal:
 		}
 	}
 
+	if ((DUMMY_ENCRYPTION_ENABLED(sbi) ||
+	     EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_ENCRYPT)) &&
+	    (blocksize != PAGE_CACHE_SIZE)) {
+		ext4_msg(sb, KERN_ERR,
+			 "Unsupported blocksize for fs encryption");
+		goto failed_mount_wq;
+	}
+
+	if (DUMMY_ENCRYPTION_ENABLED(sbi) &&
+	    !(sb->s_flags & MS_RDONLY) &&
+	    !EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_ENCRYPT)) {
+		EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_ENCRYPT);
+		ext4_commit_super(sb, 1);
+	}
+
 	/*
 	 * Get the # of file system overhead blocks from the
 	 * superblock if present.
@@ -4249,6 +4276,13 @@ no_journal:
 		err = ext4_calculate_overhead(sb);
 		if (err)
 			goto failed_mount_wq;
+	}
+
+	if (le32_to_cpu(es->s_sec_magic) == EXT4_SEC_DATA_MAGIC) {
+		sbi->s_r_inodes_count = EXT4_DEF_RESERVE_INODE;
+		ext4_msg(sb, KERN_INFO, "Reserve inodes (%d/%u)",
+			EXT4_DEF_RESERVE_INODE,
+			le32_to_cpu(es->s_inodes_count));
 	}
 
 	/*
@@ -4315,7 +4349,22 @@ no_journal:
 			 "available");
 	}
 
+#if ANDROID_VERSION < 80000
 	atomic64_set(&sbi->s_r_blocks_count, ext4_r_blocks_count(es));
+#else
+#define ANDROID_M_R_BLOCKS_COUNT	(1280)
+	if (le32_to_cpu(sbi->s_es->s_sec_magic) == EXT4_SEC_DATA_MAGIC)
+		atomic64_set(&sbi->s_r_blocks_count, ext4_r_blocks_count(es) ? :
+				ANDROID_M_R_BLOCKS_COUNT);
+#endif
+	if (atomic64_read(&sbi->s_r_blocks_count))
+		ext4_msg(sb, KERN_INFO, "Root reserved blocks %ld",
+				atomic64_read(&sbi->s_r_blocks_count));
+
+	if (ext4_sec_r_blocks_count(es))
+		ext4_msg(sb, KERN_INFO, "SEC reserved blocks %llu",
+				ext4_sec_r_blocks_count(es) >>
+				sbi->s_cluster_bits);
 
 	err = ext4_reserve_clusters(sbi, ext4_calculate_resv_clusters(sb));
 	if (err) {
@@ -4389,6 +4438,14 @@ no_journal:
 			goto failed_mount8;
 	}
 #endif  /* CONFIG_QUOTA */
+
+	if (le32_to_cpu(sbi->s_es->s_sec_magic) == EXT4_SEC_DATA_MAGIC) {
+		err = sysfs_create_link(&ext4_kset->kobj, &sbi->s_kobj,
+			      "userdata");
+		if (err)
+			printk(KERN_ERR "Can not create sysfs link"
+					"for userdata(%d)", err);
+	}
 
 	EXT4_SB(sb)->s_mount_state |= EXT4_ORPHAN_FS;
 	ext4_orphan_cleanup(sb, es);
@@ -4801,6 +4858,14 @@ static int ext4_commit_super(struct super_block *sb, int sync)
 		clear_buffer_write_io_error(sbh);
 		set_buffer_uptodate(sbh);
 	}
+
+	if (unlikely(le16_to_cpu(es->s_magic) != EXT4_SUPER_MAGIC)) {
+		print_bh(sb, sbh, 0, EXT4_BLOCK_SIZE(sb));
+		if (test_opt(sb, ERRORS_PANIC))
+			panic("EXT4(Can not find EXT4_SUPER_MAGIC");
+		return -EIO;
+	}
+
 	/*
 	 * If the file system is mounted read-only, don't update the
 	 * superblock write time.  This avoids updating the superblock
@@ -4829,12 +4894,6 @@ static int ext4_commit_super(struct super_block *sb, int sync)
 		es->s_free_inodes_count =
 			cpu_to_le32(percpu_counter_sum_positive(
 				&EXT4_SB(sb)->s_freeinodes_counter));
-
-	if (test_opt(sb, DEBUG_BDINFO)) {
-		es->s_bd_reset_cnt = cpu_to_le32(EXT4_SB(sb)->s_bd_reset_cnt);
-		strncpy(es->s_bd_reset_time, EXT4_SB(sb)->s_bd_reset_time,
-				16);
-	}
 
 	BUFFER_TRACE(sbh, "marking dirty");
 	ext4_superblock_csum_set(sb);
@@ -5309,8 +5368,10 @@ static int ext4_statfs(struct dentry *dentry, struct kstatfs *buf)
 	/* prevent underflow in case that few free space is available */
 	buf->f_bfree = EXT4_C2B(sbi, max_t(s64, bfree, 0));
 	buf->f_bavail = buf->f_bfree -
-			(atomic64_read(&sbi->s_r_blocks_count) + resv_blocks);
-	if (buf->f_bfree < (atomic64_read(&sbi->s_r_blocks_count) + resv_blocks))
+			(atomic64_read(&sbi->s_r_blocks_count) + resv_blocks +
+			 ext4_sec_r_blocks_count(es));
+	if (buf->f_bfree < (atomic64_read(&sbi->s_r_blocks_count) +
+				resv_blocks + ext4_sec_r_blocks_count(es)))
 		buf->f_bavail = 0;
 	buf->f_files = le32_to_cpu(es->s_inodes_count);
 	buf->f_ffree = percpu_counter_sum_positive(&sbi->s_freeinodes_counter);
@@ -5723,6 +5784,19 @@ void print_bh(struct super_block *sb, struct buffer_head *bh
 				" bh->b_size %lu, bh->b_data %p\n",
 				(void *) bh, bh->b_size, (void *) bh->b_data);
 		print_block_data(sb, bh->b_blocknr, bh->b_data, start, len);
+
+		/* Debugging for FDE device */
+		if (le32_to_cpu(EXT4_SB(sb)->s_es->s_sec_magic)
+				== EXT4_SEC_DATA_MAGIC) {
+			lock_buffer(bh);
+			bh->b_end_io = end_buffer_read_sync;
+			get_bh(bh);
+			_submit_bh(READ, bh, 1UL << BIO_BYPASS);
+			wait_on_buffer(bh);
+			if (buffer_uptodate(bh))
+				print_block_data(sb, bh->b_blocknr, bh->b_data,
+						 start, len);
+		}
 	}
 	else
 		printk(KERN_ERR " print_bh: bh is null!\n");
@@ -5968,6 +6042,7 @@ out7:
 
 static void __exit ext4_exit_fs(void)
 {
+	ext4_exit_crypto();
 	ext4_destroy_lazyinit_thread();
 	unregister_as_ext2();
 	unregister_as_ext3();

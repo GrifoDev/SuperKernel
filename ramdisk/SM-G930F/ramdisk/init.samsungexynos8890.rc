@@ -34,7 +34,6 @@ on init
 
 on post-fs-data
     mkdir /data/media 0770 media_rw media_rw
-
     setprop vold.post_fs_data_done 1
 
 # Permissions for audio
@@ -51,9 +50,9 @@ on post-fs-data
     chown system audio /sys/class/dsm/maxdsm_cal/temp
     chown system audio /sys/class/dsm/maxdsm_cal/rdc
     mkdir /data/firmware 0770 audioserver system
-    mkdir /efs/maxim 0770 system audio
-    chown system audio /efs/maxim/temp_cal
-    chown system audio /efs/maxim/rdc_cal
+    mkdir /efs/maxim 0770 audioserver audio
+    chown audioserver audio /efs/maxim/temp_cal
+    chown audioserver audio /efs/maxim/rdc_cal
     chmod 0660 /efs/maxim/temp_cal
     chmod 0660 /efs/maxim/rdc_cal
     chown audioserver system /data/firmware
@@ -62,6 +61,7 @@ on post-fs-data
 
     # Permissions Camera
     mkdir /data/camera 0770 cameraserver system
+    chown cameraserver cameraserver /sys/kernel/mm/vmscan/mem_boost_mode
     chown system radio /sys/class/camera/rear/rear_camfw
     chown system radio /sys/class/camera/rear/rear_camfw_full
     chown system radio /sys/class/camera/rear/rear_checkfw_user
@@ -141,6 +141,23 @@ on boot
     chmod 0222 /sys/kernel/debug/tracing/trace_marker
     write /sys/kernel/debug/tracing/tracing_on 0
 
+    # Permissions for NAD
+    symlink /dev/block/platform/155a0000.ufs/by-name/NAD_REFER /dev/block/NAD_REFER
+    chown system radio /sys/class/sec/sec_nad/nad_stat
+    chmod 0664 /sys/class/sec/sec_nad/nad_stat
+    chown system radio /sys/class/sec/sec_nad/nad_erase
+    chmod 0664 /sys/class/sec/sec_nad/nad_erase
+    chown system radio /sys/class/sec/sec_nad/nad_acat
+    chmod 0664 /sys/class/sec/sec_nad/nad_acat
+    chown system radio /sys/class/sec/sec_nad/nad_dram
+    chmod 0664 /sys/class/sec/sec_nad/nad_dram
+    chown system radio /sys/class/sec/sec_nad/nad_all
+    chmod 0664 /sys/class/sec/sec_nad/nad_all
+    chown system radio /sys/class/sec/sec_nad/nad_support
+    chmod 0664 /sys/class/sec/sec_nad/nad_support
+    chown system radio /dev/block/NAD_REFER
+    chmod 0664 /dev/block/NAD_REFER
+
     # PMS DVFS
     chown system system /sys/power/cpuhotplug/enabled
     chown system system /sys/power/cpuhotplug/min_online_cpu
@@ -216,6 +233,23 @@ on boot
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
     chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
 
+#Setting Governor Parameters
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 1274000:39000"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration 40000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 85  
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 858000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 40000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "75 1170000:85"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack 20000
+
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "59000 1248000:79000 1664000:19000"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration 40000
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 89  
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 1248000
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 40000
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "80 1040000:81 1352000:87 1664000:90"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack 20000
+
     # Assume HMP uses shared cpufreq policy for all LITTLE CPUs
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
     chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
@@ -276,20 +310,82 @@ on boot
     chown system system /sys/power/call_state
     chmod 660 /sys/power/call_state
 
+# BarTender
+    mkdir /dev/cpuctl/bg_cached
+    chown system system /dev/cpuctl/bg_cached/tasks
+    chown system system /dev/cpuctl/bg_cached/cpu.cfs_period_us
+    chown system system /dev/cpuctl/bg_cached/cpu.cfs_quota_us
+    chmod 0666 /dev/cpuctl/bg_cached/tasks
+    chmod 0664 /dev/cpuctl/bg_cached/cpu.cfs_period_us
+    chmod 0664 /dev/cpuctl/bg_cached/cpu.cfs_quota_us
+    write /dev/cpuctl/bg_cached/cpu.rt_runtime_us 10000
+    write /dev/cpuctl/bg_cached/cpu.rt_period_us 1000000
+    write /dev/cpuctl/bg_cached/cpu.cfs_period_us 20000
+    write /dev/cpuctl/bg_cached/cpu.cfs_quota_us 10000
+
+    mkdir /dev/cpuctl/bg_abnormal
+    chown system system /dev/cpuctl/bg_abnormal/tasks
+    chown system system /dev/cpuctl/bg_abnormal/cpu.cfs_period_us
+    chown system system /dev/cpuctl/bg_abnormal/cpu.cfs_quota_us
+    chmod 0666 /dev/cpuctl/bg_abnormal/tasks
+    chmod 0664 /dev/cpuctl/bg_abnormal/cpu.cfs_period_us
+    chmod 0664 /dev/cpuctl/bg_abnormal/cpu.cfs_quota_us
+    write /dev/cpuctl/bg_abnormal/cpu.rt_runtime_us 10000
+    write /dev/cpuctl/bg_abnormal/cpu.rt_period_us 1000000
+    write /dev/cpuctl/bg_abnormal/cpu.cfs_period_us 20000
+    write /dev/cpuctl/bg_abnormal/cpu.cfs_quota_us 10000
+
+    mkdir /dev/cpuset/cached
+    write /dev/cpuset/cached/cpus 0-2
+    copy /dev/cpuset/mems /dev/cpuset/cached/mems
+    mkdir /dev/cpuset/abnormal
+    write /dev/cpuset/abnormal/cpus 0-2
+    copy /dev/cpuset/mems /dev/cpuset/abnormal/mems
+
+    # change permissions for BarTender's cpusets we'll touch at runtime
+    chown system system /dev/cpuset/cached
+    chown system system /dev/cpuset/abnormal
+    chown system system /dev/cpuset/cached/tasks
+    chown system system /dev/cpuset/abnormal/tasks
+    chown system system /dev/cpuset/cached/cpus
+    chown system system /dev/cpuset/abnormal/cpus
+    chmod 0664 /dev/cpuset/cached/tasks
+    chmod 0664 /dev/cpuset/abnormal/tasks
+    chmod 0664 /dev/cpuset/cached/cpus
+    chmod 0664 /dev/cpuset/abnormal/cpus
+
+# CPUSET(8890)
+    chown system system /dev/cpuset/top-app/cpus
+    chown system system /dev/cpuset/foreground/cpus
+    chown system system /dev/cpuset/background/cpus
+    chown system system /dev/cpuset/system-background/cpus
+    chmod 664 /dev/cpuset/top-app/cpus
+    chmod 664 /dev/cpuset/foreground/cpus
+    chmod 664 /dev/cpuset/background/cpus
+    chmod 664 /dev/cpuset/system-background/cpus
+    write /dev/cpuset/top-app/cpus 0-7
+    write /dev/cpuset/top-app/mems 0
+    write /dev/cpuset/foreground/cpus 0-2,4-7
+    write /dev/cpuset/foreground/mems 0
+    write /dev/cpuset/background/cpus 0-1
+    write /dev/cpuset/background/mems 0
+    write /dev/cpuset/system-background/cpus 0-2
+    write /dev/cpuset/system-background/mems 0
+
 # Switch Device
     chown system radio /sys/class/sec/switch/afc_disable
 
 # Bluetooth
-    chown bluetooth net_bt_stack /dev/ttySAC1
+    chown bluetooth bluetooth /dev/ttySAC1
     chmod 0660 /dev/ttySAC1
     # permissions for bluetooth.
     setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
-    chown bluetooth net_bt_stack ro.bt.bdaddr_path
-    chown radio net_bt_stack /efs/bluetooth/bt_addr
+    chown bluetooth bluetooth ro.bt.bdaddr_path
+    chown radio bluetooth /efs/bluetooth/bt_addr
     chmod 0640 /efs/bluetooth/bt_addr
     chmod 0660 /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
 
 #for datarouter
     chown system system /dev/dun
@@ -320,13 +416,6 @@ on boot
 
 # MSP FactoryApp
 	mkdir /efs/FactoryApp 0775 system system
-
-# IMS Stack
-service imsd /system/bin/imsd
-    class main
-    socket imsd stream 0660 system system
-    user root
-    group system radio net_raw inet net_admin readproc
 
 on fs
     mount_all /fstab.samsungexynos8890
@@ -395,6 +484,8 @@ on fs
     chown system media_rw /sys/class/lcd/panel/adaptive_control
     chown system media_rw /sys/class/lcd/panel/resolution
     chown system system /sys/class/lcd/panel/SVC_OCTA
+    chown system system /sys/class/lcd/panel/dpui
+    chown system system /sys/class/lcd/panel/dpui_dbg
 
 # Permissions for MDNIE
     chown system media_rw /sys/class/mdnie/mdnie/mode
@@ -405,6 +496,8 @@ on fs
     chown system system /sys/class/mdnie/mdnie/hdr
     chown system system /sys/class/mdnie/mdnie/night_mode
     chown system system /sys/class/mdnie/mdnie/whiteRGB
+    chown system system /sys/class/mdnie/mdnie/color_lens
+    chown system system /sys/class/mdnie/mdnie/light_notification
 
 # Permissions for System LSI NFC
 # NFC : Permissions for NFC
@@ -623,7 +716,7 @@ on fs
     chown system system /sys/class/rtc/rtc0/device/adc_ctrl1
 
 # ARGOSD
-service argos-daemon /system/bin/argosd
+service argos-daemon /system/vendor/bin/argosd
     class main
     user system
     group system radio
@@ -817,3 +910,16 @@ service rtc_log /system/bin/rtc_log.sh
     group system
     seclabel u:r:rtc_log:s0
     oneshot
+
+# WSM service startup
+service wsmd /system/bin/wsmd
+    class core
+    user system
+    group system
+    disabled
+on property:ro.wsmd.enable=true
+    mkdir /dev/socket/wsm_socket 
+    chmod 0711 /dev/socket/wsm_socket
+    chown system system /dev/socket/wsm_socket
+    start wsmd
+

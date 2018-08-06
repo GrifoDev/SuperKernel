@@ -1358,10 +1358,7 @@ static int lpass_probe(struct platform_device *pdev)
 
 static int lpass_remove(struct platform_device *pdev)
 {
-#ifdef CONFIG_SND_SAMSUNG_IOMMU
-	iommu_detach_device(lpass.domain, &pdev->dev);
-	iommu_domain_free(lpass.domain);
-#else
+#ifndef CONFIG_SND_SAMSUNG_IOMMU
 	if (lpass.sysmmu)
 		iounmap(lpass.sysmmu);
 #endif

@@ -20,6 +20,7 @@
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
 #include <linux/spinlock.h>
+#include <asm/io.h>
 
 #define EXYNOS_MIPI_PHY_ISO_BYPASS  BIT(0)
 #define EXYNOS_MIPI_PHYS_NUM 4
@@ -398,11 +399,21 @@ static int exynos_mipi_phy_probe(struct platform_device *pdev)
 	return PTR_ERR_OR_ZERO(phy_provider);
 }
 
+static int exynos_mipi_phy_remove(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+
+	dev_info(dev, "%s, successfully removed\n", __func__);
+	return 0;
+}
+
 static struct platform_driver exynos_mipi_phy_driver = {
 	.probe	= exynos_mipi_phy_probe,
+	.remove	= exynos_mipi_phy_remove,
 	.driver = {
 		.name  = "exynos-mipi-phy",
 		.of_match_table = of_match_ptr(exynos_mipi_phy_of_table),
+		.suppress_bind_attrs = true,
 	}
 };
 module_platform_driver(exynos_mipi_phy_driver);

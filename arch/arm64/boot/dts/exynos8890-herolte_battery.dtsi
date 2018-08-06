@@ -119,7 +119,7 @@
 		battery,wpc_temp_table_data = <800 700 650 600 550 500 450 400 350 300 200 100 50 0 (-50) (-100) (-200)>;
 
 		battery,input_current_limit = <1800 450 450 1800 500 900 1000 460 1000 450 900 660 900 1900 1800 450 450 400 700 1300 300 1000 1500 450 1675 1800 1000 1675 80 1800 1675 1400 1000 1000 600 900 900 660 1675 1800>;
-		battery,fast_charging_current = <2100 450 450 2100 800 1200 1000 460 1200 450 1350 1350 1350 1600 2100 450 450 400 700 1300 300 1000 1500 450 2400 2400 1000 2400 80 1800 1000 1400 450 1000 1350 1350 1350 1350 2400 2400>;
+		battery,fast_charging_current = <2100 450 450 2100 800 1200 1000 460 1200 450 1200 1200 1200 1600 2100 450 450 400 700 1300 300 1000 1500 450 2400 2400 1000 2400 80 1800 1000 1400 450 1000 1200 1200 1200 1200 2400 2400>;
 		battery,full_check_current_1st = <300 0 0 300 300 300 300 300 300 0 300 300 300 300 300 0 0 300 300 300 300 300 300 0 300 300 300 300 0 300 300 300 0 300 300 300 300 300 300 300>;
 		battery,full_check_current_2nd = <150 0 0 150 150 150 150 150 150 0 150 150 150 150 150 0 0 150 150 150 150 150 150 0 150 150 150 150 0 150 150 150 0 150 150 150 150 150 150 150>;
 
@@ -215,7 +215,7 @@
 		battery,recharge_check_count = <2>;
 		battery,recharge_condition_type = <4>; /* SEC_BATTERY_RECHARGE_CONDITION_VCELL */
 		battery,recharge_condition_soc = <98>;
-		battery,recharge_condition_vcell = <4300>;
+		battery,recharge_condition_vcell = <4280>;
 
 		battery,charging_total_time = <21600>;
 		battery,recharging_total_time = <5400>;
@@ -224,11 +224,13 @@
 		battery,chg_float_voltage = <43500>;
 
 		battery,swelling_high_temp_block = <410>;
-		battery,swelling_high_temp_recov = <360>;
-		battery,swelling_low_temp_block = <100>;
-		battery,swelling_low_temp_recov = <150>;
+		battery,swelling_high_temp_recov = <390>;
+		battery,swelling_low_temp_block_1st = <150>;
+		battery,swelling_low_temp_recov_1st = <200>;
+		battery,swelling_low_temp_block_2nd = <100>;
+		battery,swelling_low_temp_recov_2nd = <150>;
 
-		battery,swelling_low_temp_current = <1350>;	/* 0.45C */
+		battery,swelling_low_temp_current = <900>;	/* 0.3C */
 		battery,swelling_low_temp_topoff = <150>;	/* 0.05C */
 		battery,swelling_high_temp_current = <1350>;	/* 0.45C */
 		battery,swelling_high_temp_topoff = <150>;	/* 0.05C */
@@ -236,7 +238,7 @@
 		battery,swelling_wc_high_temp_current = <900>;	/* 0.3C */
 
 		battery,swelling_drop_float_voltage = <41500>;
-		battery,swelling_high_rechg_voltage = <4100>;
+		battery,swelling_high_rechg_voltage = <4000>;
 		battery,swelling_low_rechg_voltage = <4000>;
 
 		battery,siop_event_check_type = <1>;
@@ -256,12 +258,16 @@
 		battery,ttf_hv_charge_current = <2500>;
 		battery,ttf_hv_wireless_charge_current = <1300>;
 
+		battery,standard_curr = <2400>;
+		battery,expired_time = <10800>;
+		battery,recharging_expired_time = <5400>;
+
 		/* cycle, chg_float_voltage, recharge_condition_vcell, full_condition_vcell, full_condition_soc */
-		battery,age_data = <0 43500 4300 4250 93
-			200 43250 4275 4225 92
-			250 43125 4262 4212 91
-			300 42875 4237 4187 90
-			1000 42375 4187 4137 89>;
+		battery,age_data = <0 43500 4280 4250 93
+			200 43250 4255 4225 92
+			250 43125 4242 4212 91
+			300 42875 4217 4187 90
+			1000 42375 4167 4137 89>;
 
 		battery,enable_coil_temp = <1>;
 

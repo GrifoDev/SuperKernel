@@ -1143,7 +1143,7 @@
 		desc-size = <4>;
 		card-detect-delay = <200>;
 		data-timeout = <200>;
-		hto-timeout = <550>;
+		hto-timeout = <80>;
 		clock-frequency = <800000000>;
 		samsung,dw-mshc-sdr-timing = <3 0 2 0>;
 		samsung,dw-mshc-ddr-timing = <3 0 2 1>;

@@ -14,6 +14,10 @@
 #include <linux/mmc/core.h>
 #include <linux/mod_devicetable.h>
 
+#define MAX_CNT_U64     0xFFFFFFFFFF
+#define MAX_CNT_U32     0x7FFFFFFF
+#define STATUS_MASK     (R1_ERROR | R1_CC_ERROR | R1_CARD_ECC_FAILED | R1_WP_VIOLATION | R1_OUT_OF_RANGE)
+
 struct mmc_cid {
 	unsigned int		manfid;
 	char			prod_name[8];
@@ -116,6 +120,9 @@ struct mmc_ext_csd {
 	u8			raw_pwr_cl_ddr_200_360;	/* 253 */
 	u8			raw_bkops_status;	/* 246 */
 	u8			raw_sectors[4];		/* 212 - 4 bytes */
+	u8			pre_eol_info;		/* 267 */
+	u8			device_life_time_est_typ_a;	/* 268 */
+	u8			device_life_time_est_typ_b;	/* 269 */
 
 	unsigned int            feature_support;
 #define MMC_DISCARD_FEATURE	BIT(0)                  /* CMD38 feature */
@@ -247,6 +254,11 @@ struct mmc_card_error_log {
 	u64	first_issue_time;
 	u64	last_issue_time;
 	u32	count;
+	u32 	ge_cnt; 		// status[19] : general error or unknown error
+	u32 	cc_cnt; 		// status[20] : internal card controller error
+	u32 	ecc_cnt;		// status[21] : ecc error
+	u32 	wp_cnt; 		// status[26] : write protection error
+	u32 	oor_cnt;		// status[31] : out of range error
 };
 
 /*

@@ -358,13 +358,13 @@ int ecryptfs_propagate_fmpinfo(struct inode *inode, unsigned int flag)
 
 static int ecryptfs_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	struct dentry *dentry = ecryptfs_dentry_to_lower(file->f_path.dentry);
+	struct file *lower_file = ecryptfs_file_to_lower(file);
 	/*
 	 * Don't allow mmap on top of file systems that don't support it
 	 * natively.  If FILESYSTEM_MAX_STACK_DEPTH > 2 or ecryptfs
 	 * allows recursive mounting, this will need to be extended.
 	 */
-	if (!dentry->d_inode->i_fop->mmap)
+	if (!lower_file->f_op->mmap)
 		return -ENODEV;
 	return generic_file_mmap(file, vma);
 }
@@ -525,16 +525,27 @@ static int ecryptfs_open(struct inode *inode, struct file *file)
 		printk("DLP %s: try to open %s [%lu] with crypt_stat->flags %d\n",
 				__func__, ecryptfs_dentry->d_name.name, inode->i_ino, crypt_stat->flags);
 #endif
+
+		dlp_len = ecryptfs_dentry->d_inode->i_op->getxattr(
+			ecryptfs_dentry,
+			KNOX_DLP_XATTR_NAME,
+			&dlp_data, sizeof(dlp_data));
+
+		if(dlp_data.expiry_time.tv_sec <= 0){
+#if DLP_DEBUG
+			printk("[LOG] %s: DLP flag is set but it is not DLP file -> media created file but not DLP [%s]\n",
+				__func__, ecryptfs_dentry->d_name.name);
+#endif
+			goto dlp_out;
+		}
+
 		if (dlp_is_locked(mount_crypt_stat->userid)) {
 			printk("%s: DLP locked\n", __func__);
 			rc = -EPERM;
 			goto out_put;
 		}
+
 		if(in_egroup_p(AID_KNOX_DLP) || in_egroup_p(AID_KNOX_DLP_RESTRICTED) || in_egroup_p(AID_KNOX_DLP_MEDIA)) {
-			dlp_len = ecryptfs_dentry->d_inode->i_op->getxattr(
-					ecryptfs_dentry,
-					KNOX_DLP_XATTR_NAME,
-					&dlp_data, sizeof(dlp_data));
 			if (dlp_len == sizeof(dlp_data)) {
 				getnstimeofday(&ts);
 #if DLP_DEBUG
@@ -595,6 +606,8 @@ static int ecryptfs_open(struct inode *inode, struct file *file)
 			goto out_put;
 		}
 	}
+
+dlp_out:
 #endif
 
 	ecryptfs_printk(KERN_DEBUG, "inode w/ addr = [0x%p], i_ino = "

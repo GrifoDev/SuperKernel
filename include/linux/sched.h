@@ -331,10 +331,6 @@ extern void show_regs(struct pt_regs *);
 
 extern void show_stack(struct task_struct *task, unsigned long *sp);
 
-#ifdef CONFIG_KFAULT_AUTO_SUMMARY
-extern void show_stack_auto_summary(struct task_struct *task, unsigned long *sp);
-#endif
-
 void io_schedule(void);
 long io_schedule_timeout(long timeout);
 
@@ -934,6 +930,24 @@ struct sched_domain_attr {
 
 extern int sched_domain_level_max;
 
+struct capacity_state {
+	unsigned long cap;	/* compute capacity */
+	unsigned long power;	/* power consumption at this compute capacity */
+};
+
+struct idle_state {
+	unsigned long power;	 /* power consumption in this idle state */
+};
+
+struct sched_group_energy {
+	unsigned int nr_idle_states;	/* number of idle states */
+	struct idle_state *idle_states;	/* ptr to idle state array */
+	unsigned int nr_cap_states;	/* number of capacity states */
+	struct capacity_state *cap_states; /* ptr to capacity state array */
+};
+
+unsigned long capacity_curr_of(int cpu);
+
 struct sched_group;
 
 struct sched_domain {
@@ -1138,6 +1152,7 @@ struct sched_avg {
 #endif
 #endif
 	u32 usage_avg_sum;
+	struct task_struct *task;
 };
 
 #ifdef CONFIG_SCHEDSTATS
@@ -1383,6 +1398,8 @@ struct task_struct {
 	unsigned sched_contributes_to_load:1;
 
 	unsigned long atomic_flags; /* Flags needing atomic access. */
+
+	struct restart_block restart_block;
 
 	pid_t pid;
 	pid_t tgid;
@@ -1834,6 +1851,7 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 {
 	return tsk->tgid;
 }
+
 
 static inline int pid_alive(const struct task_struct *p);
 
@@ -2490,6 +2508,11 @@ static inline void mmdrop(struct mm_struct * mm)
 
 /* mmput gets rid of the mappings and all user-space */
 extern void mmput(struct mm_struct *);
+/* same as above but performs the slow path from the async kontext. Can
+ * be called from the atomic context as well
+ */
+extern void mmput_async(struct mm_struct *);
+
 /* Grab a reference to a task's mm, if it is not already going away */
 extern struct mm_struct *get_task_mm(struct task_struct *task);
 /*
@@ -3055,6 +3078,11 @@ static inline void inc_syscw(struct task_struct *tsk)
 {
 	tsk->ioac.syscw++;
 }
+
+static inline void inc_syscfs(struct task_struct *tsk)
+{
+	tsk->ioac.syscfs++;
+}
 #else
 static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
 {
@@ -3069,6 +3097,9 @@ static inline void inc_syscr(struct task_struct *tsk)
 }
 
 static inline void inc_syscw(struct task_struct *tsk)
+{
+}
+static inline void inc_syscfs(struct task_struct *tsk)
 {
 }
 #endif

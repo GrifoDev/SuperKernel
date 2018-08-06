@@ -24,6 +24,7 @@
 #include <linux/blkdev.h>
 #include <asm/byteorder.h>
 #include <linux/ratelimit.h>
+#include <linux/android_aid.h>
 
 #include "ext4.h"
 #include "ext4_jbd2.h"
@@ -702,6 +703,32 @@ out:
 	return ret;
 }
 
+/**
+ * ext4_has_free_inodes()
+ * @sbi: in-core super block structure.
+ *
+ * Check if filesystem has inodes available for allocation.
+ * On success return 1, return 0 on failure.
+ */
+static inline int ext4_has_free_inodes(struct ext4_sb_info *sbi)
+{
+	if (likely(percpu_counter_read_positive(&sbi->s_freeinodes_counter) >
+			sbi->s_r_inodes_count * 2))
+		return 1;
+
+	if (percpu_counter_read_positive(&sbi->s_freeinodes_counter) >
+			sbi->s_r_inodes_count &&
+			in_group_p(AID_USE_SEC_RESERVED))
+		return 1;
+
+	/* Hm, nope.  Are (enough) root reserved inodes available? */
+	if (uid_eq(sbi->s_resuid, current_fsuid()) ||
+	    (!gid_eq(sbi->s_resgid, GLOBAL_ROOT_GID) && in_group_p(sbi->s_resgid)) ||
+	    capable(CAP_SYS_RESOURCE) || in_group_p(AID_USE_ROOT_RESERVED))
+		return 1;
+	return 0;
+}
+
 /*
  * There are two policies for allocating an inode.  If the new inode is
  * a directory, then a forward search is made for a block group with both
@@ -731,10 +758,24 @@ struct inode *__ext4_new_inode(handle_t *handle, struct inode *dir,
 	ext4_group_t i;
 	ext4_group_t flex_group;
 	struct ext4_group_info *grp;
+	int encrypt = 0;
 
 	/* Cannot create files in a deleted directory */
 	if (!dir || !dir->i_nlink)
 		return ERR_PTR(-EPERM);
+
+	if ((ext4_encrypted_inode(dir) ||
+	     DUMMY_ENCRYPTION_ENABLED(EXT4_SB(dir->i_sb))) &&
+	    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode))) {
+		err = ext4_get_encryption_info(dir);
+		if (err)
+			return ERR_PTR(err);
+		if (ext4_encryption_info(dir) == NULL)
+			return ERR_PTR(-EPERM);
+		if (!handle)
+			nblocks += EXT4_DATA_TRANS_BLOCKS(dir->i_sb);
+		encrypt = 1;
+	}
 
 	sb = dir->i_sb;
 	ngroups = ext4_get_groups_count(sb);
@@ -762,6 +803,11 @@ struct inode *__ext4_new_inode(handle_t *handle, struct inode *dir,
 		inode_init_owner(inode, dir, mode);
 	dquot_initialize(inode);
 
+	if (!ext4_has_free_inodes(sbi)) {
+		err = -ENOSPC;
+		goto out;
+	}
+
 	if (!goal)
 		goal = sbi->s_inode_goal;
 
@@ -780,12 +826,8 @@ struct inode *__ext4_new_inode(handle_t *handle, struct inode *dir,
 got_group:
 	EXT4_I(dir)->i_last_alloc_group = group;
 	err = -ENOSPC;
-	if (ret2 == -1) {
-		printk_ratelimited(KERN_INFO "Return ENOSPC : No free inode (%d/%u)\n",
-			(int) percpu_counter_read_positive(&sbi->s_freeinodes_counter),
-			le32_to_cpu(sbi->s_es->s_inodes_count));
+	if (ret2 == -1)
 		goto out;
-	}
 
 	/*
 	 * Normally we will only go through one pass of this loop,
@@ -872,9 +914,6 @@ next_group:
 			group = 0;
 	}
 	err = -ENOSPC;
-	printk_ratelimited(KERN_INFO "Return ENOSPC : No free inode (%d/%u)\n",
-		(int) percpu_counter_read_positive(&sbi->s_freeinodes_counter),
-		le32_to_cpu(sbi->s_es->s_inodes_count));
 	goto out;
 
 got:
@@ -1040,11 +1079,9 @@ got:
 	ext4_set_inode_state(inode, EXT4_STATE_NEW);
 
 	ei->i_extra_isize = EXT4_SB(sb)->s_want_extra_isize;
-
 	ei->i_inline_off = 0;
 	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_INLINE_DATA))
 		ext4_set_inode_state(inode, EXT4_STATE_MAY_INLINE_DATA);
-
 	ret = inode;
 	err = dquot_alloc_inode(inode);
 	if (err)
@@ -1071,6 +1108,12 @@ got:
 		ei->i_datasync_tid = handle->h_transaction->t_tid;
 	}
 
+	if (encrypt) {
+		err = ext4_inherit_context(dir, inode);
+		if (err)
+			goto fail_free_drop;
+	}
+
 	err = ext4_mark_inode_dirty(handle, inode);
 	if (err) {
 		ext4_std_error(sb, err);
@@ -1088,6 +1131,11 @@ fail_drop:
 	clear_nlink(inode);
 	unlock_new_inode(inode);
 out:
+	if (err == -ENOSPC) {
+		printk_ratelimited(KERN_INFO "Return ENOSPC : No free inode (%d/%u)\n",
+			(int) percpu_counter_read_positive(&sbi->s_freeinodes_counter),
+			le32_to_cpu(sbi->s_es->s_inodes_count));
+	}
 	dquot_drop(inode);
 	inode->i_flags |= S_NOQUOTA;
 	iput(inode);

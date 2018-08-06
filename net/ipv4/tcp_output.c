@@ -1400,6 +1400,7 @@ int __pskb_trim_head(struct sk_buff *skb, int len)
 /* Remove acked data from a packet in the transmit queue. */
 int tcp_trim_head(struct sock *sk, struct sk_buff *skb, u32 len)
 {
+	u32 delta_truesize;
 #ifdef CONFIG_MPTCP
 	if (mptcp(tcp_sk(sk)) && !is_meta_sk(sk) && mptcp_is_data_seq(skb))
 		return mptcp_trim_head(sk, skb, len);

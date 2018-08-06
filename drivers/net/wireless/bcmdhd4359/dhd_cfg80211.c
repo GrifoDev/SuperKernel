@@ -1,7 +1,7 @@
 /*
  * Linux cfg80211 driver - Dongle Host Driver (DHD) related
  *
- * Copyright (C) 1999-2017, Broadcom Corporation
+ * Copyright (C) 1999-2018, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -24,7 +24,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dhd_cfg80211.c 697414 2017-05-03 14:48:20Z $
+ * $Id: dhd_cfg80211.c 699163 2017-05-12 05:18:23Z $
  */
 
 #include <linux/vmalloc.h>
@@ -39,8 +39,6 @@
 #include <dngl_stats.h>
 #include <dhd.h>
 #endif
-
-extern struct bcm_cfg80211 *g_bcm_cfg;
 
 #ifdef PKT_FILTER_SUPPORT
 extern uint dhd_pkt_filter_enable;
@@ -126,20 +124,22 @@ s32 dhd_cfg80211_clean_p2p_info(struct bcm_cfg80211 *cfg)
 	return 0;
 }
 
-struct net_device* wl_cfg80211_allocate_if(struct bcm_cfg80211 *cfg, int ifidx, char *name,
-	uint8 *mac, uint8 bssidx, char *dngl_name)
+struct net_device* wl_cfg80211_allocate_if(struct bcm_cfg80211 *cfg, int ifidx, const char *name,
+	uint8 *mac, uint8 bssidx, const char *dngl_name)
 {
 	return dhd_allocate_if(cfg->pub, ifidx, name, mac, bssidx, FALSE, dngl_name);
 }
 
-int wl_cfg80211_register_if(struct bcm_cfg80211 *cfg, int ifidx, struct net_device* ndev)
+int wl_cfg80211_register_if(struct bcm_cfg80211 *cfg,
+	int ifidx, struct net_device* ndev, bool rtnl_lock_reqd)
 {
-	return dhd_register_if(cfg->pub, ifidx, FALSE);
+	return dhd_register_if(cfg->pub, ifidx, rtnl_lock_reqd);
 }
 
-int wl_cfg80211_remove_if(struct bcm_cfg80211 *cfg, int ifidx, struct net_device* ndev)
+int wl_cfg80211_remove_if(struct bcm_cfg80211 *cfg,
+	int ifidx, struct net_device* ndev, bool rtnl_lock_reqd)
 {
-	return dhd_remove_if(cfg->pub, ifidx, FALSE);
+	return dhd_remove_if(cfg->pub, ifidx, rtnl_lock_reqd);
 }
 
 struct net_device * dhd_cfg80211_netdev_free(struct net_device *ndev)

@@ -57,8 +57,6 @@ struct vers_iter {
 static struct list_head _name_buckets[NUM_BUCKETS];
 static struct list_head _uuid_buckets[NUM_BUCKETS];
 
-int fmp_encrypted;
-
 static void dm_hash_remove_all(bool keep_open_devices, bool mark_deferred, bool only_deferred);
 
 /*
@@ -964,16 +962,6 @@ out:
 	return r;
 }
 
-static int dev_update_status(struct dm_ioctl *param, size_t param_size)
-{
-	if (!(strncmp(param->crypto_type_name, "aes-xts-fmp", sizeof("aes-xts-fmp"))) &&
-			!(strncmp(param->encrypted_state, "encrypted", sizeof("encrypted"))))
-		fmp_encrypted = 1;
-	else
-		fmp_encrypted = 0;
-	return 0;
-}
-
 static int do_suspend(struct dm_ioctl *param)
 {
 	int r = 0;
@@ -1633,8 +1621,7 @@ static ioctl_fn lookup_ioctl(unsigned int cmd, int *ioctl_flags)
 		{DM_LIST_VERSIONS_CMD, 0, list_versions},
 
 		{DM_TARGET_MSG_CMD, 0, target_message},
-		{DM_DEV_SET_GEOMETRY_CMD, 0, dev_set_geometry},
-		{DM_DEV_UPDATE_STATUS_CMD, 0, dev_update_status}
+		{DM_DEV_SET_GEOMETRY_CMD, 0, dev_set_geometry}
 	};
 
 	if (unlikely(cmd >= ARRAY_SIZE(_ioctls)))
@@ -1934,6 +1921,45 @@ void dm_interface_exit(void)
 	dm_hash_exit();
 }
 
+
+/**
+ * dm_ioctl_export - Permanently export a mapped device via the ioctl interface
+ * @md: Pointer to mapped_device
+ * @name: Buffer (size DM_NAME_LEN) for name
+ * @uuid: Buffer (size DM_UUID_LEN) for uuid or NULL if not desired
+ */
+int dm_ioctl_export(struct mapped_device *md, const char *name,
+		    const char *uuid)
+{
+	int r = 0;
+	struct hash_cell *hc;
+
+	if (!md) {
+		r = -ENXIO;
+		goto out;
+	}
+
+	/* The name and uuid can only be set once. */
+	mutex_lock(&dm_hash_cells_mutex);
+	hc = dm_get_mdptr(md);
+	mutex_unlock(&dm_hash_cells_mutex);
+	if (hc) {
+		DMERR("%s: already exported", dm_device_name(md));
+		r = -ENXIO;
+		goto out;
+	}
+
+	r = dm_hash_insert(name, uuid, md);
+	if (r) {
+		DMERR("%s: could not bind to '%s'", dm_device_name(md), name);
+		goto out;
+	}
+
+	/* Let udev know we've changed. */
+	dm_kobject_uevent(md, KOBJ_CHANGE, dm_get_event_nr(md));
+out:
+	return r;
+}
 /**
  * dm_copy_name_and_uuid - Copy mapped device name & uuid into supplied buffers
  * @md: Pointer to mapped_device

@@ -112,6 +112,8 @@ static void tx_tick(struct mbox_chan *chan, int r)
 	chan->active_req = NULL;
 	spin_unlock_irqrestore(&chan->lock, flags);
 
+	/* Submit next message */
+	msg_submit(chan);
 
 	if (!mssg)
 		return;

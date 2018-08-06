@@ -323,6 +323,14 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
 	}
 
 	/*
+	 * Convert 'gsi' to 'ioapic.pin'.
+	 */
+	if (bus_irq >= NR_IRQS_LEGACY) {
+		pr_warn("Invalid bus_irq %u for legacy override\n", bus_irq);
+		return;
+	}
+
+	/*
 	 * TBD: This check is for faulty timer entries, where the override
 	 *      erroneously sets the trigger to level, resulting in a HUGE
 	 *      increase of timer interrupts!
