@@ -49,14 +49,7 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->ndirty_imeta = get_pages(sbi, F2FS_DIRTY_IMETA);
 	si->ndirty_dirs = sbi->ndirty_inode[DIR_INODE];
 	si->ndirty_files = sbi->ndirty_inode[FILE_INODE];
-
-	si->nquota_files = 0;
-	if (f2fs_sb_has_quota_ino(sbi->sb)) {
-		for (i = 0; i < MAXQUOTAS; i++) {
-			if (f2fs_qf_ino(sbi->sb, i))
-				si->nquota_files++;
-		}
-	}
+	si->nquota_files = sbi->nquota_files;
 	si->ndirty_all = sbi->ndirty_inode[DIRTY_META];
 	si->inmem_pages = get_pages(sbi, F2FS_INMEM_PAGES);
 	si->aw_cnt = atomic_read(&sbi->aw_cnt);
@@ -111,6 +104,8 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->avail_nids = NM_I(sbi)->available_nids;
 	si->alloc_nids = NM_I(sbi)->nid_cnt[PREALLOC_NID];
 	si->bg_gc = sbi->bg_gc;
+	si->skipped_atomic_files[BG_GC] = sbi->skipped_atomic_files[BG_GC];
+	si->skipped_atomic_files[FG_GC] = sbi->skipped_atomic_files[FG_GC];
 	si->util_free = (int)(free_user_blocks(sbi) >> sbi->log_blocks_per_seg)
 		* 100 / (int)(sbi->user_block_count >> sbi->log_blocks_per_seg)
 		/ 2;
@@ -186,7 +181,6 @@ static void update_mem_info(struct f2fs_sb_info *sbi)
 	si->base_mem += sizeof(struct f2fs_sb_info) + sbi->sb->s_blocksize;
 	si->base_mem += 2 * sizeof(struct f2fs_inode_info);
 	si->base_mem += sizeof(*sbi->ckpt);
-	si->base_mem += sizeof(struct percpu_counter) * NR_COUNT_TYPE;
 
 	/* build sm */
 	si->base_mem += sizeof(struct f2fs_sm_info);
@@ -352,6 +346,10 @@ static int stat_show(struct seq_file *s, void *v)
 				si->bg_data_blks);
 		seq_printf(s, "  - node blocks : %d (%d)\n", si->node_blks,
 				si->bg_node_blks);
+		seq_printf(s, "Skipped : atomic write %llu (%llu)\n",
+				si->skipped_atomic_files[BG_GC] +
+				si->skipped_atomic_files[FG_GC],
+				si->skipped_atomic_files[BG_GC]);
 		seq_puts(s, "\nExtent Cache:\n");
 		seq_printf(s, "  - Hit Count: L1-1:%llu L1-2:%llu L2:%llu\n",
 				si->hit_largest, si->hit_cached,
@@ -449,7 +447,7 @@ int f2fs_build_stats(struct f2fs_sb_info *sbi)
 	struct f2fs_super_block *raw_super = F2FS_RAW_SUPER(sbi);
 	struct f2fs_stat_info *si;
 
-	si = kzalloc(sizeof(struct f2fs_stat_info), GFP_KERNEL);
+	si = f2fs_kzalloc(sbi, sizeof(struct f2fs_stat_info), GFP_KERNEL);
 	if (!si)
 		return -ENOMEM;
 

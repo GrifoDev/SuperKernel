@@ -1153,7 +1153,10 @@ int __tcp_transmit_skb(struct sock *sk, struct sk_buff *skb,
 	return net_xmit_eval(err);
 }
 
-static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
+#ifndef CONFIG_MPTCP
+static
+#endif
+int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
 			    gfp_t gfp_mask)
 {
 	return __tcp_transmit_skb(sk, skb, clone_it, gfp_mask,
@@ -1166,7 +1169,7 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
  * otherwise socket can stall.
  */
 #ifndef CONFIG_MPTCP
-static 
+static
 #endif
 void tcp_queue_skb(struct sock *sk, struct sk_buff *skb)
 {
@@ -1182,7 +1185,7 @@ void tcp_queue_skb(struct sock *sk, struct sk_buff *skb)
 
 /* Initialize TSO segments for a packet. */
 #ifndef CONFIG_MPTCP
-static 
+static
 #endif
 void tcp_set_skb_tso_segs(const struct sock *sk, struct sk_buff *skb,
 			  unsigned int mss_now)
