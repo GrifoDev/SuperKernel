@@ -262,6 +262,7 @@ struct cp_control {
 	__u64 trim_start;
 	__u64 trim_end;
 	__u64 trim_minlen;
+	__u64 trimmed;
 };
 
 /*
