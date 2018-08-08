@@ -18,6 +18,7 @@
 #include <mali_kbase.h>
 
 #include <linux/fb.h>
+#include <linux/sysfs_helpers.h>
 
 #if defined(CONFIG_EXYNOS_THERMAL) && defined(CONFIG_GPU_THERMAL) && defined(CONFIG_MALI_DEBUG_KERNEL_SYSFS)
 #include "exynos_tmu.h"
