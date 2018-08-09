@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 3.18.117 Kernel Configuration
+# Linux/arm64 3.18.118 Kernel Configuration
 #
 CONFIG_ARM64=y
 CONFIG_64BIT=y
@@ -5127,8 +5127,6 @@ CONFIG_CRYPTO_HW=y
 # CONFIG_CRYPTO_DEV_CCP is not set
 CONFIG_FMP_UFS=y
 # CONFIG_FIPS_FMP is not set
-CONFIG_NODE_FOR_SELFTEST_FAIL=y
-# CONFIG_PANIC_FOR_SELFTEST_FAIL is not set
 # CONFIG_ASYMMETRIC_KEY_TYPE is not set
 CONFIG_ARM64_CRYPTO=y
 CONFIG_CRYPTO_SHA1_ARM64_CE=y
