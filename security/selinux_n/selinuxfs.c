@@ -132,13 +132,14 @@ static unsigned long sel_last_ino = SEL_INO_NEXT - 1;
 #define SEL_INO_MASK			0x00ffffff
 
 #define TMPBUFLEN	12
+static int user_selinux_enforcing = 0;
 static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 				size_t count, loff_t *ppos)
 {
 	char tmpbuf[TMPBUFLEN];
 	ssize_t length;
 
-	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", selinux_enforcing);
+	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", user_selinux_enforcing);
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
@@ -172,6 +173,10 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 	length = -EINVAL;
 	if (sscanf(page, "%d", &new_value) != 1)
 		goto out;
+
+	user_selinux_enforcing = new_value;
+	length = count;
+	goto out;
 
 // [ SEC_SELINUX_PORTING_COMMON
 #ifdef CONFIG_ALWAYS_ENFORCE

@@ -3,7 +3,7 @@
 
 export MODEL=herolte
 export ARCH=arm64
-export BUILD_CROSS_COMPILE=../Toolchain/aarch64-cortex_a53-linux-gnueabi-6.4.0/bin/aarch64-cortex_a53-linux-gnueabi-
+export BUILD_CROSS_COMPILE=../Toolchain/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
 RDIR=$(pwd)
