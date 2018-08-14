@@ -10,6 +10,7 @@ on property:sys.boot_completed=1
     start kernelinit
     start sysinit
     start wakelock
+    stop secure_storage
 
 service kernelinit /sbin/kernelinit.sh
     user root
