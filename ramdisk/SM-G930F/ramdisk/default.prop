@@ -31,7 +31,9 @@ pm.dexopt.bg-dexopt=speed-profile
 pm.dexopt.ab-ota=speed-profile
 debug.atrace.tags.enableflags=0
 
+ro.config.tima=0
 ro.securestorage.support=false
+wlan.wfd.hdcp=disable
 
 #
 # BOOTIMAGE_BUILD_PROPERTIES
