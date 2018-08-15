@@ -1421,15 +1421,11 @@ static int exynos5_i2c_xfer(struct i2c_adapter *adap,
 	clk_ret = pm_runtime_get_sync(i2c->dev);
 	if (clk_ret < 0) {
 		exynos_update_ip_idle_status(i2c->idle_ip_index, 0);
-			ret = clk_enable(i2c->clk);
-			if (ret)
-				return ret;
+		clk_prepare_enable(i2c->clk);
 	}
 #else
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 0);
-	ret = clk_enable(i2c->clk);
-	if (ret)
-		return ret;
+	clk_prepare_enable(i2c->clk);
 #endif
 	/* If master is in arbitration lost state before transfer */
 	/* master should be reset */
@@ -1492,14 +1488,14 @@ static int exynos5_i2c_xfer(struct i2c_adapter *adap,
  out:
 #ifdef CONFIG_PM_RUNTIME
 	if (clk_ret < 0) {
-		clk_disable(i2c->clk);
+		clk_disable_unprepare(i2c->clk);
 		exynos_update_ip_idle_status(i2c->idle_ip_index, 1);
 	} else {
 		pm_runtime_mark_last_busy(i2c->dev);
 		pm_runtime_put_autosuspend(i2c->dev);
 	}
 #else
-	clk_disable(i2c->clk);
+	clk_disable_unprepare(i2c->clk);
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 1);
 #endif
 
@@ -1725,9 +1721,7 @@ static int exynos5_i2c_probe(struct platform_device *pdev)
 	pm_runtime_get_sync(&pdev->dev);
 #else
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 0);
-	ret = clk_prepare_enable(i2c->clk);
-	if (ret)
-		return ret;
+	clk_prepare_enable(i2c->clk);
 #endif
 
 	/* Clear pending interrupts from u-boot or misc causes */
@@ -1789,10 +1783,6 @@ static int exynos5_i2c_probe(struct platform_device *pdev)
 #endif
 	return 0;
 
-	clk_disable(i2c->clk);
-
-	return 0;
-
  err_clk:
 	clk_disable_unprepare(i2c->clk);
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 1);
@@ -1804,8 +1794,6 @@ static int exynos5_i2c_remove(struct platform_device *pdev)
 	struct exynos5_i2c *i2c = platform_get_drvdata(pdev);
 
 	i2c_del_adapter(&i2c->adap);
-
-	clk_unprepare(i2c->clk);
 
 	return 0;
 }
@@ -1820,8 +1808,6 @@ static int exynos5_i2c_suspend_noirq(struct device *dev)
 	i2c->suspended = 1;
 	i2c_unlock_adapter(&i2c->adap);
 
-	clk_unprepare(i2c->clk);
-
 	return 0;
 }
 
@@ -1829,17 +1815,14 @@ static int exynos5_i2c_resume_noirq(struct device *dev)
 {
 	struct platform_device *pdev = to_platform_device(dev);
 	struct exynos5_i2c *i2c = platform_get_drvdata(pdev);
-	int ret = 0;
 
 	i2c_lock_adapter(&i2c->adap);
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 0);
-	ret = clk_prepare_enable(i2c->clk);
-	if (ret)
-		return ret;
+	clk_prepare_enable(i2c->clk);
 	/* I2C for batcher doesn't need reset */
 	if(!(i2c->support_hsi2c_batcher))
 		exynos5_i2c_reset(i2c);
-	clk_disable(i2c->clk);
+	clk_disable_unprepare(i2c->clk);
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 1);
 	i2c->suspended = 0;
 	i2c_unlock_adapter(&i2c->adap);

@@ -2234,7 +2234,6 @@ int expand_upwards(struct vm_area_struct *vma, unsigned long address)
 	/* Guard against exceeding limits of the address space. */
 	address &= PAGE_MASK;
 	if (address >= (TASK_SIZE & PAGE_MASK))
-<<<<<<< HEAD
 		return -ENOMEM;
 	address += PAGE_SIZE;
 
@@ -2248,27 +2247,6 @@ int expand_upwards(struct vm_area_struct *vma, unsigned long address)
 	next = vma->vm_next;
 	if (next && next->vm_start < gap_addr &&
 			(next->vm_flags & (VM_WRITE|VM_READ|VM_EXEC))) {
-		if (!(next->vm_flags & VM_GROWSUP))
-			return -ENOMEM;
-		/* Check that both stack segments have the same anon_vma? */
-	}
-
-	/* We must make sure the anon_vma is allocated. */
-	if (unlikely(anon_vma_prepare(vma)))
-=======
->>>>>>> 4ff53b4278a8... source: update to ERG2
-		return -ENOMEM;
-	address += PAGE_SIZE;
-
-	/* Enforce stack_guard_gap */
-	gap_addr = address + stack_guard_gap;
-
-	/* Guard against overflow */
-	if (gap_addr < address || gap_addr > TASK_SIZE)
-		gap_addr = TASK_SIZE;
-
-	next = vma->vm_next;
-	if (next && next->vm_start < gap_addr) {
 		if (!(next->vm_flags & VM_GROWSUP))
 			return -ENOMEM;
 		/* Check that both stack segments have the same anon_vma? */

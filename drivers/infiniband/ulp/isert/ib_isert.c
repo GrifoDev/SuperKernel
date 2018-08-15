@@ -925,15 +925,12 @@ out:
 	return 0;
 }
 
-static int
+static void
 isert_connect_error(struct rdma_cm_id *cma_id)
 {
 	struct isert_conn *isert_conn = cma_id->qp->qp_context;
 
-	isert_conn->conn_cm_id = NULL;
 	isert_put_conn(isert_conn);
-
-	return -1;
 }
 
 static int
