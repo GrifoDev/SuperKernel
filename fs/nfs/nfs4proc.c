@@ -3052,7 +3052,7 @@ static int nfs4_do_find_root_sec(struct nfs_server *server,
  */
 int nfs4_proc_get_rootfh(struct nfs_server *server, struct nfs_fh *fhandle,
 			 struct nfs_fsinfo *info,
-			 int auth_probe)
+			 bool auth_probe)
 {
 	int status = 0;
 

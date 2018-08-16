@@ -34,9 +34,6 @@
 #include <linux/platform_device.h>
 #include <linux/of.h>
 #include <linux/apm-exynos.h>
-#ifdef CONFIG_MUIC_SUPPORT_CCIC
-#include <linux/of_gpio.h>
-#endif
 
 #include <asm/smp_plat.h>
 #include <asm/cputype.h>
