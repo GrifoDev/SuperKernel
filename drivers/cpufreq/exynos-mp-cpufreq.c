@@ -36,9 +36,6 @@
 #include <linux/of.h>
 #include <linux/apm-exynos.h>
 #include <linux/moduleparam.h>
-#ifdef CONFIG_MUIC_SUPPORT_CCIC
-#include <linux/of_gpio.h>
-#endif
 
 #include <linux/sysfs_helpers.h>
 

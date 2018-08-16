@@ -1870,7 +1870,7 @@ static void exynos_ufs_post_hibern8(struct ufs_hba *hba, u8 enter)
 	}
 }
 
-static int exynos_ufs_link_startup_notify(struct ufs_hba *hba, int notify)
+static int exynos_ufs_link_startup_notify(struct ufs_hba *hba, bool notify)
 {
 	struct exynos_ufs *ufs = to_exynos_ufs(hba);
 	int ret = 0;
@@ -1891,7 +1891,7 @@ static int exynos_ufs_link_startup_notify(struct ufs_hba *hba, int notify)
 	return ret;
 }
 
-static int exynos_ufs_pwr_change_notify(struct ufs_hba *hba, int notify,
+static int exynos_ufs_pwr_change_notify(struct ufs_hba *hba, bool notify,
 					struct ufs_pa_layer_attr *pwr_max,
 					struct ufs_pa_layer_attr *pwr_req)
 {
@@ -1912,7 +1912,7 @@ static int exynos_ufs_pwr_change_notify(struct ufs_hba *hba, int notify,
 }
 
 static void exynos_ufs_hibern8_notify(struct ufs_hba *hba,
-				u8 enter, int notify)
+				u8 enter, bool notify)
 {
 	switch (notify) {
 	case PRE_CHANGE:
@@ -1926,7 +1926,7 @@ static void exynos_ufs_hibern8_notify(struct ufs_hba *hba,
 	}
 }
 
-static void exynos_ufs_clock_control_notify(struct ufs_hba *hba, bool on, int notify)
+static void exynos_ufs_clock_control_notify(struct ufs_hba *hba, bool on, bool notify)
 {
 	struct exynos_ufs *ufs = to_exynos_ufs(hba);
 	s32 pm_qos_int_value = ufs->pm_qos_int_value;
