@@ -1,10 +1,10 @@
 #!/bin/bash
 # kernel build script by Tkkg1994 v0.6 (optimized from apq8084 kernel source)
 
-export MODEL=herolte
+export MODEL=hero2lte
 export VARIANT=eur
 export ARCH=arm64
-export VERSION=V3.0.2
+export VERSION=V3.1.0
 export BUILD_CROSS_COMPILE=../Toolchain/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 export BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
